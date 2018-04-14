@@ -44,6 +44,7 @@ public class TrackerTest : MonoBehaviour
             jointOverlayPosition.z = jointOverlayPosition.z + (NewLeftPosition.z - jointOverlayPosition.z) / TrailMovementDamp;
         }
 
+
         ParticleSystemLeft.transform.position = jointPosition;
 
         ParticleSystemLeft.transform.position = jointOverlayPosition;

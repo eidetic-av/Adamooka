@@ -44,14 +44,14 @@ public class LimitMesh : MonoBehaviour
             if (limitedTriangles.Length < allTriangles.Length)
             {
                 Array.Copy(allTriangles, limitedTriangles, TriangleLimit);
-                mesh.triangles = limitedTriangles;
+                //mesh.triangles = limitedTriangles;
                 Limiting = true;
             } else
             {
-                mesh.triangles = allTriangles;
+                //mesh.triangles = allTriangles;
                 Limiting = false;
             }
-            MeshFilter.mesh = mesh;
+            //MeshFilter.mesh = mesh;
             LimitedTriangles = limitedTriangles.ToList();
         }
     }

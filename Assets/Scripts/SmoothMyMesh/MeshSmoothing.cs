@@ -15,70 +15,124 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Jobs;
+using Unity.Collections;
 
 public class MeshSmoothing
 {
 
-    public static Mesh LaplacianFilter(Mesh mesh, int times = 1)
+    public static bool OffsetTriangles = false;
+    public static List<int> PreviousTriangles;
+    public static int[] LatestTriangles;
+
+    public static Mesh LaplacianFilter(Mesh mesh, int times, JobHandle jobHandlerDependency)
     {
-        mesh.vertices = LaplacianFilter(mesh.vertices, mesh.triangles, times);
+        mesh.vertices = LaplacianFilter(mesh.vertices, mesh.triangles, times, jobHandlerDependency);
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
         return mesh;
     }
 
-    public static Mesh LaplacianFilter(Mesh mesh, LimitMesh limitMesh, int times = 1)
+    public static Mesh LaplacianFilter(Mesh mesh, LimitMesh limitMesh, int times, JobHandle jobHandlerDependency)
     {
-        if (!limitMesh.Limiting) return LaplacianFilter(mesh, times);
+        if (!limitMesh.Limiting) return LaplacianFilter(mesh, times, jobHandlerDependency);
 
-        var limitedTriangles = limitMesh.LimitedTriangles;
+        var limitedTriangles = limitMesh.LimitedTriangles.ToArray();
+        if (limitedTriangles.Length == 0) limitedTriangles = mesh.triangles;
         var limitedVertexCount = limitedTriangles.Max() + 1;
-        Vector3[] limitedVertices = new Vector3[limitedVertexCount];
-        Array.Copy(mesh.vertices, limitedVertices, limitedVertexCount);
+        var limitedVertices = new Vector3[limitedVertexCount];
 
-        mesh.vertices = LaplacianFilter(limitedVertices, limitedTriangles, times);
+        Array.Copy(mesh.vertices, limitedVertices, limitedVertices.Length);
+
+        mesh.vertices = LaplacianFilter(limitedVertices, limitedTriangles, times, jobHandlerDependency);
+        if (!OffsetTriangles || LatestTriangles == null)
+        {
+            mesh.triangles = limitedTriangles;
+            LatestTriangles = limitedTriangles;
+        } 
+        else
+        {
+            // use the last triangles not the current ones to provide a noisy effect
+            PreviousTriangles = LatestTriangles.ToList();
+            int lastVertex = mesh.vertices.Length;
+            // remove any triangles that reference vertices that don't exist in this frame
+            PreviousTriangles.RemoveAll(v => (v >= lastVertex));
+            // and make sure the count is divisable by three to make a full triangle
+            while((PreviousTriangles.Count % 3) != 0)
+                PreviousTriangles.Add(lastVertex);
+            mesh.triangles = PreviousTriangles.ToArray();
+            LatestTriangles = limitedTriangles;
+        }
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
 
         return mesh;
     }
 
-    public static Vector3[] LaplacianFilter(Vector3[] vertices, int[] triangles, int times)
+    public static Dictionary<int, VertexConnection> Network;
+    public static Vector3[] LatestVertices;
+
+    public static Vector3[] LaplacianFilter(Vector3[] sourceVertices, int[] sourceTriangles, int times, JobHandle initialJobHandlerDependency)
     {
-        var network = VertexConnection.BuildNetwork(triangles);
+        var filterJobHandlers = new List<JobHandle>();
+        int batchSize = 250;
+
+        Network = VertexConnection.BuildNetwork(sourceTriangles);
+        LatestVertices = sourceVertices;
+
         for (int i = 0; i < times; i++)
         {
-            vertices = LaplacianFilter(network, vertices, triangles);
+
+            var vertexArray = new NativeArray<Vector3>(LatestVertices, Allocator.TempJob);
+            var trianglesArray = new NativeArray<int>(sourceTriangles, Allocator.TempJob);
+
+            var job = new LaplactianFilterJob
+            {
+                vertices = vertexArray,
+                triangles = trianglesArray
+            };
+
+            if (i == 0)
+            {
+                filterJobHandlers.Add(job.Schedule(vertexArray.Length, batchSize, initialJobHandlerDependency));
+            }
+            else
+            {
+                filterJobHandlers.Add(job.Schedule(vertexArray.Length, batchSize, filterJobHandlers[i - 1]));
+            }
+
+            filterJobHandlers.Last().Complete();
+
+            // set vertices
+            LatestVertices = new Vector3[vertexArray.Length];
+            vertexArray.CopyTo(LatestVertices);
+
+            vertexArray.Dispose();
+            trianglesArray.Dispose();
+
         }
-        return vertices;
+
+        return LatestVertices;
     }
 
-    public static Vector3[] LaplacianFilter(Vector3[] vertices, List<int> limitedTriangles, int times)
+    public struct LaplactianFilterJob : IJobParallelFor
     {
-        var network = VertexConnection.BuildNetwork(limitedTriangles.ToArray());
-        for (int i = 0; i < times; i++)
-        {
-            vertices = LaplacianFilter(network, vertices, limitedTriangles);
-        }
-        return vertices;
-    }
+        public NativeArray<Vector3> vertices;
+        public NativeArray<int> triangles;
 
-    static Vector3[] LaplacianFilter(Dictionary<int, VertexConnection> network, Vector3[] origin, int[] triangles)
-    {
-        Vector3[] vertices = new Vector3[origin.Length];
-        for (int i = 0, n = origin.Length; i < n; i++)
+        public void Execute(int i)
         {
-            if (!network.ContainsKey(i)) continue;
-            var connection = network[i].Connection;
+            if (!Network.ContainsKey(i)) return;
+
+            var connection = Network[i].Connection;
             var v = Vector3.zero;
             foreach (int adj in connection)
             {
-                v += origin[adj];
+                v += LatestVertices[adj];
             }
             vertices[i] = v / connection.Count;
         }
-        return vertices;
-    }
+    };
 
     static Vector3[] LaplacianFilter(Dictionary<int, VertexConnection> network, Vector3[] origin, List<int> limitedTriangles)
     {
@@ -156,26 +210,27 @@ public class MeshSmoothing
 
     public static Vector3[] HCFilter(Dictionary<int, VertexConnection> network, Vector3[] o, Vector3[] q, int[] triangles, float alpha, float beta)
     {
-        Vector3[] p = LaplacianFilter(network, q, triangles);
-        Vector3[] b = new Vector3[o.Length];
+        //Vector3[] p = LaplacianFilter(network, q, triangles);
+        //Vector3[] b = new Vector3[o.Length];
 
-        for (int i = 0; i < p.Length; i++)
-        {
-            b[i] = p[i] - (alpha * o[i] + (1f - alpha) * q[i]);
-        }
+        //for (int i = 0; i < p.Length; i++)
+        //{
+        //    b[i] = p[i] - (alpha * o[i] + (1f - alpha) * q[i]);
+        //}
 
-        for (int i = 0; i < p.Length; i++)
-        {
-            var adjacents = network[i].Connection;
-            var bs = Vector3.zero;
-            foreach (int adj in adjacents)
-            {
-                bs += b[adj];
-            }
-            p[i] = p[i] - (beta * b[i] + (1 - beta) / adjacents.Count * bs);
-        }
+        //for (int i = 0; i < p.Length; i++)
+        //{
+        //    var adjacents = network[i].Connection;
+        //    var bs = Vector3.zero;
+        //    foreach (int adj in adjacents)
+        //    {
+        //        bs += b[adj];
+        //    }
+        //    p[i] = p[i] - (beta * b[i] + (1 - beta) / adjacents.Count * bs);
+        //}
 
-        return p;
+        //return p;
+        return null;
     }
 
 }

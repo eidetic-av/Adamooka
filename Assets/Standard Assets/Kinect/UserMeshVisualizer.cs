@@ -35,6 +35,11 @@ public class UserMeshVisualizer : MonoBehaviour
     float lastMeshUpdateTime;
 
     public Mesh Mesh;
+
+    public bool LimitToHand = false;
+    [Range(0.01f, 1f)]
+    public float HandRadius = 0.1f;
+
     public static Vector3[] vertices;
     public static Vector3 gameObjectPosition;
     private Vector2[] uvs;
@@ -255,7 +260,30 @@ public class UserMeshVisualizer : MonoBehaviour
                                 vSpacePos = kinectToWorld.MultiplyPoint3x4(vSpacePos);
                             }
 
-                            vertices[vIndex] = vSpacePos - userMeshPos;
+                            if (LimitToHand)
+                            {
+                                var manager = KinectManager.Instance;
+                                Vector3 handPosition = manager.GetJointPosition(manager.GetUserIdByIndex(0), (int)KinectInterop.JointType.HandRight);
+                                if (Mathf.Abs(vSpacePos.x - handPosition.x) > HandRadius)
+                                {
+                                        vertices[vIndex] = handPosition;
+                                } else if (Mathf.Abs(vSpacePos.y - handPosition.y) > HandRadius)
+                                {
+                                    vertices[vIndex] = handPosition;
+                                } else if (Mathf.Abs(vSpacePos.z - handPosition.z) > HandRadius)
+                                {
+                                    vertices[vIndex] = handPosition;
+                                } else
+                                {
+                                    vertices[vIndex] = vSpacePos - userMeshPos;
+                                }
+                            } else
+                            {
+                                vertices[vIndex] = vSpacePos - userMeshPos;
+                            }
+
+
+
                             uvs[vIndex] = new Vector2((float)x / depthWidth, (float)y / depthHeight);
                             vIndex++;
 
