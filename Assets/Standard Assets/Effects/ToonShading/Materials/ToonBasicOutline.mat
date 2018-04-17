@@ -27,12 +27,12 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _Outline: 0.0234
+    - _Outline: 0.0082
     - _Shininess: 0.579717
     m_Colors:
-    - _Color: {r: 0.46268654, g: 0.46268654, b: 0.46268654, a: 1}
+    - _Color: {r: 0.50980395, g: 0.12879142, b: 0.10980392, a: 1}
     - _Emission: {r: 0, g: 0, b: 0, a: 0}
-    - _OutlineColor: {r: 1, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 1, g: 0.8333334, b: 0, a: 1}
     - _SpecColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1002 &2100001
 EditorExtensionImpl:

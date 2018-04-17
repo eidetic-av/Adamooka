@@ -1,19 +1,15 @@
-﻿using System.Linq;
+﻿using Eidetic.Utility;
+using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using Eidetic.Utility;
-using System.Collections.Generic;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
-public partial class SmoothMyMesh : MonoBehaviour
+public class MeshTools : MonoBehaviour
 {
 
-    public bool OffsetTriangles = false;
-
-    [System.Serializable]
-    enum FilterType
+    public enum FilterType
     {
         Laplacian, HC
     };
@@ -28,24 +24,37 @@ public partial class SmoothMyMesh : MonoBehaviour
             }
             return _filter;
         }
+
     }
 
     MeshFilter _filter;
 
-    public bool ControlNoiseWithMouse = false;
-    public bool ControlMaterialFilmWithMouse = false;
-    public bool ControlMaterialSpecWithMouse = false;
-    public bool ControlMaterialNoiseWithMouse = false;
-    public bool ControlMaterialColorWithMouse = false;
-    public bool ControlLightingIntensityWithMouse = false;
-    [SerializeField, Range(-5f, 5f)] public float NoiseIntensity = 0.5f;
-    public static float CurrentNoiseIntensity;
-    [SerializeField] bool ContinuousUpdate = false;
-    float LastUpdateTime;
-    [SerializeField] FilterType Type;
-    [SerializeField, Range(0, 20)] int Times = 3;
-    [SerializeField, Range(0f, 1f)] float HCAlpha = 0.5f;
-    [SerializeField, Range(0f, 1f)] float HCBeta = 0.5f;
+    public class NoiseAndSmoothing
+    {
+        public bool OffsetTriangles = false;
+
+        public bool ControlNoiseWithMouse = false;
+        public bool ControlMaterialFilmWithMouse = false;
+        public bool ControlMaterialSpecWithMouse = false;
+        public bool ControlMaterialNoiseWithMouse = false;
+        public bool ControlMaterialColorWithMouse = false;
+        public bool ControlLightingIntensityWithMouse = false;
+
+        public float NoiseIntensity = -0.000125f;
+        public float NewNoiseIntensity = -0.000125f;
+        public static float CurrentNoiseIntensity;
+        public bool ContinuousUpdate = true;
+        public float LastUpdateTime;
+        public FilterType Type = FilterType.Laplacian;
+        public int SmoothingTimes = 3;
+        public float HCAlpha = 0.5f;
+        public float HCBeta = 0.5f;
+
+        public bool RandomisePositionOnMouse = false;
+        public float NoiseChangeDamping = 5f;
+    }
+
+    public NoiseAndSmoothing Noise = new NoiseAndSmoothing();
 
     bool LimitingMesh = false;
     LimitMesh LimitMesh;
@@ -57,6 +66,8 @@ public partial class SmoothMyMesh : MonoBehaviour
     Light Light;
 
     Renderer Renderer;
+
+    Vector3 LastMousePosition = Vector3.zero;
 
     void Start()
     {
@@ -75,32 +86,33 @@ public partial class SmoothMyMesh : MonoBehaviour
         var mesh = filter.mesh;
         JobHandle normalNoiseJobHandler;
 
+
         if (mesh.vertexCount != 0)
         {
             filter.mesh = ApplyNormalNoise(mesh, out normalNoiseJobHandler);
 
-            switch (Type)
+            switch (Noise.Type)
             {
                 case FilterType.Laplacian:
                     if (!LimitingMesh)
-                        filter.mesh = MeshSmoothing.LaplacianFilter(filter.mesh, Times, normalNoiseJobHandler);
+                        filter.mesh = MeshSmoothing.LaplacianFilter(filter.mesh, Noise.SmoothingTimes, normalNoiseJobHandler);
                     else
                     {
-                        filter.mesh = MeshSmoothing.LaplacianFilter(filter.mesh, LimitMesh, Times, normalNoiseJobHandler);
+                        filter.mesh = MeshSmoothing.LaplacianFilter(filter.mesh, LimitMesh, Noise.SmoothingTimes, normalNoiseJobHandler);
                     }
                     break;
                 case FilterType.HC:
                     if (!LimitingMesh)
-                        filter.mesh = MeshSmoothing.HCFilter(filter.mesh, Times, HCAlpha, HCBeta);
+                        filter.mesh = MeshSmoothing.HCFilter(filter.mesh, Noise.SmoothingTimes, Noise.HCAlpha, Noise.HCBeta);
                     else
                     {
-                        filter.mesh = MeshSmoothing.HCFilter(filter.mesh, LimitMesh.LimitedTriangles, Times, HCAlpha, HCBeta);
+                        filter.mesh = MeshSmoothing.HCFilter(filter.mesh, LimitMesh.LimitedTriangles, Noise.SmoothingTimes, Noise.HCAlpha, Noise.HCBeta);
                     }
                     break;
             }
         }
 
-        LastUpdateTime = Time.time;
+        Noise.LastUpdateTime = Time.time;
     }
 
     private void Update()
@@ -111,24 +123,24 @@ public partial class SmoothMyMesh : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            OffsetTriangles = !OffsetTriangles;
+            Noise.OffsetTriangles = !Noise.OffsetTriangles;
         }
-        MeshSmoothing.OffsetTriangles = OffsetTriangles;
+        MeshSmoothing.OffsetTriangles = Noise.OffsetTriangles;
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            ControlNoiseWithMouse = !ControlNoiseWithMouse;
+            Noise.ControlNoiseWithMouse = !Noise.ControlNoiseWithMouse;
         }
-        if (ControlNoiseWithMouse)
+        if (Noise.ControlNoiseWithMouse)
         {
-            NoiseIntensity = Input.mousePosition.x.Map(0f, Screen.width, -5f, 5f);
-            Times = Mathf.RoundToInt(Input.mousePosition.y.Map(Screen.height, 0f, 0f, 8f));
+            Noise.NoiseIntensity = Input.mousePosition.x.Map(0f, Screen.width, -5f, 5f);
+            Noise.SmoothingTimes = Mathf.RoundToInt(Input.mousePosition.y.Map(Screen.height, 0f, 0f, 8f));
         }
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
-            ControlLightingIntensityWithMouse = !ControlLightingIntensityWithMouse;
+            Noise.ControlLightingIntensityWithMouse = !Noise.ControlLightingIntensityWithMouse;
         }
-        if (ControlLightingIntensityWithMouse)
+        if (Noise.ControlLightingIntensityWithMouse)
         {
             Light.intensity = Input.mousePosition.x.Map(0f, Screen.width, 0f, 2f);
         }
@@ -136,7 +148,8 @@ public partial class SmoothMyMesh : MonoBehaviour
         {
             ActiveMaterial++;
             if (ActiveMaterial > 2) ActiveMaterial = 0;
-            switch(ActiveMaterial) {
+            switch (ActiveMaterial)
+            {
                 case 0:
                     Renderer.material = Resources.Load<Material>("Pink");
                     break;
@@ -150,12 +163,33 @@ public partial class SmoothMyMesh : MonoBehaviour
         }
         IridescenceUpdate();
 
-        CurrentNoiseIntensity = NoiseIntensity;
+        NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Noise.NewNoiseIntensity = Random.Range(-0.0005f, 0.0005f);
+        } else if (Input.GetMouseButtonDown(1)) {
+            var mouse = Input.mousePosition.x.Map(0f, Screen.width, 0f, 1f);
+        }
+
+
+        if (Mathf.Abs(Noise.NoiseIntensity - Noise.NewNoiseIntensity) > 0) {
+            Noise.NoiseIntensity = Noise.NoiseIntensity + (Noise.NewNoiseIntensity - Noise.NoiseIntensity) / Noise.NoiseChangeDamping;
+        }
+
+        if (Noise.RandomisePositionOnMouse)
+        {
+
+            // var transform = gameObject.transform;
+            // var newPosition = new Vector3(Random.Range(-0.0005f, 0.0005f), transform.localPosition.y, transform.localPosition.z);
+            // transform.localPosition = newPosition;
+
+        }
     }
 
     void LateUpdate()
     {
-        if (ContinuousUpdate)
+        if (Noise.ContinuousUpdate)
         {
             ApplySmoothing();
         }
@@ -166,40 +200,40 @@ public partial class SmoothMyMesh : MonoBehaviour
         if (ActiveMaterial != 2) return;
         if (Input.GetKeyDown(KeyCode.Alpha9))
         {
-            ControlMaterialFilmWithMouse = !ControlMaterialFilmWithMouse;
+            Noise.ControlMaterialFilmWithMouse = !Noise.ControlMaterialFilmWithMouse;
         }
         if (Input.GetKeyDown(KeyCode.Alpha8))
         {
-            ControlMaterialSpecWithMouse = !ControlMaterialSpecWithMouse;
+            Noise.ControlMaterialSpecWithMouse = !Noise.ControlMaterialSpecWithMouse;
         }
         if (Input.GetKeyDown(KeyCode.Alpha7))
         {
-            ControlMaterialNoiseWithMouse = !ControlMaterialNoiseWithMouse;
+            Noise.ControlMaterialNoiseWithMouse = !Noise.ControlMaterialNoiseWithMouse;
         }
         if (Input.GetKeyDown(KeyCode.Alpha6))
         {
-            ControlMaterialColorWithMouse = !ControlMaterialColorWithMouse;
+            Noise.ControlMaterialColorWithMouse = !Noise.ControlMaterialColorWithMouse;
         }
 
-        if (ControlMaterialFilmWithMouse)
+        if (Noise.ControlMaterialFilmWithMouse)
         {
             SetMaterialsFloat("_Thinfilm_Strength", Input.mousePosition.x.Map(0f, Screen.width, -0f, 50f));
             SetMaterialsFloat("_Thinfilm_Color_Freq", Input.mousePosition.y.Map(Screen.height, 0f, 1f, 1000f));
         }
 
-        if (ControlMaterialSpecWithMouse)
+        if (Noise.ControlMaterialSpecWithMouse)
         {
             SetMaterialsFloat("_SpecPower", Input.mousePosition.x.Map(0f, Screen.width, 0.0001f, 0.1f));
         }
 
-        if (ControlMaterialNoiseWithMouse)
+        if (Noise.ControlMaterialNoiseWithMouse)
         {
             SetMaterialsFloat("_NoiseMultiplier", Input.mousePosition.x.Map(0f, Screen.width, 0.00001f, 20f));
             Debug.Log(Input.mousePosition.x.Map(0f, Screen.width, 0.00001f, 20f));
             SetMaterialsFloat("_NoiseOffset", Input.mousePosition.y.Map(Screen.height, 0f, 0f, 20f));
         }
 
-        if (ControlMaterialColorWithMouse)
+        if (Noise.ControlMaterialColorWithMouse)
         {
             SetMaterialsFloat("_ColorNoiseMultiplier", Input.mousePosition.x.Map(0f, Screen.width, 1f, 20f));
             SetMaterialsFloat("_ColorOffset", Input.mousePosition.y.Map(Screen.height, 0f, 0f, 20f));
@@ -254,7 +288,7 @@ public partial class SmoothMyMesh : MonoBehaviour
         outputMesh.vertices = vertices;
         outputMesh.normals = normals;
 
-        if (OffsetTriangles)
+        if (Noise.OffsetTriangles)
         {
             // if we are offsetting the triangles
             // remove any triangles that reference vertices that don't exist in this frame
@@ -279,7 +313,7 @@ public partial class SmoothMyMesh : MonoBehaviour
 
         public void Execute(int i)
         {
-            Vertices[i] = Vertices[i] + Normals[i] * RandomGenerator.NextFloat() * CurrentNoiseIntensity;
+            Vertices[i] = Vertices[i] + Normals[i] * RandomGenerator.NextFloat() * NoiseAndSmoothing.CurrentNoiseIntensity;
         }
     }
 

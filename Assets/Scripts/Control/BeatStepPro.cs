@@ -191,8 +191,8 @@ public class BeatStepPro : MonoBehaviour
 
     void UpdateMeshNoise(int midiValue)
     {
-        var SmoothScript = UserMesh.GetComponent<SmoothMyMesh>();
-        SmoothScript.NoiseIntensity = ((float)midiValue).Map(0, 127, 0, 3);
+        var noise = UserMesh.GetComponent<MeshTools>().Noise;
+        noise.NoiseIntensity = ((float)midiValue).Map(0, 127, 0, 3);
     }
 
     void UpdateRotationRateY(int midiValue)

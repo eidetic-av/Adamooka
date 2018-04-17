@@ -89,8 +89,8 @@ public class MAMRibbonController : MonoBehaviour
         if (Mathf.Abs(MeshDeform.x - MeshDeform.y) > 0)
         {
             MeshDeform.x = MeshDeform.x + (MeshDeform.y - MeshDeform.x) / MeshDeformDampRate;
-            var smoothScript = UserMesh.GetComponent<SmoothMyMesh>();
-            smoothScript.NoiseIntensity = MeshDeform.x;
+            var noise = UserMesh.GetComponent<MeshTools>().Noise;
+            noise.NoiseIntensity = MeshDeform.x;
         }
 
         DebouncePosition += Time.deltaTime;
