@@ -7329,19 +7329,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 350217bdfc7d7e445b233fac696aebcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OffsetTriangles: 0
-  ControlNoiseWithMouse: 0
-  ControlMaterialFilmWithMouse: 0
-  ControlMaterialSpecWithMouse: 0
-  ControlMaterialNoiseWithMouse: 0
-  ControlMaterialColorWithMouse: 0
-  ControlLightingIntensityWithMouse: 0
-  NoiseIntensity: 0.02
-  ContinuousUpdate: 1
-  Type: 0
-  Times: 3
-  HCAlpha: 0.5
-  HCBeta: 0.5
   ActiveMaterial: 0
 --- !u!114 &1184549877
 MonoBehaviour:
@@ -8374,7 +8361,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1637663376
 MonoBehaviour:
   m_ObjectHideFlags: 0

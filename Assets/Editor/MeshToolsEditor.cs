@@ -11,7 +11,7 @@ public class MeshToolsEditor : Editor
 
     public void SetStyles()
     {
-        // Section Header style
+        // Section Header
         sectionHeader = new GUIStyle(UnityEditor.EditorStyles.foldout);
         sectionHeader.fontStyle = FontStyle.Bold;
         sectionHeader.imagePosition = ImagePosition.TextOnly;
@@ -21,8 +21,9 @@ public class MeshToolsEditor : Editor
         sectionHeader.clipping = TextClipping.Overflow;
     }
 
-    public void SetSectionHeaderStyle() { 
-}
+    public void SetSectionHeaderStyle()
+    {
+    }
 
     public override void OnInspectorGUI()
     {
@@ -33,8 +34,10 @@ public class MeshToolsEditor : Editor
 
         EditorGUILayout.Space();
 
-        var meshTools = (MeshTools) target;
+        var meshTools = (MeshTools)target;
         var noiseAndSmoothing = meshTools.Noise;
+
+        // Noise and Smoothing Controls
 
         GUI.color = new Color(247, 182, 130);
         ShowNoiseAndSmoothing = EditorGUILayout.Foldout(ShowNoiseAndSmoothing, "Noise and Smoothing", true, sectionHeader);
@@ -49,9 +52,15 @@ public class MeshToolsEditor : Editor
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Noise Intensity", EditorStyles.label, GUILayout.Width(120));
-            noiseAndSmoothing.NoiseIntensity = GUILayout.HorizontalSlider(noiseAndSmoothing.NoiseIntensity, -0.0005f, 0.0005f);
-            noiseAndSmoothing.NoiseIntensity = EditorGUILayout.FloatField(noiseAndSmoothing.NoiseIntensity, EditorStyles.numberField, GUILayout.Width(50));
+            noiseAndSmoothing.NewNoiseIntensity = EditorGUILayout.Slider(noiseAndSmoothing.NewNoiseIntensity, -15f, 15f);
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("Intensity Change Damping", EditorStyles.label, GUILayout.Width(120));
+            noiseAndSmoothing.NoiseChangeDamping = EditorGUILayout.Slider(noiseAndSmoothing.NoiseChangeDamping, 1.01f, 40f);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Smoothing Multiplier", EditorStyles.label, GUILayout.Width(120));
@@ -60,6 +69,9 @@ public class MeshToolsEditor : Editor
 
         }
 
-        GUI.color = Color.clear;
+        // Another Header
+
+        GUI.color = new Color(105, 84, 196);
+        EditorGUILayout.Foldout(false, "Another Header", true, sectionHeader);
     }
 }

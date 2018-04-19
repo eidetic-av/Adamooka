@@ -5,6 +5,10 @@ using System.Collections.Generic;
 
 public class UserMeshVisualizer : MonoBehaviour
 {
+    [Tooltip("Auto position the UserMesh object and a Camera (set below) based on the height of the camera.")]
+    public bool AutoPosition = false;
+    private bool PerformedAutoPosition = false;
+
     [Tooltip("Index of the player, tracked by this component. -1 means all players, 0 - the 1st player only, 1 - the 2nd player only, etc.")]
     public int playerIndex = -1;
 
@@ -106,6 +110,22 @@ public class UserMeshVisualizer : MonoBehaviour
         if (manager == null || !manager.IsInitialized())
             return;
 
+        if (manager.GetUsersCount() != 0)
+        {
+            if (AutoPosition && !PerformedAutoPosition)
+            {
+                var sensorHeight = KinectManager.Instance.sensorHeight;
+                var sensorAngle = KinectManager.Instance.sensorAngle;
+                // centers the middle of the kinect projection to 0
+                transform.position = new Vector3(transform.position.x, -(sensorHeight / 2), transform.position.z);
+                PerformedAutoPosition = true;
+            }
+            else if (!AutoPosition)
+            {
+                PerformedAutoPosition = false;
+            }
+        }
+
         // get user texture
         //Renderer renderer = GetComponent<Renderer>();
         //if (renderer && renderer.material && renderer.material.mainTexture == null)
@@ -119,6 +139,7 @@ public class UserMeshVisualizer : MonoBehaviour
 
         if (playerIndex >= 0)
         {
+
             long lastUserId = userId;
             userId = manager.GetUserIdByIndex(playerIndex);
 

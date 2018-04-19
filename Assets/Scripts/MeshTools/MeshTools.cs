@@ -39,19 +39,19 @@ public class MeshTools : MonoBehaviour
         public bool ControlMaterialNoiseWithMouse = false;
         public bool ControlMaterialColorWithMouse = false;
         public bool ControlLightingIntensityWithMouse = false;
-
-        public float NoiseIntensity = -0.000125f;
-        public float NewNoiseIntensity = -0.000125f;
+        
+        public float NoiseIntensity;
+        public float NewNoiseIntensity;
         public static float CurrentNoiseIntensity;
-        public bool ContinuousUpdate = true;
+        public bool ContinuousUpdate;
         public float LastUpdateTime;
         public FilterType Type = FilterType.Laplacian;
-        public int SmoothingTimes = 3;
+        public int SmoothingTimes;
         public float HCAlpha = 0.5f;
         public float HCBeta = 0.5f;
 
         public bool RandomisePositionOnMouse = false;
-        public float NoiseChangeDamping = 5f;
+        public float NoiseChangeDamping;
     }
 
     public NoiseAndSmoothing Noise = new NoiseAndSmoothing();

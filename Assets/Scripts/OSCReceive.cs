@@ -53,14 +53,17 @@ public partial class OSCReceive : MonoBehaviour
             }
             if (address[3] == "pos")
             {
-                targetStick.Position.x = (float)data[0];
-                targetStick.Position.y = (float)data[1];
-                targetStick.Position.z = (float)data[2];
+                targetStick.Position = new Vector3((float)data[0], (float)data[1], (float)data[2]);
             } else if (address[3] == "angles")
             {
                 targetStick.EulerAngles.x = (float)data[0];
                 targetStick.EulerAngles.y = (float)data[1];
                 targetStick.EulerAngles.z = (float)data[2];
+            }
+            if (address[3] == "note")
+            {
+                if (address[4] == "on")
+                Debug.Log(address[2] + ": " + "noteOn." + (float)data[0]);
             }
         }
     }
