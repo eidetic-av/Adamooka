@@ -39,14 +39,14 @@ public class MeshTools : MonoBehaviour
         public bool ControlMaterialNoiseWithMouse = false;
         public bool ControlMaterialColorWithMouse = false;
         public bool ControlLightingIntensityWithMouse = false;
-        
-        public float NoiseIntensity;
-        public float NewNoiseIntensity;
+
+        public float NoiseIntensity = 0.01f;
+        public float NewNoiseIntensity = 0.01f;
         public static float CurrentNoiseIntensity;
-        public bool ContinuousUpdate;
+        public bool ContinuousUpdate = true;
         public float LastUpdateTime;
         public FilterType Type = FilterType.Laplacian;
-        public int SmoothingTimes;
+        public int SmoothingTimes = 5;
         public float HCAlpha = 0.5f;
         public float HCBeta = 0.5f;
 
@@ -72,7 +72,7 @@ public class MeshTools : MonoBehaviour
     void Start()
     {
         Renderer = gameObject.GetComponent<Renderer>();
-        Light = GameObject.Find("Directional Light").GetComponent<Light>();
+        Light = GameObject.Find("SceneLight").GetComponent<Light>();
         ApplySmoothing();
         if (gameObject.GetComponent<LimitMesh>() != null)
         {

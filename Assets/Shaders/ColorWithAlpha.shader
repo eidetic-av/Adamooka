@@ -1,12 +1,12 @@
 ﻿Shader "Unlit/ColorWithAlpha" {
 
 	Properties{
-		_Color("Main Color (A=Opacity)", Color) = (1,1,1,1)
-		_MainTex("Base (A=Opacity)", 2D) = ""
+		_Color("Main Color", Color) = (1,1,1,1)
+		_MainTex("Base", 2D) = ""
 	}
 
 		Category{
-		Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" }
+		Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent"}
 		ZWrite Off
 		Blend SrcAlpha OneMinusSrcAlpha
 
