@@ -40,9 +40,11 @@ public class UserMeshVisualizer : MonoBehaviour
 
     public Mesh Mesh;
 
-    public bool LimitToHand = false;
-    [Range(0.01f, 1f)]
-    public float HandRadius = 0.1f;
+    int LimitPosition;
+    public bool LimitToLeftHand = false;
+    public bool LimitToRightHand = false;
+    
+    public Vector3 HandLimit = new Vector3(0.1f, 0.1f, 0.1f);
 
     public static Vector3[] vertices;
     public static Vector3 gameObjectPosition;
@@ -203,6 +205,23 @@ public class UserMeshVisualizer : MonoBehaviour
         UpdateMesh();
 
         PushMeshToNetworkClients();
+
+
+        if (Input.GetKeyDown(KeyCode.L)) {
+            LimitPosition++;
+            if (LimitPosition > 1) LimitPosition = 0;
+            switch(LimitPosition) {
+                case 0:
+                    LimitToLeftHand = false;
+                    LimitToRightHand = false;
+                    break;
+                case 1:
+                    LimitToLeftHand = true;
+                    LimitToRightHand = true;
+                    break;
+            }
+        }
+
     }
 
     private void PushMeshToNetworkClients()
@@ -281,23 +300,53 @@ public class UserMeshVisualizer : MonoBehaviour
                                 vSpacePos = kinectToWorld.MultiplyPoint3x4(vSpacePos);
                             }
 
-                            if (LimitToHand)
+                            if (LimitToLeftHand || LimitToRightHand)
                             {
                                 var manager = KinectManager.Instance;
-                                Vector3 handPosition = manager.GetJointPosition(manager.GetUserIdByIndex(0), (int)KinectInterop.JointType.HandRight);
-                                if (Mathf.Abs(vSpacePos.x - handPosition.x) > HandRadius)
+                                List<int> alteredIndices = new List<int>();
+                                if (LimitToRightHand)
                                 {
+                                    Vector3 handPosition = manager.GetJointPosition(manager.GetUserIdByIndex(0), (int)KinectInterop.JointType.HandRight);
+                                    if (Mathf.Abs(vSpacePos.x - handPosition.x) > HandLimit.x)
+                                    {
                                         vertices[vIndex] = handPosition;
-                                } else if (Mathf.Abs(vSpacePos.y - handPosition.y) > HandRadius)
-                                {
-                                    vertices[vIndex] = handPosition;
-                                } else if (Mathf.Abs(vSpacePos.z - handPosition.z) > HandRadius)
-                                {
-                                    vertices[vIndex] = handPosition;
-                                } else
-                                {
-                                    vertices[vIndex] = vSpacePos - userMeshPos;
+                                    }
+                                    else if (Mathf.Abs(vSpacePos.y - handPosition.y) > HandLimit.y)
+                                    {
+                                        vertices[vIndex] = handPosition;
+                                    }
+                                    else if (Mathf.Abs(vSpacePos.z - handPosition.z) > HandLimit.z)
+                                    {
+                                        vertices[vIndex] = handPosition;
+                                    }
+                                    else
+                                    {
+                                        vertices[vIndex] = vSpacePos - userMeshPos;
+                                        alteredIndices.Add(vIndex);
+                                    }
                                 }
+                                if (LimitToLeftHand)
+                                {
+                                    Vector3 handPosition = manager.GetJointPosition(manager.GetUserIdByIndex(0), (int)KinectInterop.JointType.HandLeft);
+                                    if (Mathf.Abs(vSpacePos.x - handPosition.x) > HandLimit.x)
+                                    {
+                                        vertices[vIndex] = handPosition;
+                                    }
+                                    else if (Mathf.Abs(vSpacePos.y - handPosition.y) > HandLimit.y)
+                                    {
+                                        vertices[vIndex] = handPosition;
+                                    }
+                                    else if (Mathf.Abs(vSpacePos.z - handPosition.z) > HandLimit.z)
+                                    {
+                                        vertices[vIndex] = handPosition;
+                                    }
+                                    else
+                                    {
+                                        if (!alteredIndices.Contains(vIndex))
+                                        vertices[vIndex] = vSpacePos - userMeshPos;
+                                    }
+                                }
+
                             } else
                             {
                                 vertices[vIndex] = vSpacePos - userMeshPos;

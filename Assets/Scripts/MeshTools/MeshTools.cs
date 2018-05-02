@@ -85,9 +85,8 @@ public class MeshTools : MonoBehaviour
 
     void Explode()
     {
-        //Debug.Log("Explode");
         Noise.NewNoiseIntensity = 0.01f;
-        Noise.NoiseIntensity = 10f;
+        Noise.NoiseIntensity = 0.5f;
         Noise.NoiseChangeDamping = 5f;
     }
 
@@ -95,7 +94,6 @@ public class MeshTools : MonoBehaviour
     {
         var mesh = filter.mesh;
         JobHandle normalNoiseJobHandler;
-
 
         if (mesh.vertexCount != 0)
         {
@@ -127,6 +125,10 @@ public class MeshTools : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.E)) {
+            Explode();
+        }
+
         if (Input.GetKeyDown(KeyCode.Alpha0))
         {
             Renderer.enabled = !Renderer.enabled;
@@ -157,7 +159,7 @@ public class MeshTools : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             ActiveMaterial++;
-            if (ActiveMaterial > 2) ActiveMaterial = 0;
+            if (ActiveMaterial > 3) ActiveMaterial = 0;
             switch (ActiveMaterial)
             {
                 case 0:
@@ -169,32 +171,35 @@ public class MeshTools : MonoBehaviour
                 case 2:
                     Renderer.material = Resources.Load<Material>("Iridescence");
                     break;
+                case 3:
+                    Renderer.material = Resources.Load<Material>("Blue");
+                    break;
             }
         }
         IridescenceUpdate();
 
         NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
 
-        if (Input.GetMouseButtonDown(0))
-        {
-            Noise.NewNoiseIntensity = Random.Range(-0.0005f, 0.0005f);
-        } else if (Input.GetMouseButtonDown(1)) {
-            var mouse = Input.mousePosition.x.Map(0f, Screen.width, 0f, 1f);
-        }
+        // if (Input.GetMouseButtonDown(0))
+        // {
+        //     Noise.NewNoiseIntensity = Random.Range(-0.0005f, 0.0005f);
+        // } else if (Input.GetMouseButtonDown(1)) {
+        //     var mouse = Input.mousePosition.x.Map(0f, Screen.width, 0f, 1f);
+        // }
 
 
         if (Mathf.Abs(Noise.NoiseIntensity - Noise.NewNoiseIntensity) > 0) {
             Noise.NoiseIntensity = Noise.NoiseIntensity + (Noise.NewNoiseIntensity - Noise.NoiseIntensity) / Noise.NoiseChangeDamping;
         }
 
-        if (Noise.RandomisePositionOnMouse)
-        {
+        // if (Noise.RandomisePositionOnMouse)
+        // {
 
-            // var transform = gameObject.transform;
-            // var newPosition = new Vector3(Random.Range(-0.0005f, 0.0005f), transform.localPosition.y, transform.localPosition.z);
-            // transform.localPosition = newPosition;
+        //     var transform = gameObject.transform;
+        //     var newPosition = new Vector3(Random.Range(-0.0005f, 0.0005f), transform.localPosition.y, transform.localPosition.z);
+        //     transform.localPosition = newPosition;
 
-        }
+        // }
 
     }
 

@@ -14,7 +14,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/ParticleHandsTest.unity
     guid: f9059ea6ae2f6354899f1528399b1eaf
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/AirsticksTesting.unity
     guid: 9bc575934b1d00a4da1c3f47ab90c2ee
+  - enabled: 1
+    path: Assets/Scenes/PACT.unity
+    guid: 249ecc55938fa71469aea5001bcf72f3
   m_configObjects: {}

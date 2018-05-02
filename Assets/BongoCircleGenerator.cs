@@ -11,7 +11,7 @@ public class BongoCircleGenerator : MonoBehaviour
     public int YCount = 4;
     public Vector2 GridSpan = new Vector2(1f, 1f);
 
-    Tanzmaus Tanzmaus;
+    //Tanzmaus Tanzmaus;
 
     int XPosition = 1;
     int YPosition = 1;
@@ -23,8 +23,8 @@ public class BongoCircleGenerator : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        Tanzmaus = new Tanzmaus();
-        Tanzmaus.AddNoteOnAction(NoteOn);
+        //Tanzmaus = new Tanzmaus();
+        //Tanzmaus.AddNoteOnAction(NoteOn);
         Circles = new GameObject[XCount, YCount];
 
         float xDist = GridSpan.x / (float)XCount;

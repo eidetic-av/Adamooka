@@ -11,8 +11,8 @@ public class MAMRibbonController : MonoBehaviour
 
     BeatStepPro BeatStepPro;
 
-    Minitaur Minitaur = new Minitaur();
-    Tanzmaus Tanzmaus;
+    //Minitaur Minitaur = new Minitaur();
+    //Tanzmaus Tanzmaus;
 
     public int EmissionCount = 1;
 
@@ -43,16 +43,16 @@ public class MAMRibbonController : MonoBehaviour
     void Start()
     {
         MAMRibbon = GameObject.Find("MAMRibbon").GetComponent<ParticleSystem>();
-        Minitaur.AttachInputDevice("MIDIIN6 (mio4)");
+        //Minitaur.AttachInputDevice("MIDIIN6 (mio4)");
 
         BeatStepPro = GameObject.Find("UpdateController").GetComponent<BeatStepPro>();
 
         BlockoutQuad = GameObject.Find("BlockoutQuad");
 
-        Minitaur.AddNoteOnAction(DoNoteOn);
-        Minitaur.AddNoteOffAction(DoNoteOff);
-        Tanzmaus = new Tanzmaus();
-        Tanzmaus.AddNoteOnAction(DoTanzmausNoteOn);
+        //Minitaur.AddNoteOnAction(DoNoteOn);
+        //Minitaur.AddNoteOffAction(DoNoteOff);
+        //Tanzmaus = new Tanzmaus();
+        //Tanzmaus.AddNoteOnAction(DoTanzmausNoteOn);
 
         UserMesh = GameObject.Find("UserMesh");
 
@@ -226,60 +226,60 @@ public class MAMRibbonController : MonoBehaviour
 namespace Eidetic.Devices
 {
 
-    class Tanzmaus : DrumMachine
-    {
+    //class Tanzmaus : DrumMachine
+    //{
 
-        public Tanzmaus() : base()
-        {
+    //    public Tanzmaus() : base()
+    //    {
 
-        }
+    //    }
 
-        public override string MidiDeviceName { get; protected set; }
-            = "MIDIIN4 (mio4)";
+    //    public override string MidiDeviceName { get; protected set; }
+    //        = "MIDIIN4 (mio4)";
 
-        override public void Setup()
-        {
-            NoteOnActionPointers = new List<System.Action<int, int>>();
-        }
-        override protected void ControlChange(ControlChangeMessage ccMessage)
-        {
-            UnityMainThreadDispatcher.Instance().Enqueue(DoControlChange(ccMessage.Control.Number(), ccMessage.Value));
-        }
+    //    override public void Setup()
+    //    {
+    //        NoteOnActionPointers = new List<System.Action<int, int>>();
+    //    }
+    //    override protected void ControlChange(ControlChangeMessage ccMessage)
+    //    {
+    //        UnityMainThreadDispatcher.Instance().Enqueue(DoControlChange(ccMessage.Control.Number(), ccMessage.Value));
+    //    }
 
-        IEnumerator DoControlChange(int ccNumber, int value)
-        {
-            // ControlChangeActionPointers
-            yield return null;
-        }
-        IEnumerator DoNoteOn(int noteNumber, int velocity)
-        {
-            NoteOnActionPointers.ForEach(a => a.Invoke(noteNumber, velocity));
-            yield return null;
-        }
-        override protected void NoteOn(NoteOnMessage noteOnMessage)
-        {
-            if (noteOnMessage.Channel.Number() == 10)
-            {
-                UnityMainThreadDispatcher.Instance().Enqueue(DoNoteOn(noteOnMessage.Pitch.NoteNumber(), noteOnMessage.Velocity));
-            }
-        }
+    //    IEnumerator DoControlChange(int ccNumber, int value)
+    //    {
+    //        // ControlChangeActionPointers
+    //        yield return null;
+    //    }
+    //    IEnumerator DoNoteOn(int noteNumber, int velocity)
+    //    {
+    //        NoteOnActionPointers.ForEach(a => a.Invoke(noteNumber, velocity));
+    //        yield return null;
+    //    }
+    //    override protected void NoteOn(NoteOnMessage noteOnMessage)
+    //    {
+    //        if (noteOnMessage.Channel.Number() == 10)
+    //        {
+    //            UnityMainThreadDispatcher.Instance().Enqueue(DoNoteOn(noteOnMessage.Pitch.NoteNumber(), noteOnMessage.Velocity));
+    //        }
+    //    }
 
-        override protected void NoteOff(NoteOffMessage noteOffMessage)
-        {
-        }
-        void OnDestroy()
-        {
-            foreach (InputDevice d in InputDevice.InstalledDevices)
-            {
-                if (d.IsReceiving)
-                {
-                    d.StopReceiving();
-                }
-                if (d.IsOpen)
-                {
-                    d.Close();
-                }
-            }
-        }
-    }
+    //    override protected void NoteOff(NoteOffMessage noteOffMessage)
+    //    {
+    //    }
+    //    void OnDestroy()
+    //    {
+    //        foreach (InputDevice d in InputDevice.InstalledDevices)
+    //        {
+    //            if (d.IsReceiving)
+    //            {
+    //                d.StopReceiving();
+    //            }
+    //            if (d.IsOpen)
+    //            {
+    //                d.Close();
+    //            }
+    //        }
+    //    }
+    //}
 }
