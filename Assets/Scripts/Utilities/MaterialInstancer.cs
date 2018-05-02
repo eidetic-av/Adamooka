@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Eidetic.Unity.Utility;
 using UnityEngine;
 
 public class MaterialInstancer : MonoBehaviour
@@ -11,18 +10,9 @@ public class MaterialInstancer : MonoBehaviour
     {
         if (CreateInstance)
         {
-            this.InstanceMaterial();
+            gameObject.InstanceMaterial();
             CreateInstance = false;
         }
     }
 }
 
-public static class MaterialInstancerExtensionMethods
-{
-    public static void InstanceMaterial(this MonoBehaviour monoBehaviour)
-    {
-        var renderer = monoBehaviour.gameObject.GetComponent<Renderer>();
-        var instancedMaterial = new Material(renderer.material);
-        renderer.material = instancedMaterial;
-    }
-}

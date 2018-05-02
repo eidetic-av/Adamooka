@@ -1,13 +1,25 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
+using System;
+using Eidetic.Unity.Utility;
 
 public static class AirSticks
 {
-    public static Stick Left = new Stick();
-    public static Stick Right = new Stick();
+    public static Stick Left = new Stick() { Hand = Hand.Left };
+    public static Stick Right = new Stick() { Hand = Hand.Right };
+
+    public enum Hand
+    {
+        Left, Right
+    }
 
     public class Stick
     {
-        public bool FlipX = true;
+        public Hand Hand;
+
+        public Vector3 EulerAngles = Vector3.zero;
+
+        public bool FlipX = false;
         public bool FlipY = false;
         public bool FlipZ = true;
 
@@ -36,6 +48,18 @@ public static class AirSticks
             }
         }
 
-        public Vector3 EulerAngles = Vector3.zero;
+        public Action NoteOn { get; set; }
+        public Action NoteOff { get; set; }
+
+        public void TriggerNoteOn()
+        {
+            if (NoteOn == null) return;
+            Threading.RunOnMain(NoteOn);
+        }
+        public void TriggerNoteOff()
+        {
+            if (NoteOff == null) return;
+            Threading.RunOnMain(NoteOff);
+        }
     }
 }

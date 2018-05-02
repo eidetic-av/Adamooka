@@ -5,7 +5,8 @@ using System.Linq;
 using UnityEngine;
 using System;
 using Midi;
-using Eidetic.Utility;
+using Utility;
+using Eidetic.Unity.Utility;
 
 public class LifxController : MonoBehaviour
 {
@@ -14,10 +15,13 @@ public class LifxController : MonoBehaviour
     static List<LightBulb> LightBulbs = new List<LightBulb>();
 
     static InputDevice LoopMidi;
+    static InputDevice Tanzmaus;
 
     public bool CycleHue = false;
 
     static LightStateResponse LastOnLightState;
+
+    static float LastSP1Time;
 
     // Use this for initialization
     void Start()
@@ -29,22 +33,31 @@ public class LifxController : MonoBehaviour
         Client.DeviceLost += Client_DeviceLost;
         Client.StartDeviceDiscovery();
 
-        Debug.Log("Lifx Devices Count on Start: " + Client.Devices.ToList().Count);
-
         // Print the label of each device
         Client.Devices.ToList().ForEach(device => Debug.Log(Client.GetDeviceLabelAsync(device)));
 
+        // MIDI IN 4
+        OpenMidiDevice(
+            Tuple.Create("MIDIIN4 (mio4)", 10)
+        );
+
+    }
+
+    void OpenMidiDevice(params Tuple<string, int>[] targetDevices)
+    {
         foreach (var device in InputDevice.InstalledDevices)
         {
-            Debug.Log(device.Name);
-            if (device.Name.ToLower() == "LoopBe Internal MIDI".ToLower())
+            foreach (Tuple<string, int> targetDevice in targetDevices)
             {
-                LoopMidi = device;
-                LoopMidi.NoteOn += NoteOn;
-                LoopMidi.ControlChange += ControlChange;
-                LoopMidi.Open();
-                LoopMidi.StartReceiving(null);
-                Debug.Log("Connected to LoopBe Port");
+                if (targetDevice.Item1 == device.Name)
+                {
+                    LoopMidi = device;
+                    LoopMidi.NoteOn += NoteOn;
+                    LoopMidi.ControlChange += ControlChange;
+                    LoopMidi.Open();
+                    LoopMidi.StartReceiving(null);
+                    Debug.Log("Initialised MIDI Device: " + device.Name);
+                }
             }
         }
     }
@@ -60,13 +73,13 @@ public class LifxController : MonoBehaviour
 
     private static void Client_DeviceDiscovered(object sender, LifxClient.DeviceDiscoveryEventArgs e)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(LogDeviceName(e));
+        Threading.RunOnMain(LogDeviceName(e));
         LightBulbs.Add((LightBulb)e.Device);
     }
 
     private static IEnumerator LogDeviceName(LifxClient.DeviceDiscoveryEventArgs e)
     {
-        Debug.Log(Client.GetDeviceLabelAsync(e.Device));
+        Debug.Log("Light: " + Client.GetDeviceLabelAsync(e.Device).Id);
         yield return null;
     }
 
@@ -87,7 +100,8 @@ public class LifxController : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.O))
         {
             NoteOn(null);
-        } else if (Input.GetKeyDown(KeyCode.I))
+        }
+        else if (Input.GetKeyDown(KeyCode.I))
         {
             CycleHue = !CycleHue;
         }
@@ -104,7 +118,7 @@ public class LifxController : MonoBehaviour
 
     public static void SetHueFromCC(LightBulb target, float hueCC)
     {
-        var convertedHue = (ushort) Mathf.RoundToInt(hueCC.Map(0f, 127f, 0f, 65535f));
+        var convertedHue = (ushort)Mathf.RoundToInt(hueCC.Map(0f, 127f, 0f, 65535f));
         SetHue(target, convertedHue);
     }
 
@@ -143,14 +157,33 @@ public class LifxController : MonoBehaviour
 
     private static void NoteOn(NoteOnMessage noteOnMessage)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(RandomiseHue);
+
+        var channel = noteOnMessage.Channel.Number();
+        var note = noteOnMessage.Pitch.NoteNumber();
+
+        switch (channel)
+        {
+            case 10:
+                // ! Tanzmaus
+                switch (note)
+                {
+                    case 65:
+                        // --> SP1
+                        // debounce
+                        if (Mathf.Abs(noteOnMessage.Time - LastSP1Time) < 0.04f) return;
+                        LastSP1Time = noteOnMessage.Time;
+                        Threading.RunOnMain(RandomiseHue);
+                        break;
+                }
+                break;
+        }
     }
 
     private static void ControlChange(ControlChangeMessage controlChangeMessage)
     {
         if (controlChangeMessage.Device.Name == "LoopBe Internal MIDI")
         {
-                LightBulbs.ForEach(bulb => SetHueFromCC(bulb, controlChangeMessage.Value));
+            LightBulbs.ForEach(bulb => SetHueFromCC(bulb, controlChangeMessage.Value));
         }
     }
 
@@ -158,8 +191,12 @@ public class LifxController : MonoBehaviour
     {
         foreach (var target in LightBulbs)
         {
-            //var state = await Client.GetLightStateAsync(target);
-            var newHue = (ushort)Mathf.RoundToInt(UnityEngine.Random.value * 65535);
+            var state = await Client.GetLightStateAsync(target);
+            ushort newHue = 99;
+            while (newHue == 99 || (Mathf.Abs(state.Hue - newHue) < 1000))
+            {
+                newHue = (ushort)Mathf.RoundToInt(UnityEngine.Random.value * 65535);
+            }
             await Client.SetColorAsync(target, newHue, 65535, 65535, 9000, TimeSpan.FromMilliseconds(0));
         }
     }
@@ -167,18 +204,19 @@ public class LifxController : MonoBehaviour
 
 }
 
-namespace Eideteic
+namespace Eidetic.Unity.Utility
 {
-
-    partial class Utility
+    public static class Threading
     {
-
-        static bool RunOnMain(Action action)
+        public static bool RunOnMain(Action action)
         {
             UnityMainThreadDispatcher.Instance().Enqueue(action);
             return true;
         }
-
+        public static bool RunOnMain(IEnumerator iEnumerator)
+        {
+            UnityMainThreadDispatcher.Instance().Enqueue(iEnumerator);
+            return true;
+        }
     }
-
 }

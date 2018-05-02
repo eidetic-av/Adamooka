@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Midi;
-using Eidetic.Utility;
+using Utility;
 
 public class BeatStepPro : MonoBehaviour
 {

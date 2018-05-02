@@ -8,14 +8,12 @@ public partial class OSCReceive : MonoBehaviour
 {
 
     public static Dictionary<string, ServerLog> Servers = new Dictionary<string, ServerLog>();
-
-    // Use this for initialization
+    
     void Start()
     {
         OSCHandler.Instance.Init();
     }
-
-    // Update is called once per frame
+    
     void Update()
     {
         for (var i = 0; i < OSCHandler.Instance.packets.Count; i++)
@@ -33,19 +31,26 @@ public partial class OSCReceive : MonoBehaviour
 
         // Origin
         int serverPort = packet.server.ServerPort;
-        var address = ((OSCMessage)packet.Data[0]).Address.Split("/".ToCharArray());
 
         // Data at index 0
         if (packet.Data[0] == null) return;
-        var dataList = ((OSCMessage)packet.Data[0]).Data;
 
-        RouteOSC(address, dataList);
+        for (int i = 0; i < packet.Data.Count; i++)
+        {
+            var address = ((OSCMessage)packet.Data[i]).Address.Split("/".ToCharArray());
+            var dataList = ((OSCMessage)packet.Data[i]).Data;
+            RouteOSC(address, dataList);
+        }
+
     }
 
     private void RouteOSC(string[] address, List<object> data)
     {
+        Debug.Log(address[2]);
+
         if (address[1] == "airsticks")
         {
+            //Debug.Log("getting message");
             AirSticks.Stick targetStick = AirSticks.Left;
             if (address[2] == "right")
             {
@@ -54,7 +59,8 @@ public partial class OSCReceive : MonoBehaviour
             if (address[3] == "pos")
             {
                 targetStick.Position = new Vector3((float)data[0], (float)data[1], (float)data[2]);
-            } else if (address[3] == "angles")
+            }
+            else if (address[3] == "angles")
             {
                 targetStick.EulerAngles.x = (float)data[0];
                 targetStick.EulerAngles.y = (float)data[1];
@@ -63,7 +69,9 @@ public partial class OSCReceive : MonoBehaviour
             if (address[3] == "note")
             {
                 if (address[4] == "on")
-                Debug.Log(address[2] + ": " + "noteOn." + (float)data[0]);
+                    targetStick.TriggerNoteOn();
+                else if (address[4] == "off")
+                    targetStick.TriggerNoteOff();
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿using Eidetic.Utility;
+﻿using Utility;
 using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
@@ -40,13 +40,13 @@ public class MeshTools : MonoBehaviour
         public bool ControlMaterialColorWithMouse = false;
         public bool ControlLightingIntensityWithMouse = false;
 
-        public float NoiseIntensity = 0.01f;
-        public float NewNoiseIntensity = 0.01f;
+        public float NoiseIntensity = 0.05f;
+        public float NewNoiseIntensity = 0.05f;
         public static float CurrentNoiseIntensity;
         public bool ContinuousUpdate = true;
         public float LastUpdateTime;
         public FilterType Type = FilterType.Laplacian;
-        public int SmoothingTimes = 5;
+        public int SmoothingTimes = 3;
         public float HCAlpha = 0.5f;
         public float HCBeta = 0.5f;
 
@@ -79,6 +79,16 @@ public class MeshTools : MonoBehaviour
             LimitMesh = gameObject.GetComponent<LimitMesh>();
             LimitingMesh = true;
         }
+
+        AirSticks.Right.NoteOn += Explode;
+    }
+
+    void Explode()
+    {
+        //Debug.Log("Explode");
+        Noise.NewNoiseIntensity = 0.01f;
+        Noise.NoiseIntensity = 10f;
+        Noise.NoiseChangeDamping = 5f;
     }
 
     void ApplySmoothing()
@@ -185,6 +195,7 @@ public class MeshTools : MonoBehaviour
             // transform.localPosition = newPosition;
 
         }
+
     }
 
     void LateUpdate()

@@ -103,7 +103,7 @@ public class AirSticksUpdater : MonoBehaviour
             switch (noteOnMessage.Pitch.NoteNumber())
             {
                 case 42:
-                    UnityMainThreadDispatcher.Instance().Enqueue(ReverseColors);
+                    //UnityMainThreadDispatcher.Instance().Enqueue(ReverseColors);
                     break;
             }
         }
@@ -147,6 +147,8 @@ public class AirSticksUpdater : MonoBehaviour
                 Left.transform.localRotation = Quaternion.Euler(DampedLeftRotation * 90);
             }
 
+            Debug.Log("AirSticks.Right.Position: " + AirSticks.Right.Position);
+
             if (Right != null)
             {
                 if (Mathf.Abs(DampedRightPosition.x - AirSticks.Right.Position.x) > 0)
@@ -161,7 +163,10 @@ public class AirSticksUpdater : MonoBehaviour
                 {
                     DampedRightPosition.z = DampedRightPosition.z + (AirSticks.Right.Position.z - DampedRightPosition.z) / DampingRate;
                 }
-                Right.transform.localPosition = DampedRightPosition;
+                // Right.transform.localPosition = DampedRightPosition;
+
+                Right.transform.localPosition = AirSticks.Right.Position;
+                
 
                 if (Mathf.Abs(DampedRightRotation.x - AirSticks.Left.EulerAngles.x) > 0)
                 {
@@ -175,6 +180,7 @@ public class AirSticksUpdater : MonoBehaviour
                 {
                     DampedRightRotation.z = DampedRightRotation.z + (AirSticks.Left.EulerAngles.z - DampedRightRotation.z) / DampingRate;
                 }
+                
                 Right.transform.localRotation = Quaternion.Euler(DampedRightRotation * 90);
 
             }
