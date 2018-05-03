@@ -7,6 +7,10 @@ using Eidetic.Unity.Utility;
 public class TrackerOutputEffector : MonoBehaviour
 {
 
+    public bool AnimateAlpha = true;
+
+    public bool NoteOnCloning = false;
+
     public bool LogLeftNoteEvents = false;
     public bool LogRightNoteEvents = false;
 
@@ -71,10 +75,15 @@ public class TrackerOutputEffector : MonoBehaviour
 
     bool OccludeBase = true;
 
+    Renderer Renderer;
+    float Alpha, NewAlpha = 1f;
+    float AlphaAnimationDamp = 5f;
+
     void Start()
     {
         // Instance the material so it is independently editable
         gameObject.InstanceMaterial();
+        Renderer = gameObject.GetComponent<Renderer>();
 
         // Set AirSticks actions
         AirSticks.Left.NoteOn += LeftNoteOn;
@@ -126,7 +135,8 @@ public class TrackerOutputEffector : MonoBehaviour
             {
                 Color occludeColor = Color.HSVToRGB(h, s, 0);
                 gameObject.GetComponent<Renderer>().material.SetColor("_TintColor", occludeColor);
-            } else
+            }
+            else
             {
                 Color normalColor = Color.HSVToRGB(h, s, 1);
                 gameObject.GetComponent<Renderer>().material.SetColor("_TintColor", normalColor);
@@ -136,28 +146,26 @@ public class TrackerOutputEffector : MonoBehaviour
 
     void LeftNoteOn()
     {
-        Debug.Log("left on");
+        if (!NoteOnCloning) return;
         LeftOn = true;
         LeftNoteOnPosition = AirSticks.Left.Position;
     }
 
     void RightNoteOn()
     {
-        Debug.Log("right on");
+        if (!NoteOnCloning) return;
         RightOn = true;
         RightNoteOnPosition = AirSticks.Right.Position;
     }
 
     void LeftNoteOff()
     {
-        Debug.Log("left off");
         LeftOn = false;
         HideClones(AirSticks.Hand.Left);
     }
 
     void RightNoteOff()
     {
-        Debug.Log("right off");
         RightOn = false;
         HideClones(AirSticks.Hand.Right);
     }

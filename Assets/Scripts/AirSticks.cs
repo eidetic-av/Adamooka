@@ -23,6 +23,8 @@ public static class AirSticks
         public bool FlipY = false;
         public bool FlipZ = true;
 
+        public float JoystickY;
+
         private Vector3 position;
         public Vector3 Position
         {
@@ -47,6 +49,8 @@ public static class AirSticks
                 position = newPosition;
             }
         }
+
+        public bool Trigger = false;
 
         public Action NoteOn { get; set; }
         public Action NoteOff { get; set; }

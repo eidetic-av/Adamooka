@@ -3,6 +3,7 @@ using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using Eidetic.Unity.Utility;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
@@ -40,8 +41,8 @@ public class MeshTools : MonoBehaviour
         public bool ControlMaterialColorWithMouse = false;
         public bool ControlLightingIntensityWithMouse = false;
 
-        public float NoiseIntensity = 0.05f;
-        public float NewNoiseIntensity = 0.05f;
+        public float NoiseIntensity = 0.1f;
+        public float NewNoiseIntensity = 0.1f;
         public static float CurrentNoiseIntensity;
         public bool ContinuousUpdate = true;
         public float LastUpdateTime;
@@ -56,6 +57,8 @@ public class MeshTools : MonoBehaviour
 
     public NoiseAndSmoothing Noise = new NoiseAndSmoothing();
 
+    public Prototyping Prototyping;
+
     bool LimitingMesh = false;
     LimitMesh LimitMesh;
 
@@ -69,10 +72,13 @@ public class MeshTools : MonoBehaviour
 
     Vector3 LastMousePosition = Vector3.zero;
 
+    public bool AnimateOutline = true;
+
     void Start()
     {
         Renderer = gameObject.GetComponent<Renderer>();
         Light = GameObject.Find("SceneLight").GetComponent<Light>();
+        Prototyping = GameObject.Find("Prototyping").GetComponent<Prototyping>();
         ApplySmoothing();
         if (gameObject.GetComponent<LimitMesh>() != null)
         {
@@ -80,14 +86,38 @@ public class MeshTools : MonoBehaviour
             LimitingMesh = true;
         }
 
-        AirSticks.Right.NoteOn += Explode;
+        AirSticks.Right.NoteOn += ExplodeA;
+        AirSticks.Left.NoteOn += ExplodeB;
+
+        MidiManager.OneFiveNine.Beep += BangOutline;
+
+        gameObject.InstanceMaterial();
     }
 
-    void Explode()
+    float Outline, NewOutline = 0.2f;
+    float OutlineAnimationDamp = 5f;
+
+    void BangOutline()
+    {
+        Outline = 1f;
+        NewOutline = 0f;
+    }
+
+    void ExplodeA()
+    {
+        Explode(Prototyping.Vectors[0].x, Prototyping.Vectors[0].y);
+    }
+
+    void ExplodeB()
+    {
+        Explode(Prototyping.Vectors[1].x, Prototyping.Vectors[1].y);
+    }
+
+    void Explode(float explosionIntensity, float dampRate = 10f)
     {
         Noise.NewNoiseIntensity = 0.01f;
-        Noise.NoiseIntensity = 0.5f;
-        Noise.NoiseChangeDamping = 5f;
+        Noise.NoiseIntensity = explosionIntensity;
+        Noise.NoiseChangeDamping = dampRate;
     }
 
     void ApplySmoothing()
@@ -125,8 +155,22 @@ public class MeshTools : MonoBehaviour
 
     private void Update()
     {
+        if (AnimateOutline)
+        {
+            if (Mathf.Abs(Outline - NewOutline) > 0)
+            {
+                Outline = Outline + (NewOutline - Outline) / OutlineAnimationDamp;
+            }
+            var color = Renderer.material.GetColor("_OutlineColor");
+            color.a = Outline;
+            Renderer.material.SetColor("_OutlineColor", color);
+        }
+
         if (Input.GetKeyDown(KeyCode.E)) {
-            Explode();
+            ExplodeA();
+        } else if (Input.GetKeyDown(KeyCode.R))
+        {
+            ExplodeB();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha0))
@@ -163,16 +207,16 @@ public class MeshTools : MonoBehaviour
             switch (ActiveMaterial)
             {
                 case 0:
-                    Renderer.material = Resources.Load<Material>("Pink");
+                    Renderer.material = Resources.Load<UnityEngine.Material>("Pink");
                     break;
                 case 1:
-                    Renderer.material = Resources.Load<Material>("Rainbow Wireframe");
+                    Renderer.material = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
                     break;
                 case 2:
-                    Renderer.material = Resources.Load<Material>("Iridescence");
+                    Renderer.material = Resources.Load<UnityEngine.Material>("Iridescence");
                     break;
                 case 3:
-                    Renderer.material = Resources.Load<Material>("Blue");
+                    Renderer.material = Resources.Load<UnityEngine.Material>("Blue");
                     break;
             }
         }
@@ -259,7 +303,7 @@ public class MeshTools : MonoBehaviour
 
     void SetMaterialsFloat(string name, float f)
     {
-        Material[] mats = Renderer.materials;
+        UnityEngine.Material[] mats = Renderer.materials;
         for (int i = 0; i < mats.Length; i++)
         {
             mats[i].SetFloat(name, f);

@@ -56,18 +56,18 @@ public class AirSticksUpdater : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        foreach (var device in InputDevice.InstalledDevices)
-        {
-            if (device.Name.Equals("LoopBe Internal MIDI"))
-            {
-                LoopMidi = device;
-                LoopMidi.Open();
-                LoopMidi.StartReceiving(null);
-                LoopMidi.NoteOn += RouteNoteOns;
-                Debug.Log("Connected to LoopBe Device");
-                break;
-            }
-        }
+        //foreach (var device in InputDevice.InstalledDevices)
+        //{
+        //    if (device.Name.Equals("LoopBe Internal MIDI"))
+        //    {
+        //        LoopMidi = device;
+        //        LoopMidi.Open();
+        //        LoopMidi.StartReceiving(null);
+        //        LoopMidi.NoteOn += RouteNoteOns;
+        //        Debug.Log("Connected to LoopBe Device");
+        //        break;
+        //    }
+        //}
 
         SetPatternOrigin(Origin);
         if (Left != null)
@@ -200,7 +200,7 @@ public class AirSticksUpdater : MonoBehaviour
 
             //User.transform.localPosition = KinectManager.Instance.GetJointPosition(KinectManager.Instance.GetUserIdByIndex(0), (int)KinectInterop.JointType.SpineMid) * 10;
         }
-        UpdateDiscs();
+        //UpdateDiscs();
     }
 
     void CheckKeyPresses()

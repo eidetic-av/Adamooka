@@ -3,17 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using UnityOSC;
+using Midi;
+using System;
+using Eidetic;
+using Utility;
 
 public partial class OSCReceive : MonoBehaviour
 {
 
     public static Dictionary<string, ServerLog> Servers = new Dictionary<string, ServerLog>();
-    
+
+
+
     void Start()
     {
         OSCHandler.Instance.Init();
+
     }
-    
+
     void Update()
     {
         for (var i = 0; i < OSCHandler.Instance.packets.Count; i++)
@@ -46,11 +53,8 @@ public partial class OSCReceive : MonoBehaviour
 
     private void RouteOSC(string[] address, List<object> data)
     {
-        Debug.Log(address[2]);
-
         if (address[1] == "airsticks")
         {
-            //Debug.Log("getting message");
             AirSticks.Stick targetStick = AirSticks.Left;
             if (address[2] == "right")
             {
@@ -70,8 +74,25 @@ public partial class OSCReceive : MonoBehaviour
             {
                 if (address[4] == "on")
                     targetStick.TriggerNoteOn();
-                else if (address[4] == "off")
+                if (address[4] == "off")
                     targetStick.TriggerNoteOff();
+            }
+            if (address[3] == "trigger")
+            {
+                var value = data[0].ToString();
+                if (value == "0")
+                {
+                    targetStick.Trigger = false;
+                }
+                else if (value == "1")
+                {
+                    targetStick.Trigger = true;
+                }
+            }
+            if (address[3] == "joystick")
+            {
+                var value = Convert.ToSingle(data[1].ToString());
+                targetStick.JoystickY = value;
             }
         }
     }
