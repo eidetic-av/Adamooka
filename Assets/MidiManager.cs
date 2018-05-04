@@ -34,6 +34,9 @@ public class MidiManager : MonoBehaviour
     public GameObject TrackerSceneOutputQuad;
     public TrackerOutputEffector TrackerOutputEffector;
 
+    public GameObject PatternScene;
+    public Strobe Strobe;
+
     UnityEngine.Material ToonLit;
     UnityEngine.Material BlackOcclusion;
     UnityEngine.Material Wireframe;
@@ -74,11 +77,27 @@ public class MidiManager : MonoBehaviour
                     OneFiveNine.Bass.Invoke(noteOnMessage.Pitch);
                     break;
                 }
+            case Channel.Channel14:
+                {
+                    RouteElectricMidi(noteOnMessage.Pitch);
+                    break;
+                }
             case Channel.Channel16:
                 {
                     UpdateAbletonState(noteOnMessage.Pitch);
                     break;
                 }
+        }
+    }
+
+    private void RouteElectricMidi(Pitch pitch)
+    {
+        Debug.Log(pitch);
+        switch(pitch)
+        {
+            case Pitch.CNeg1:
+                Strobe.Bang = true;
+                break;
         }
     }
 

@@ -293,11 +293,15 @@
 -d:ENABLE_VSTU
 -d:UNITY_PRO_LICENSE
 -i:C:/Users/matth/Desktop/Adamooka/Assets/BongoCircleGenerator.cs
+-i:"C:/Users/matth/Desktop/Adamooka/Assets/Camera Filter Pack/Scripts/CameraFilterPack_Distortion_Noise.cs"
+-i:"C:/Users/matth/Desktop/Adamooka/Assets/Camera Filter Pack/Scripts/CameraFilterPack_TV_Noise.cs"
+-i:C:/Users/matth/Desktop/Adamooka/Assets/Kino/Mirror/Mirror.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/MidiManager.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/MobileShaderPack/RenderingMask/RenderingOrderSetter.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/OutputMappingController.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/ParticleHandsController.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/PatchSelector.cs
+-i:C:/Users/matth/Desktop/Adamooka/Assets/PatternLineController.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/PostProcessing/Runtime/Attributes/GetSetAttribute.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/PostProcessing/Runtime/Attributes/MinAttribute.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/PostProcessing/Runtime/Attributes/TrackballAttribute.cs
@@ -381,6 +385,7 @@
 -i:C:/Users/matth/Desktop/Adamooka/Assets/Scripts/ParticleController.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/Scripts/PatternScene/MAMRibbonController.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/Scripts/SirenDisc.cs
+-i:C:/Users/matth/Desktop/Adamooka/Assets/Scripts/Strobe.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/Scripts/TrackerTest.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/Scripts/UnityOSC/OSC/OSCBundle.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/Scripts/UnityOSC/OSC/OSCClient.cs
