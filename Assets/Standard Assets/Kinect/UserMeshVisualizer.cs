@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 
 public class UserMeshVisualizer : MonoBehaviour
@@ -40,11 +41,23 @@ public class UserMeshVisualizer : MonoBehaviour
 
     public Mesh Mesh;
 
+    public bool DisableMeshUpdate = false;
+    public bool BlockKinectUpdate = false;
+
     int LimitPosition;
     public bool LimitToLeftHand = false;
     public bool LimitToRightHand = false;
-    
+
     public Vector3 HandLimit = new Vector3(0.1f, 0.1f, 0.1f);
+
+    GameObject Parent;
+    Vector3 NewOffsetRotation = Vector3.zero;
+    Vector3 NewOffsetPosition = Vector3.zero;
+    public float OffsetRotationBangAngle = -40f;
+    public float OffsetRotationDampRate = 4f;
+    public Vector3 OffsetRotationShift = new Vector3(0, 0, 0);
+    Vector3 VertexAverageSnapshot = new Vector3(-99, 0, 0);
+    int OffsetRotationCount = 0;
 
     public static Vector3[] vertices;
     public static Vector3 gameObjectPosition;
@@ -74,6 +87,7 @@ public class UserMeshVisualizer : MonoBehaviour
     void Start()
     {
         manager = KinectManager.Instance;
+        Parent = GameObject.Find("Users");
 
         if (manager != null)
         {
@@ -107,10 +121,81 @@ public class UserMeshVisualizer : MonoBehaviour
         GetComponent<MeshFilter>().mesh = Mesh;
     }
 
+    void OffsetRotationBang()
+    {
+        // take the average point of the vertices to rotate around
+        //var vertexPositionSum = new Vector3(0, 0, 0);
+        //for (int i = 0; i < vertices.Length; i++)
+        //{
+        //    vertexPositionSum += vertices[i];
+        //}
+        //VertexAverageSnapshot = (vertexPositionSum / vertices.Length) + transform.localPosition;
+
+        // find the median point to rotate around if we don't already have it
+        if (VertexAverageSnapshot.x == -99)
+        {
+            // first list all the points
+            List<float> xPositions = new List<float>();
+            List<float> yPositions = new List<float>();
+            List<float> zPositions = new List<float>();
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                xPositions.Add(vertices[i].x);
+                yPositions.Add(vertices[i].y);
+                zPositions.Add(vertices[i].z);
+            }
+            // sort the lists into order 
+            xPositions.Sort();
+            yPositions.Sort();
+            zPositions.Sort();
+
+            Debug.Log(Mathf.FloorToInt(xPositions.Count / 2f) + ": " + xPositions[Mathf.FloorToInt(xPositions.Count / 2f)]);
+            // and grab the middle(ish) value of the array
+            VertexAverageSnapshot = new Vector3(
+                xPositions[Mathf.FloorToInt(xPositions.Count / 2f)] + transform.localPosition.x + OffsetRotationShift.x,
+                yPositions[Mathf.FloorToInt(yPositions.Count / 2f)] + transform.localPosition.y + OffsetRotationShift.y,
+                zPositions[Mathf.FloorToInt(zPositions.Count / 2f)] + transform.localPosition.z + OffsetRotationShift.z
+            );
+        }
+
+        OffsetRotationCount++;
+
+        Parent.transform.localEulerAngles = Vector3.zero;
+        Parent.transform.localPosition = Vector3.zero;
+        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, OffsetRotationBangAngle * OffsetRotationCount);
+        NewOffsetRotation = Parent.transform.localEulerAngles;
+        NewOffsetPosition = Parent.transform.localPosition;
+        // reset now that we have set the new positions to move towards
+        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, -OffsetRotationBangAngle);
+
+        // Disbale updating
+        DisableMeshUpdate = true;
+    }
+
+    void ResetOffsetRotation()
+    {
+        NewOffsetRotation = Vector3.zero;
+        NewOffsetPosition = Vector3.zero;
+        VertexAverageSnapshot = new Vector3(-99, 0, 0);
+        OffsetRotationCount = 0;
+        DisableMeshUpdate = false;
+    }
+
     void Update()
     {
         if (manager == null || !manager.IsInitialized())
             return;
+
+        if (Input.GetKeyDown(KeyCode.Alpha8))
+        {
+            ResetOffsetRotation();
+        } else if (Input.GetKeyDown(KeyCode.Alpha9))
+        {
+            OffsetRotationBang();
+        }
+
+        Parent.transform.position = DampPosition(Parent.transform.position, NewOffsetPosition, OffsetRotationDampRate);
+        Parent.transform.localEulerAngles = DampPosition(Parent.transform.localEulerAngles, NewOffsetRotation, OffsetRotationDampRate);
 
         if (manager.GetUsersCount() != 0)
         {
@@ -202,15 +287,18 @@ public class UserMeshVisualizer : MonoBehaviour
         }
 
         // update the mesh
-        UpdateMesh();
+        if (!DisableMeshUpdate)
+            UpdateMesh();
 
         PushMeshToNetworkClients();
 
 
-        if (Input.GetKeyDown(KeyCode.L)) {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
             LimitPosition++;
             if (LimitPosition > 1) LimitPosition = 0;
-            switch(LimitPosition) {
+            switch (LimitPosition)
+            {
                 case 0:
                     LimitToLeftHand = false;
                     LimitToRightHand = false;
@@ -226,7 +314,8 @@ public class UserMeshVisualizer : MonoBehaviour
 
     private void PushMeshToNetworkClients()
     {
-        if (Mesh != null) {
+        if (Mesh != null)
+        {
             int vertexCount = Mesh.vertexCount;
             // Debug.Log(vertexCount);
         }
@@ -272,7 +361,7 @@ public class UserMeshVisualizer : MonoBehaviour
                                 }
 
                                 // TODO: The following returns null!?:
-                                
+
                                 Vector2 vColorPos = sensorData.depth2ColorCoords[xyIndex];
                                 ushort depthValue = sensorData.depthImage[xyIndex];
 
@@ -343,11 +432,12 @@ public class UserMeshVisualizer : MonoBehaviour
                                     else
                                     {
                                         if (!alteredIndices.Contains(vIndex))
-                                        vertices[vIndex] = vSpacePos - userMeshPos;
+                                            vertices[vIndex] = vSpacePos - userMeshPos;
                                     }
                                 }
 
-                            } else
+                            }
+                            else
                             {
                                 vertices[vIndex] = vSpacePos - userMeshPos;
                             }
@@ -395,14 +485,17 @@ public class UserMeshVisualizer : MonoBehaviour
                     sensorData.spaceCoordsBufferReady = false;
                 }
 
-                Mesh.Clear();
-                Mesh.vertices = vertices;
+                if (!BlockKinectUpdate)
+                {
+                    Mesh.Clear();
+                    Mesh.vertices = vertices;
 
-                Mesh.uv = uvs;
-                //mesh.normals = normals;
-                Mesh.triangles = triangles;
-                Mesh.RecalculateNormals();
-                Mesh.RecalculateBounds();
+                    Mesh.uv = uvs;
+                    //mesh.normals = normals;
+                    Mesh.triangles = triangles;
+                    Mesh.RecalculateNormals();
+                    Mesh.RecalculateBounds();
+                }
 
                 if (updateMeshCollider)
                 {
@@ -418,6 +511,22 @@ public class UserMeshVisualizer : MonoBehaviour
                 lastMeshUpdateTime = Time.time;
             }
         }
+    }
+    Vector3 DampPosition(Vector3 value, Vector3 goal, float dampRate)
+    {
+        if (Mathf.Abs(value.x - goal.x) > 0)
+        {
+            value.x = value.x + (goal.x - value.x) / dampRate;
+        }
+        if (Mathf.Abs(value.y - goal.y) > 0)
+        {
+            value.y = value.y + (goal.y - value.y) / dampRate;
+        }
+        if (Mathf.Abs(value.z - goal.z) > 0)
+        {
+            value.z = value.z + (goal.z - value.z) / dampRate;
+        }
+        return value;
     }
 
     //	// gets the average depth of the sample block

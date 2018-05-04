@@ -57,6 +57,9 @@ public class MeshTools : MonoBehaviour
 
     public NoiseAndSmoothing Noise = new NoiseAndSmoothing();
 
+    public bool EnableExplode;
+    public bool EnableAirsticksControl;
+
     public Prototyping Prototyping;
 
     bool LimitingMesh = false;
@@ -74,11 +77,14 @@ public class MeshTools : MonoBehaviour
 
     public bool AnimateOutline = true;
 
+    UserMeshVisualizer UserMeshVisualizer;
+
     void Start()
     {
         Renderer = gameObject.GetComponent<Renderer>();
         Light = GameObject.Find("SceneLight").GetComponent<Light>();
         Prototyping = GameObject.Find("Prototyping").GetComponent<Prototyping>();
+        UserMeshVisualizer = GameObject.Find("UserMesh").GetComponent<UserMeshVisualizer>();
         ApplySmoothing();
         if (gameObject.GetComponent<LimitMesh>() != null)
         {
@@ -86,8 +92,8 @@ public class MeshTools : MonoBehaviour
             LimitingMesh = true;
         }
 
-        AirSticks.Right.NoteOn += ExplodeA;
-        AirSticks.Left.NoteOn += ExplodeB;
+        //AirSticks.Right.NoteOn = DoNoteOn;
+        //AirSticks.Left.NoteOn = DoNoteOn;
 
         MidiManager.OneFiveNine.Beep += BangOutline;
 
@@ -97,31 +103,41 @@ public class MeshTools : MonoBehaviour
     float Outline, NewOutline = 0.2f;
     float OutlineAnimationDamp = 5f;
 
+    public bool AnimateWireframeAlpha = true;
+    float WireframeAlpha, NewWireframeAlpha = 0.49f;
+    float WireframeAlphaAnimationDamp = 8f;
+    Color WireframeColor = new Color(1, 1, 1, 0.49f);
+
     void BangOutline()
     {
         Outline = 1f;
         NewOutline = 0f;
     }
 
-    void ExplodeA()
+    public void ExplodeA()
     {
         Explode(Prototyping.Vectors[0].x, Prototyping.Vectors[0].y);
     }
 
-    void ExplodeB()
+    public void ExplodeB()
     {
         Explode(Prototyping.Vectors[1].x, Prototyping.Vectors[1].y);
     }
 
     void Explode(float explosionIntensity, float dampRate = 10f)
     {
-        Noise.NewNoiseIntensity = 0.01f;
-        Noise.NoiseIntensity = explosionIntensity;
-        Noise.NoiseChangeDamping = dampRate;
+        if (EnableExplode)
+        {
+            Noise.NewNoiseIntensity = 0.01f;
+            Noise.NoiseIntensity = explosionIntensity;
+            Noise.NoiseChangeDamping = dampRate;
+        }
     }
 
     void ApplySmoothing()
     {
+        if (UserMeshVisualizer.DisableMeshUpdate)
+            return;
         var mesh = filter.mesh;
         JobHandle normalNoiseJobHandler;
 
@@ -166,9 +182,11 @@ public class MeshTools : MonoBehaviour
             Renderer.material.SetColor("_OutlineColor", color);
         }
 
-        if (Input.GetKeyDown(KeyCode.E)) {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
             ExplodeA();
-        } else if (Input.GetKeyDown(KeyCode.R))
+        }
+        else if (Input.GetKeyDown(KeyCode.R))
         {
             ExplodeB();
         }
@@ -189,8 +207,6 @@ public class MeshTools : MonoBehaviour
         }
         if (Noise.ControlNoiseWithMouse)
         {
-            Noise.NoiseIntensity = Input.mousePosition.x.Map(0f, Screen.width, -5f, 5f);
-            Noise.SmoothingTimes = Mathf.RoundToInt(Input.mousePosition.y.Map(Screen.height, 0f, 0f, 8f));
         }
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
@@ -220,7 +236,17 @@ public class MeshTools : MonoBehaviour
                     break;
             }
         }
-        IridescenceUpdate();
+        //IridescenceUpdate();
+
+        if (EnableAirsticksControl)
+        {
+            Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, -.3f, .5f);
+            Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, 0f, 5f));
+
+            WireframeAlpha = AirSticks.Right.EulerAngles.z.Map(0f, 1f, 0.7f, 1f);
+            WireframeColor.a = WireframeAlpha;
+            SetMaterialColor("_Color", WireframeColor);
+        }
 
         NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
 
@@ -232,8 +258,25 @@ public class MeshTools : MonoBehaviour
         // }
 
 
-        if (Mathf.Abs(Noise.NoiseIntensity - Noise.NewNoiseIntensity) > 0) {
+        if (Mathf.Abs(Noise.NoiseIntensity - Noise.NewNoiseIntensity) > 0)
+        {
             Noise.NoiseIntensity = Noise.NoiseIntensity + (Noise.NewNoiseIntensity - Noise.NoiseIntensity) / Noise.NoiseChangeDamping;
+        }
+        if (AnimateWireframeAlpha)
+        {
+            if (Mathf.Abs(WireframeAlpha - NewWireframeAlpha) > 0)
+            {
+                WireframeAlpha = WireframeAlpha + (NewWireframeAlpha - WireframeAlpha) / WireframeAlphaAnimationDamp;
+                WireframeColor.a = WireframeAlpha;
+                SetMaterialColor("_Color", WireframeColor);
+            }
+        }
+
+        if (NoteOn)
+        {
+            NewWireframeAlpha = 0.49f;
+            WireframeAlpha = 1f;
+            NoteOn = false;
         }
 
         // if (Noise.RandomisePositionOnMouse)
@@ -245,6 +288,13 @@ public class MeshTools : MonoBehaviour
 
         // }
 
+    }
+
+    bool NoteOn = false;
+
+    void DoNoteOn()
+    {
+        NoteOn = true;
     }
 
     void LateUpdate()
@@ -307,6 +357,15 @@ public class MeshTools : MonoBehaviour
         for (int i = 0; i < mats.Length; i++)
         {
             mats[i].SetFloat(name, f);
+        }
+    }
+
+    void SetMaterialColor(string name, Color c)
+    {
+        UnityEngine.Material[] mats = Renderer.materials;
+        for (int i = 0; i < mats.Length; i++)
+        {
+            mats[i].SetColor(name, c);
         }
     }
 

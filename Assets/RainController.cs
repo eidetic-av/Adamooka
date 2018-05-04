@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Midi;
+using System;
 
 public class RainController : MonoBehaviour
 {
@@ -24,7 +25,9 @@ public class RainController : MonoBehaviour
     public Vector3 Scaling = new Vector3(0, 0, 0);
     public Vector3 HonedOffset = new Vector3(0, 0, 0);
 
-    public float HoneDamping = 10f;
+    float HoneDamping = 10f;
+    public Vector2 HoneDampingSpeed = new Vector2(5f, 1f);
+    public float HoneDampingSpeedDamp = 8f;
     public float RevertDamping = 10f;
 
     public float RevertThreshold = 0.05f;
@@ -38,6 +41,8 @@ public class RainController : MonoBehaviour
     public bool Revert;
     bool DoingHoneOff;
 
+    public Action HoneCallback;
+
     // Use this for initialization
     void Start()
     {
@@ -47,8 +52,8 @@ public class RainController : MonoBehaviour
         Wind = GameObject.Find("WindZone");
         Particles = GameObject.Find("RainParticleSystem");
 
-        AirSticks.Right.NoteOn += HoneOn;
-        AirSticks.Right.NoteOff += HoneOff;
+        //AirSticks.Right.NoteOn += HoneOn;
+        //AirSticks.Right.NoteOff += HoneOff;
     }
 
     // Update is called once per frame
@@ -77,56 +82,72 @@ public class RainController : MonoBehaviour
         }
         if (Hone)
         {
-            Wind.SetActive(false);
-
-            if (ParticleArray == null)
+            if (KinectManager.Instance.GetUsersCount() != 0)
             {
-                ParticleSystem = Particles.GetComponent<ParticleSystem>();
-                ParticleArray = new ParticleSystem.Particle[ParticleSystem.main.maxParticles];
+                Wind.SetActive(false);
 
-                // and stop emission and forces
-                var emissionModule = ParticleSystem.emission;
-                OriginalParticleEmitRate = emissionModule.rateOverTime;
-                emissionModule.rateOverTime = 0;
-                var forcesModule = ParticleSystem.externalForces;
-                OriginalParticleForceMultiplier = forcesModule.multiplier;
-                forcesModule.multiplier = 0;
-
-                // increase the lifetime of particles and emit one burst
-                var mainModule = ParticleSystem.main;
-                OriginalLifetime = mainModule.startLifetime;
-                mainModule.startLifetime = new ParticleSystem.MinMaxCurve(1000f, 1000f);
-                ParticleSystem.Clear();
-                ParticleSystem.Emit(ParticleSystem.main.maxParticles);
-
-                // initialise the particle position arrays
-                var particleCount = ParticleSystem.GetParticles(ParticleArray);
-                OriginalParticlePositions = new Vector3[particleCount];
-                NewParticlePositions = new Vector3[particleCount];
-
-                for (int i = 0; i < particleCount; i++)
+                if (ParticleArray == null)
                 {
-                    OriginalParticlePositions[i] = ParticleArray[i].position;
-                    NewParticlePositions[i] = ParticleArray[i].position;
+                    ParticleSystem = Particles.GetComponent<ParticleSystem>();
+                    ParticleArray = new ParticleSystem.Particle[ParticleSystem.main.maxParticles];
+
+                    // and stop emission and forces
+                    var emissionModule = ParticleSystem.emission;
+                    OriginalParticleEmitRate = emissionModule.rateOverTime;
+                    emissionModule.rateOverTime = 0;
+                    var forcesModule = ParticleSystem.externalForces;
+                    OriginalParticleForceMultiplier = forcesModule.multiplier;
+                    forcesModule.multiplier = 0;
+
+                    // increase the lifetime of particles and emit one burst
+                    var mainModule = ParticleSystem.main;
+                    OriginalLifetime = mainModule.startLifetime;
+                    mainModule.startLifetime = new ParticleSystem.MinMaxCurve(1000f, 1000f);
+                    ParticleSystem.Clear();
+                    ParticleSystem.Emit(ParticleSystem.main.maxParticles);
+
+                    // initialise the particle position arrays
+                    var particleCount = ParticleSystem.GetParticles(ParticleArray);
+                    OriginalParticlePositions = new Vector3[particleCount];
+                    NewParticlePositions = new Vector3[particleCount];
+
+                    for (int i = 0; i < particleCount; i++)
+                    {
+                        OriginalParticlePositions[i] = ParticleArray[i].position;
+                        NewParticlePositions[i] = ParticleArray[i].position;
+                    }
+                }
+
+                ParticleSystem.GetParticles(ParticleArray);
+                var userMeshVertices = UserMeshFilter.mesh.vertices;
+                // calculate the positions to flock to
+                int positionsDamped = 0;
+                for (int i = 0; i < ParticleArray.Length; i++)
+                {
+                    int vertex = (i * (userMeshVertices.Length / ParticleArray.Length) * 2) % userMeshVertices.Length;
+                    var vertexPosition = new Vector3(
+                        (userMeshVertices[vertex].x * Scaling.x) + HonedOffset.x,
+                        (userMeshVertices[vertex].y * Scaling.y) + HonedOffset.y,
+                        (userMeshVertices[vertex].z * Scaling.z) + HonedOffset.z
+                    );
+                    bool damped;
+                    ParticleArray[i].position = DampPosition(ParticleArray[i].position, vertexPosition, HoneDamping, 0.01f, out damped);
+                    if (damped) positionsDamped++;
+                }
+                ParticleSystem.SetParticles(ParticleArray, ParticleArray.Length);
+                if (Mathf.Abs(HoneDamping - HoneDampingSpeed.y) > 0)
+                {
+                    HoneDamping = HoneDamping + (HoneDampingSpeed.y - HoneDamping) / HoneDampingSpeedDamp;
+                }
+                if (positionsDamped == 0)
+                {
+                    if (HoneCallback != null)
+                    {
+                        HoneCallback.Invoke();
+                        HoneCallback = null;
+                    }
                 }
             }
-
-            ParticleSystem.GetParticles(ParticleArray);
-            var userMeshVertices = UserMeshFilter.mesh.vertices;
-            // calculate the positions to flock to
-            for (int i = 0; i < ParticleArray.Length; i++)
-            {
-                int vertex = (i * 11) % userMeshVertices.Length;
-                var vertexPosition = new Vector3(
-                    (userMeshVertices[vertex].x * Scaling.x) + HonedOffset.x,
-                    (userMeshVertices[vertex].y * Scaling.y) + HonedOffset.y,
-                    (userMeshVertices[vertex].z * Scaling.z) +HonedOffset.z
-                );
-                bool damped;
-                ParticleArray[i].position = DampPosition(ParticleArray[i].position, vertexPosition, HoneDamping, 0f, out damped);
-            }
-            ParticleSystem.SetParticles(ParticleArray, ParticleArray.Length);
-
         }
         else if (DoingHoneOff)
         {
@@ -189,6 +210,8 @@ public class RainController : MonoBehaviour
         OriginalParticlePositions = null;
         NewParticlePositions = null;
         ParticleArray = null;
+
+        HoneDamping = HoneDampingSpeed.x;
     }
 
     Vector3 DampPosition(Vector3 value, Vector3 goal, float dampRate, float dampThreshold, out bool damped)
