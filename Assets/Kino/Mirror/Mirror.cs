@@ -34,21 +34,21 @@ namespace Kino
     public class Mirror : MonoBehaviour
     {
         #region Public Properties
-
-        [SerializeField]
+        
         int _repeat;
-
-        [SerializeField]
+        public int Repeat;
+        
         float _offset;
-
-        [SerializeField]
+        public float Offset;
+        
         float _roll;
+        public float Roll;
 
         public bool AnimateRoll = false;
         public float AnimateRollRate = 0.5f;
-
-        [SerializeField]
+        
         bool _symmetry;
+        public bool Symmetry;
 
         #endregion
 
@@ -66,7 +66,13 @@ namespace Kino
             if (AnimateRoll)
             {
                 _roll += (Time.deltaTime * AnimateRollRate);
+            } else
+            {
+                _roll = Roll;
             }
+            _repeat = Repeat;
+            _offset = Offset;
+            _symmetry = Symmetry;
         }
 
         void OnRenderImage(RenderTexture source, RenderTexture destination)

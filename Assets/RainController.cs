@@ -9,8 +9,8 @@ public class RainController : MonoBehaviour
     GameObject UserMesh;
     MeshFilter UserMeshFilter;
 
-    GameObject Wind;
-    GameObject Particles;
+    public GameObject Wind;
+    public GameObject Particles;
 
     ParticleSystem ParticleSystem;
 
@@ -21,6 +21,8 @@ public class RainController : MonoBehaviour
     ParticleSystem.MinMaxCurve OriginalLifetime;
     float OriginalParticleForceMultiplier;
     Vector3[] OriginalParticlePositions;
+
+    bool OriginalNoiseEnabled;
 
     public Vector3 Scaling = new Vector3(0, 0, 0);
     public Vector3 HonedOffset = new Vector3(0, 0, 0);
@@ -49,9 +51,6 @@ public class RainController : MonoBehaviour
         UserMesh = GameObject.Find("UserMesh");
         UserMeshFilter = UserMesh.GetComponent<MeshFilter>();
 
-        Wind = GameObject.Find("WindZone");
-        Particles = GameObject.Find("RainParticleSystem");
-
         //AirSticks.Right.NoteOn += HoneOn;
         //AirSticks.Right.NoteOff += HoneOff;
     }
@@ -62,7 +61,8 @@ public class RainController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.N))
         {
             HoneOn();
-        } else if (Input.GetKeyDown(KeyCode.M))
+        }
+        else if (Input.GetKeyDown(KeyCode.M))
         {
             HoneOff();
         }
@@ -84,7 +84,8 @@ public class RainController : MonoBehaviour
         {
             if (KinectManager.Instance.GetUsersCount() != 0)
             {
-                Wind.SetActive(false);
+                if (Wind != null)
+                    Wind.SetActive(false);
 
                 if (ParticleArray == null)
                 {
@@ -98,6 +99,9 @@ public class RainController : MonoBehaviour
                     var forcesModule = ParticleSystem.externalForces;
                     OriginalParticleForceMultiplier = forcesModule.multiplier;
                     forcesModule.multiplier = 0;
+                    var noiseModule = ParticleSystem.noise;
+                    OriginalNoiseEnabled = noiseModule.enabled;
+                    noiseModule.enabled = false;
 
                     // increase the lifetime of particles and emit one burst
                     var mainModule = ParticleSystem.main;
@@ -190,10 +194,12 @@ public class RainController : MonoBehaviour
 
     void RevertToDefault(ParticleSystem.Particle[] currentParticles)
     {
-        Debug.Log("Revert");
         DoingHoneOff = false;
         // set wind to active
-        Wind.SetActive(true);
+        if (Wind != null)
+            Wind.SetActive(true);
+        var noiseModule = ParticleSystem.noise;
+        noiseModule.enabled = OriginalNoiseEnabled;
         // replace particles with new ones with original lifetime
         var particleCount = ParticleSystem.particleCount;
         ParticleSystem.Clear();

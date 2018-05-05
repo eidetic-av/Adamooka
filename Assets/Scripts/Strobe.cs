@@ -5,10 +5,10 @@ using UnityEngine;
 public class Strobe : MonoBehaviour {
 
     public float StrobeLength = 0.2f;
-    public bool Bang = false;
+    public bool DoFlash = false;
 
     bool Active = false;
-    float BangTime;
+    float FlashTime;
 
     MeshRenderer MeshRenderer;
 
@@ -18,20 +18,27 @@ public class Strobe : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (Bang)
+		if (DoFlash)
         {
             MeshRenderer.enabled = true;
             Active = true;
-            BangTime = Time.time;
-            Bang = false;
+            FlashTime = Time.time;
+            DoFlash = false;
         }
         if (Active)
         {
-            if ((Time.time - BangTime) > StrobeLength)
+            if ((Time.time - FlashTime) > StrobeLength)
             {
                 Active = false;
                 MeshRenderer.enabled = false;
             }
         }
 	}
+
+    public void Flash()
+    {
+        MeshRenderer.enabled = true;
+        Active = true;
+        FlashTime = Time.time;
+    }
 }

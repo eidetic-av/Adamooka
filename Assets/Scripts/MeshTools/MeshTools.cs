@@ -92,8 +92,9 @@ public class MeshTools : MonoBehaviour
             LimitingMesh = true;
         }
 
-        //AirSticks.Right.NoteOn = DoNoteOn;
-        //AirSticks.Left.NoteOn = DoNoteOn;
+
+        AirSticks.Right.NoteOn += ExplodeA;
+        AirSticks.Left.NoteOn += ExplodeB;
 
         MidiManager.OneFiveNine.Beep += BangOutline;
 
@@ -191,51 +192,51 @@ public class MeshTools : MonoBehaviour
             ExplodeB();
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-        {
-            Renderer.enabled = !Renderer.enabled;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            Noise.OffsetTriangles = !Noise.OffsetTriangles;
-        }
+        //if (Input.GetKeyDown(KeyCode.Alpha0))
+        //{
+        //    Renderer.enabled = !Renderer.enabled;
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha1))
+        //{
+        //    Noise.OffsetTriangles = !Noise.OffsetTriangles;
+        //}
         MeshSmoothing.OffsetTriangles = Noise.OffsetTriangles;
 
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            Noise.ControlNoiseWithMouse = !Noise.ControlNoiseWithMouse;
-        }
-        if (Noise.ControlNoiseWithMouse)
-        {
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            Noise.ControlLightingIntensityWithMouse = !Noise.ControlLightingIntensityWithMouse;
-        }
+        //if (Input.GetKeyDown(KeyCode.Alpha2))
+        //{
+        //    Noise.ControlNoiseWithMouse = !Noise.ControlNoiseWithMouse;
+        //}
+        //if (Noise.ControlNoiseWithMouse)
+        //{
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha5))
+        //{
+        //    Noise.ControlLightingIntensityWithMouse = !Noise.ControlLightingIntensityWithMouse;
+        //}
         if (Noise.ControlLightingIntensityWithMouse)
         {
             Light.intensity = Input.mousePosition.x.Map(0f, Screen.width, 0f, 2f);
         }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            ActiveMaterial++;
-            if (ActiveMaterial > 3) ActiveMaterial = 0;
-            switch (ActiveMaterial)
-            {
-                case 0:
-                    Renderer.material = Resources.Load<UnityEngine.Material>("Pink");
-                    break;
-                case 1:
-                    Renderer.material = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
-                    break;
-                case 2:
-                    Renderer.material = Resources.Load<UnityEngine.Material>("Iridescence");
-                    break;
-                case 3:
-                    Renderer.material = Resources.Load<UnityEngine.Material>("Blue");
-                    break;
-            }
-        }
+        //if (Input.GetKeyDown(KeyCode.Alpha3))
+        //{
+        //    ActiveMaterial++;
+        //    if (ActiveMaterial > 3) ActiveMaterial = 0;
+        //    switch (ActiveMaterial)
+        //    {
+        //        case 0:
+        //            Renderer.material = Resources.Load<UnityEngine.Material>("Pink");
+        //            break;
+        //        case 1:
+        //            Renderer.material = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
+        //            break;
+        //        case 2:
+        //            Renderer.material = Resources.Load<UnityEngine.Material>("Iridescence");
+        //            break;
+        //        case 3:
+        //            Renderer.material = Resources.Load<UnityEngine.Material>("Blue");
+        //            break;
+        //    }
+        //}
         //IridescenceUpdate();
 
         if (EnableAirsticksControl)
@@ -308,22 +309,22 @@ public class MeshTools : MonoBehaviour
     void IridescenceUpdate()
     {
         if (ActiveMaterial != 2) return;
-        if (Input.GetKeyDown(KeyCode.Alpha9))
-        {
-            Noise.ControlMaterialFilmWithMouse = !Noise.ControlMaterialFilmWithMouse;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-        {
-            Noise.ControlMaterialSpecWithMouse = !Noise.ControlMaterialSpecWithMouse;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-        {
-            Noise.ControlMaterialNoiseWithMouse = !Noise.ControlMaterialNoiseWithMouse;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            Noise.ControlMaterialColorWithMouse = !Noise.ControlMaterialColorWithMouse;
-        }
+        //if (Input.GetKeyDown(KeyCode.Alpha9))
+        //{
+        //    Noise.ControlMaterialFilmWithMouse = !Noise.ControlMaterialFilmWithMouse;
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha8))
+        //{
+        //    Noise.ControlMaterialSpecWithMouse = !Noise.ControlMaterialSpecWithMouse;
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha7))
+        //{
+        //    Noise.ControlMaterialNoiseWithMouse = !Noise.ControlMaterialNoiseWithMouse;
+        //}
+        //if (Input.GetKeyDown(KeyCode.Alpha6))
+        //{
+        //    Noise.ControlMaterialColorWithMouse = !Noise.ControlMaterialColorWithMouse;
+        //}
 
         if (Noise.ControlMaterialFilmWithMouse)
         {

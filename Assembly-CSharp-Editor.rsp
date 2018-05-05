@@ -5,7 +5,9 @@
 -out:C:/Users/matth/Desktop/Adamooka/Temp/Assembly-CSharp-Editor.dll
 -nostdlib
 -unsafe
+-r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll
 -r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp.dll
+-r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.AIModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.ARModule.dll"
@@ -66,8 +68,6 @@
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.XRModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEditor.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/Unity.Locator.dll"
--r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll
--r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll
 -r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll
 -r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll"

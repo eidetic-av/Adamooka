@@ -59,6 +59,9 @@ public class UserMeshVisualizer : MonoBehaviour
     Vector3 VertexAverageSnapshot = new Vector3(-99, 0, 0);
     int OffsetRotationCount = 0;
 
+    bool AnimateUserRotation = false;
+    float AnimateRotationAngle = 0;
+
     public static Vector3[] vertices;
     public static Vector3 gameObjectPosition;
     private Vector2[] uvs;
@@ -121,55 +124,52 @@ public class UserMeshVisualizer : MonoBehaviour
         GetComponent<MeshFilter>().mesh = Mesh;
     }
 
-    void OffsetRotationBang()
+    void OffsetRotationBang(float angle, bool pause)
     {
-        // take the average point of the vertices to rotate around
-        //var vertexPositionSum = new Vector3(0, 0, 0);
-        //for (int i = 0; i < vertices.Length; i++)
-        //{
-        //    vertexPositionSum += vertices[i];
-        //}
-        //VertexAverageSnapshot = (vertexPositionSum / vertices.Length) + transform.localPosition;
-
         // find the median point to rotate around if we don't already have it
         if (VertexAverageSnapshot.x == -99)
         {
-            // first list all the points
-            List<float> xPositions = new List<float>();
-            List<float> yPositions = new List<float>();
-            List<float> zPositions = new List<float>();
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                xPositions.Add(vertices[i].x);
-                yPositions.Add(vertices[i].y);
-                zPositions.Add(vertices[i].z);
-            }
-            // sort the lists into order 
-            xPositions.Sort();
-            yPositions.Sort();
-            zPositions.Sort();
-
-            Debug.Log(Mathf.FloorToInt(xPositions.Count / 2f) + ": " + xPositions[Mathf.FloorToInt(xPositions.Count / 2f)]);
-            // and grab the middle(ish) value of the array
-            VertexAverageSnapshot = new Vector3(
-                xPositions[Mathf.FloorToInt(xPositions.Count / 2f)] + transform.localPosition.x + OffsetRotationShift.x,
-                yPositions[Mathf.FloorToInt(yPositions.Count / 2f)] + transform.localPosition.y + OffsetRotationShift.y,
-                zPositions[Mathf.FloorToInt(zPositions.Count / 2f)] + transform.localPosition.z + OffsetRotationShift.z
-            );
+            SetMedianVertexPosition();
         }
 
         OffsetRotationCount++;
 
         Parent.transform.localEulerAngles = Vector3.zero;
         Parent.transform.localPosition = Vector3.zero;
-        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, OffsetRotationBangAngle * OffsetRotationCount);
+        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, angle * OffsetRotationCount);
         NewOffsetRotation = Parent.transform.localEulerAngles;
         NewOffsetPosition = Parent.transform.localPosition;
         // reset now that we have set the new positions to move towards
-        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, -OffsetRotationBangAngle);
+        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, -angle);
 
         // Disbale updating
-        DisableMeshUpdate = true;
+        DisableMeshUpdate = pause;
+    }
+
+    void SetMedianVertexPosition()
+    {
+        // first list all the points
+        List<float> xPositions = new List<float>();
+        List<float> yPositions = new List<float>();
+        List<float> zPositions = new List<float>();
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            xPositions.Add(vertices[i].x);
+            yPositions.Add(vertices[i].y);
+            zPositions.Add(vertices[i].z);
+        }
+        // sort the lists into order 
+        xPositions.Sort();
+        yPositions.Sort();
+        zPositions.Sort();
+
+        Debug.Log(Mathf.FloorToInt(xPositions.Count / 2f) + ": " + xPositions[Mathf.FloorToInt(xPositions.Count / 2f)]);
+        // and grab the middle(ish) value of the array
+        VertexAverageSnapshot = new Vector3(
+            xPositions[Mathf.FloorToInt(xPositions.Count / 2f)] + transform.localPosition.x + OffsetRotationShift.x,
+            yPositions[Mathf.FloorToInt(yPositions.Count / 2f)] + transform.localPosition.y + OffsetRotationShift.y,
+            zPositions[Mathf.FloorToInt(zPositions.Count / 2f)] + transform.localPosition.z + OffsetRotationShift.z
+        );
     }
 
     void ResetOffsetRotation()
@@ -181,21 +181,49 @@ public class UserMeshVisualizer : MonoBehaviour
         DisableMeshUpdate = false;
     }
 
+    public void StartAnimateUserRotation()
+    {
+        AnimateUserRotation = true;
+        OffsetRotationDampRate = 1;
+        SetMedianVertexPosition();
+    }
+
+    public void EndAnimateUserRotation()
+    {
+        if (AnimateUserRotation)
+        {
+            AnimateUserRotation = false;
+            NewOffsetRotation = Vector3.zero;
+            NewOffsetPosition = Vector3.zero;
+            VertexAverageSnapshot = new Vector3(-99, 0, 0);
+            AnimateRotationAngle = 0;
+        }
+
+    }
+
     void Update()
     {
         if (manager == null || !manager.IsInitialized())
             return;
 
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-        {
-            ResetOffsetRotation();
-        } else if (Input.GetKeyDown(KeyCode.Alpha9))
-        {
-            OffsetRotationBang();
-        }
+        //if (Input.GetKeyDown(KeyCode.Alpha8))
+        //{
+        //    ResetOffsetRotation();
+        //}
+        //else if (Input.GetKeyDown(KeyCode.Alpha9))
+        //{
+        //    OffsetRotationBang(OffsetRotationBangAngle, true);
+        //}
 
-        Parent.transform.position = DampPosition(Parent.transform.position, NewOffsetPosition, OffsetRotationDampRate);
-        Parent.transform.localEulerAngles = DampPosition(Parent.transform.localEulerAngles, NewOffsetRotation, OffsetRotationDampRate);
+        if (AnimateUserRotation)
+        {
+            Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, Time.deltaTime * 20f);
+        }
+        else
+        {
+            Parent.transform.position = DampPosition(Parent.transform.position, NewOffsetPosition, OffsetRotationDampRate);
+            Parent.transform.localEulerAngles = DampPosition(Parent.transform.localEulerAngles, NewOffsetRotation, OffsetRotationDampRate);
+        }
 
         if (manager.GetUsersCount() != 0)
         {

@@ -1,10 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using Eidetic.Unity.Utility;
 using Midi;
 using System;
-using Eidetic;
-using Eidetic.Unity.Utility;
+using UnityEngine;
 
 public class MidiManager : MonoBehaviour
 {
@@ -12,7 +9,7 @@ public class MidiManager : MonoBehaviour
     public string DeviceName = "rtpMIDI";
     InputDevice InputDevice;
 
-    public static int AbletonState = -1;
+    public int AbletonState = -1;
 
     public static class OneFiveNine
     {
@@ -32,14 +29,29 @@ public class MidiManager : MonoBehaviour
     public Renderer UserMeshRenderer;
     public UserMeshVisualizer UserMeshVisualizer;
     public GameObject TrackerSceneOutputQuad;
+    public Renderer TrackerSceneOutputQuadRenderer;
+    public GameObject TrackerSceneFlippedOutputQuad;
+    public Renderer TrackerSceneFlippedOutputQuadRenderer;
     public TrackerOutputEffector TrackerOutputEffector;
 
     public GameObject PatternScene;
+    public GameObject Lines;
     public Strobe Strobe;
+    public Kino.Mirror Kaleidoscope;
+
+    public GameObject DriftParticles;
+    public DriftController DriftController;
 
     UnityEngine.Material ToonLit;
     UnityEngine.Material BlackOcclusion;
     UnityEngine.Material Wireframe;
+    UnityEngine.Material Basic;
+    UnityEngine.Material Pink;
+    UnityEngine.Material LinePattern;
+
+    bool ExitLines = false;
+    bool ExitTrackerQuad = false;
+    float ExitTime = 0f;
 
     // Use this for initialization
     void Start()
@@ -47,6 +59,14 @@ public class MidiManager : MonoBehaviour
         ToonLit = Resources.Load<UnityEngine.Material>("ToonLit");
         BlackOcclusion = Resources.Load<UnityEngine.Material>("BlackOcclusion");
         Wireframe = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
+        Basic = Resources.Load<UnityEngine.Material>("Basic");
+        Pink = Resources.Load<UnityEngine.Material>("Pink");
+        LinePattern = Resources.Load<UnityEngine.Material>("LinePattern");
+
+
+        TrackerSceneOutputQuadRenderer = TrackerSceneOutputQuad.GetComponent<Renderer>();
+        TrackerSceneFlippedOutputQuadRenderer = TrackerSceneFlippedOutputQuad.GetComponent<Renderer>();
+
         foreach (InputDevice inputDevice in InputDevice.InstalledDevices)
         {
             if (inputDevice.Name.ToLower().Equals(DeviceName.ToLower()))
@@ -65,91 +85,287 @@ public class MidiManager : MonoBehaviour
 
     private void RouteNoteOn(NoteOnMessage noteOnMessage)
     {
-        switch (noteOnMessage.Channel)
+        Threading.RunOnMain(() =>
         {
-            case Channel.Channel1:
-                {
-                    OneFiveNine.Beep.Invoke();
-                    break;
-                }
-            case Channel.Channel2:
-                {
-                    OneFiveNine.Bass.Invoke(noteOnMessage.Pitch);
-                    break;
-                }
-            case Channel.Channel14:
-                {
-                    RouteElectricMidi(noteOnMessage.Pitch);
-                    break;
-                }
-            case Channel.Channel16:
-                {
-                    UpdateAbletonState(noteOnMessage.Pitch);
-                    break;
-                }
+            switch (noteOnMessage.Channel)
+            {
+                case Channel.Channel1:
+                    {
+                        OneFiveNine.Beep.Invoke();
+                        break;
+                    }
+                case Channel.Channel2:
+                    {
+                        OneFiveNine.Bass.Invoke(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel14:
+                    {
+                        RouteElectricMidi(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel15:
+                    {
+                        RouteDriftMidi(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel16:
+                    {
+                        UpdateAbletonState(noteOnMessage.Pitch);
+                        break;
+                    }
+            }
+        });
+    }
+
+    private void RouteDriftMidi(Pitch pitch)
+    {
+        switch (pitch)
+        {
+            case Pitch.CNeg1:
+                DriftController.SelectState(0);
+                break;
+            case Pitch.CSharpNeg1:
+                DriftController.SelectState(1);
+                break;
+            case Pitch.DNeg1:
+                DriftController.SelectState(2);
+                break;
+            case Pitch.DSharpNeg1:
+                DriftController.SelectState(3);
+                break;
+            case Pitch.ENeg1:
+                DriftController.SelectState(4);
+                break;
+            case Pitch.FNeg1:
+                DriftController.SelectState(5);
+                break;
+            case Pitch.FSharpNeg1:
+                DriftController.SelectState(6);
+                break;
+            case Pitch.GNeg1:
+                DriftController.SelectState(7);
+                break;
+            case Pitch.GSharpNeg1:
+                DriftController.SelectState(8);
+                break;
+            case Pitch.ANeg1:
+                DriftController.SelectState(9);
+                break;
         }
     }
 
     private void RouteElectricMidi(Pitch pitch)
     {
-        Debug.Log(pitch);
-        switch(pitch)
+        Debug.Log("pitch: " + pitch);
+        switch (pitch)
         {
             case Pitch.CNeg1:
-                Strobe.Bang = true;
+                Strobe.Flash();
+                break;
+            case Pitch.GNeg1:
+                RandomiseKaleidoscope();
+                UserMeshVisualizer.EndAnimateUserRotation();
+                break;
+            case Pitch.GSharpNeg1:
+                IncrementalKaleidoscopeA();
+                UserMeshVisualizer.StartAnimateUserRotation();
+                break;
+            case Pitch.ANeg1:
+                IncrementalKaleidoscopeB();
+                break;
+            case Pitch.ASharpNeg1:
+                IncrementalKaleidoscopeC();
+                break;
+            case Pitch.BNeg1:
+                IncrementalKaleidoscopeD();
+                break;
+            case Pitch.C0:
+                HighKaleidoscopeSqueal();
+                break;
+            case Pitch.CSharp0:
+                LowKaleidoscopeSqueal();
+                break;
+            case Pitch.C1:
+                LinesOut();
                 break;
         }
     }
 
+    private void RandomiseKaleidoscope()
+    {
+        Kaleidoscope.enabled = true;
+        int lastRepeat = Kaleidoscope.Repeat;
+        int repeat = 1;
+        while ((repeat % 2 != 0) || (repeat == lastRepeat))
+        {
+            repeat = Mathf.FloorToInt(UnityEngine.Random.Range(2, 7));
+        }
+        Kaleidoscope.Repeat = repeat;
+        float roll = UnityEngine.Random.Range(0, 360);
+        Kaleidoscope.Roll = repeat;
+        Kaleidoscope.Offset = 0;
+        Kaleidoscope.AnimateRoll = true;
+        Kaleidoscope.AnimateRollRate = 40;
+        Kaleidoscope.Symmetry = true;
+    }
+
+    private void IncrementalKaleidoscopeA()
+    {
+        Kaleidoscope.Repeat = 5;
+        Kaleidoscope.Offset = 0;
+        Kaleidoscope.AnimateRoll = true;
+        Kaleidoscope.AnimateRollRate = 80;
+        Kaleidoscope.Symmetry = false;
+    }
+
+    private void IncrementalKaleidoscopeB()
+    {
+        Kaleidoscope.Repeat = 3;
+        Kaleidoscope.Offset = 0;
+        Kaleidoscope.AnimateRoll = true;
+        Kaleidoscope.AnimateRollRate = -20;
+        Kaleidoscope.Symmetry = false;
+    }
+
+    private void IncrementalKaleidoscopeC()
+    {
+        Kaleidoscope.Repeat = 6;
+        Kaleidoscope.Offset = 0;
+        Kaleidoscope.AnimateRoll = true;
+        Kaleidoscope.AnimateRollRate = 150;
+        Kaleidoscope.Symmetry = false;
+    }
+
+    private void IncrementalKaleidoscopeD()
+    {
+        Kaleidoscope.Repeat = 9;
+        Kaleidoscope.Offset = 0;
+        Kaleidoscope.AnimateRoll = true;
+        Kaleidoscope.AnimateRollRate = 270;
+        Kaleidoscope.Symmetry = false;
+    }
+
+    private void HighKaleidoscopeSqueal()
+    {
+        Kaleidoscope.enabled = true;
+        Kaleidoscope.AnimateRoll = false;
+        Kaleidoscope.Symmetry = false;
+        Kaleidoscope.Repeat = 2;
+        Kaleidoscope.Roll = -45f;
+    }
+
+    private void LowKaleidoscopeSqueal()
+    {
+        Kaleidoscope.enabled = true;
+        Kaleidoscope.AnimateRoll = false;
+        Kaleidoscope.Symmetry = false;
+        Kaleidoscope.Repeat = 2;
+        Kaleidoscope.Roll = 45f;
+    }
+
+    private void LinesOut()
+    {
+        ExitLines = true;
+        ExitTrackerQuad = true;
+        ExitTime = Time.time;
+    }
+    private void DirectKeyCodeScenes()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            UpdateAbletonState(Pitch.E2);
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+            UpdateAbletonState(Pitch.E1);
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+            UpdateAbletonState(Pitch.D2);
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+            UpdateAbletonState(Pitch.DSharp2);
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+            UpdateAbletonState(Pitch.F1);
+        if (Input.GetKeyDown(KeyCode.Alpha6))
+            UpdateAbletonState(Pitch.F2);
+        if (Input.GetKeyDown(KeyCode.Alpha7))
+            UpdateAbletonState(Pitch.FSharp2);
+        if (Input.GetKeyDown(KeyCode.Alpha8))
+            UpdateAbletonState(Pitch.G2);
+        if (Input.GetKeyDown(KeyCode.Alpha9))
+            UpdateAbletonState(Pitch.GSharp2);
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+            UpdateAbletonState(Pitch.A2);
+        if (Input.GetKeyDown(KeyCode.Minus))
+            UpdateAbletonState(Pitch.B2);
+    }
+
     private void UpdateAbletonState(Pitch pitch)
     {
-        Debug.Log(pitch);
-        Threading.RunOnMain(() =>
+        switch (pitch)
         {
-            switch (pitch)
-            {
-                case Pitch.E2:
-                    // Rain
-                    ActivateRainState();
-                    break;
-                case Pitch.E1:
-                    // SuckRain
-                    SuckRain();
-                    break;
-                case Pitch.D2:
-                    // Clone transition
-                    ExplodeMeshBeforeClones();
-                    break;
-                case Pitch.DSharp2:
-                    if (AbletonState != 3)
-                        // Activate clone scene
-                        ShowClones();
-                    else
-                        // Cycle colours
-                        TrackerOutputEffector.CycleCloneColours();
-                    break;
-                case Pitch.F1:
-                    // End clones
-                    EndClones();
-                    break;
-                case Pitch.F2:
-                    if (AbletonState != 5)
-                        // stop producing rain particles
-                        StopRain();
-                    else if (AbletonState == 5)
-                        // activate wireframe scene
-                        ShowWireframe();
-                    else if (AbletonState == 6)
-                        WireframeExplodeEnable();
-                    else if (AbletonState == 7)
-                        WireframeExplodeDisable();
-                    else if (AbletonState == 8)
-                        WireframeExplodeReEnable();
-                    else if (AbletonState == 9)
-                        DesmondBreak();
-                    break;
-            }
-        });
+            case Pitch.E2:
+                // Rain
+                ActivateRainState();
+                break;
+            case Pitch.E1:
+                // SuckRain
+                SuckRain();
+                break;
+            case Pitch.D2:
+                // Clone transition
+                ExplodeMeshBeforeClones();
+                break;
+            case Pitch.DSharp2:
+                if (AbletonState != 3)
+                    // Activate clone scene
+                    ShowClones();
+                else
+                    // Cycle colours
+                    TrackerOutputEffector.CycleCloneColours();
+                break;
+            case Pitch.F1:
+                // End clones
+                EndClones();
+                break;
+            case Pitch.F2:
+                if (AbletonState != 5 && AbletonState < 6)
+                    // stop producing rain particles
+                    StopRain();
+                else if (AbletonState == 5)
+                    // activate wireframe scene
+                    ShowWireframe();
+                else if (AbletonState == 6)
+                    WireframeExplodeEnable();
+                else if (AbletonState == 7)
+                    WireframeExplodeDisable();
+                else if (AbletonState == 8)
+                    WireframeExplodeReEnable();
+                else if (AbletonState == 9)
+                    DesmondBreak();
+                break;
+            case Pitch.FSharp2:
+                DesmondOut();
+                break;
+            case Pitch.G2:
+                UmbeAnts();
+                break;
+            case Pitch.GSharp2:
+                EndUmbeAnts();
+                break;
+            case Pitch.A2:
+                ElectricPartOne();
+                break;
+            case Pitch.B2:
+                ElectricPartTwo();
+                break;
+        }
+    }
+
+    void UmbeAnts()
+    {
+        DriftParticles.SetActive(true);
+    }
+
+    void EndUmbeAnts()
+    {
+        DriftParticles.SetActive(false);
     }
 
     void ActivateRainState()
@@ -236,6 +452,7 @@ public class MidiManager : MonoBehaviour
 
     void StopRain()
     {
+        Debug.Log("StopRain");
         var emissionModule = RainParticles.GetComponentInChildren<ParticleSystem>().emission;
         emissionModule.rateOverTime = 0;
         AbletonState = 5;
@@ -243,6 +460,8 @@ public class MidiManager : MonoBehaviour
 
     void ShowWireframe()
     {
+        Debug.Log("ShowWireframe");
+        UserMeshRenderer.enabled = true;
         UserMeshVisualizer.BlockKinectUpdate = false;
         TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
         UserMeshRenderer.material = Wireframe;
@@ -253,15 +472,17 @@ public class MidiManager : MonoBehaviour
 
     void WireframeExplodeEnable()
     {
+        Debug.Log("ExplodeEnable");
+        UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
-        AirSticks.Right.NoteOn += MeshTools.ExplodeA;
-        AirSticks.Left.NoteOn += MeshTools.ExplodeB;
-        MeshTools.EnableAirsticksControl = false;
+        MeshTools.EnableAirsticksControl = true;
         AbletonState = 7;
     }
 
     void WireframeExplodeDisable()
     {
+        Debug.Log("ExplodeDisable");
+        UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = false;
         MeshTools.EnableAirsticksControl = true;
         AbletonState = 8;
@@ -269,16 +490,63 @@ public class MidiManager : MonoBehaviour
 
     void WireframeExplodeReEnable()
     {
+        Debug.Log("ExplodeRena");
+        UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
-        MeshTools.EnableAirsticksControl = false;
+        MeshTools.EnableAirsticksControl = true;
         AbletonState = 9;
     }
 
     void DesmondBreak()
     {
+        Debug.Log("DesmondBreak");
         MeshTools.EnableExplode = false;
+        MeshTools.EnableAirsticksControl = true;
         UserMeshVisualizer.BlockKinectUpdate = true;
         AbletonState = 10;
+    }
+
+    void DesmondOut()
+    {
+        ExitTrackerQuad = true;
+        ExitTime = Time.time;
+    }
+
+
+    void ElectricPartOne()
+    {
+        // enable mesh renderer
+        UserMeshRenderer.enabled = true;
+        UserMeshRenderer.material = new UnityEngine.Material(LinePattern);
+
+        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
+        TrackerSceneFlippedOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
+
+        MeshTools.EnableExplode = true;
+        MeshTools.EnableAirsticksControl = false;
+        UserMeshVisualizer.BlockKinectUpdate = false;
+
+
+    }
+
+    void ElectricPartTwo()
+    {
+        UserMeshRenderer.enabled = true;
+        UserMeshRenderer.material = new UnityEngine.Material(Basic);
+        UserMeshRenderer.material.SetColor("_EmissionColor", Color.yellow);
+
+        MeshTools.EnableAirsticksControl = false;
+        MeshTools.EnableExplode = false;
+        MeshTools.Noise.NoiseIntensity = 0.06f;
+        MeshTools.Noise.NewNoiseIntensity = 0.06f;
+        MeshTools.Noise.SmoothingTimes = 0;
+
+        UserMeshVisualizer.DisableMeshUpdate = false;
+        UserMeshVisualizer.BlockKinectUpdate = false;
+
+        TrackerSceneFlippedOutputQuad.SetActive(true);
+
+        Lines.SetActive(true);
     }
 
     void ClearAllStates()
@@ -301,6 +569,23 @@ public class MidiManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (ExitLines)
+        {
+            Lines.transform.Translate(0, Time.deltaTime * 8, 0);
+        }
+        if (ExitTrackerQuad)
+        {
+            var alpha = ((Time.time - ExitTime) / 10f);
+            float h, s, v;
+            Color.RGBToHSV(TrackerSceneOutputQuadRenderer.material.GetColor("_TintColor"), out h, out s, out v);
+            TrackerSceneOutputQuadRenderer.material.SetColor("_TintColor", Color.HSVToRGB(h, alpha, alpha));
+            TrackerSceneFlippedOutputQuadRenderer.material.SetColor("_TintColor", Color.HSVToRGB(h, alpha, alpha));
+            if (alpha < 0.01f)
+            {
+                ExitTrackerQuad = false;
+            }
+        }
 
+        DirectKeyCodeScenes();
     }
 }
