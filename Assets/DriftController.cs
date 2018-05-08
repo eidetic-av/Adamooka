@@ -28,7 +28,7 @@ public class DriftController : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        if (KinectManager.Instance.GetUsersCount() != 0)
+        if (KinectManager.Instance != null && KinectManager.Instance.GetUsersCount() != 0)
         {
             if (ParticleArray == null)
             {

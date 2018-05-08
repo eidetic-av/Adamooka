@@ -5,6 +5,7 @@
 -out:C:/Users/matth/Desktop/Adamooka/Temp/Assembly-CSharp-firstpass.dll
 -nostdlib
 -unsafe
+-r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.AIModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.ARModule.dll"
@@ -15,8 +16,6 @@
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.BaselibModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.ClothModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.CloudWebServicesModule.dll"
--r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.ClusterInputModule.dll"
--r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.ClusterRendererModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.CoreModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.CrashReportingModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.DirectorModule.dll"
@@ -65,9 +64,10 @@
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.XRModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEditor.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/Unity.Locator.dll"
--r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll"
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll"
+-r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/TestRunner/UnityEngine.TestRunner.dll"
+-r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/TestRunner/net35/unity-custom/nunit.framework.dll"
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Timeline/RuntimeEditor/UnityEngine.Timeline.dll"
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UIAutomation/UnityEngine.UIAutomation.dll"
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityGoogleAudioSpatializer/RuntimeEditor/UnityEngine.GoogleAudioSpatializer.dll"
@@ -80,6 +80,8 @@
 -r:C:/Users/matth/Desktop/Adamooka/Assets/Plugins/System.Runtime.dll
 -r:C:/Users/matth/Desktop/Adamooka/Assets/Plugins/System.Threading.Thread.dll
 -r:"C:/Users/matth/Desktop/Adamooka/Assets/Standard Assets/Kinect/SharpZipLib/ICSharpCode.SharpZipLib.dll"
+-r:"C:/Program Files/Unity/Editor/Data/PlaybackEngines/iOSSupport\UnityEditor.iOS.Extensions.Xcode.dll"
+-r:"C:/Program Files/Unity/Editor/Data/PlaybackEngines/iOSSupport\UnityEditor.iOS.Extensions.Common.dll"
 -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\mscorlib.dll"
 -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\System.dll"
 -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\System.Core.dll"
@@ -204,12 +206,9 @@
 -d:UNITY_2018_1_0
 -d:UNITY_2018_1
 -d:UNITY_2018
--d:PLATFORM_ARCH_64
--d:UNITY_64
 -d:ENABLE_AUDIO
 -d:ENABLE_CACHING
 -d:ENABLE_CLOTH
--d:ENABLE_DUCK_TYPING
 -d:ENABLE_MICROPHONE
 -d:ENABLE_MULTIPLE_DISPLAYS
 -d:ENABLE_PHYSICS
@@ -227,7 +226,6 @@
 -d:ENABLE_WWW
 -d:ENABLE_CLOUD_SERVICES_COLLAB
 -d:ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS
--d:ENABLE_CLOUD_SERVICES_ADS
 -d:ENABLE_CLOUD_HUB
 -d:ENABLE_CLOUD_PROJECT_ID
 -d:ENABLE_CLOUD_SERVICES_USE_WEBREQUEST
@@ -248,33 +246,46 @@
 -d:INCLUDE_GI
 -d:ENABLE_MONO_BDWGC
 -d:PLATFORM_SUPPORTS_MONO
--d:RENDER_SOFTWARE_CURSOR
 -d:INCLUDE_PUBNUB
 -d:ENABLE_PLAYMODE_TESTS_RUNNER
 -d:ENABLE_VIDEO
 -d:ENABLE_PACKMAN
 -d:ENABLE_CUSTOM_RENDER_TEXTURE
 -d:ENABLE_LOCALIZATION
--d:PLATFORM_STANDALONE_WIN
--d:PLATFORM_STANDALONE
--d:UNITY_STANDALONE_WIN
--d:UNITY_STANDALONE
--d:ENABLE_SUBSTANCE
 -d:ENABLE_RUNTIME_GI
--d:ENABLE_MOVIES
+-d:ENABLE_SUBSTANCE
+-d:ENABLE_GAMECENTER
 -d:ENABLE_NETWORK
--d:ENABLE_CRUNCH_TEXTURE_COMPRESSION
 -d:ENABLE_UNITYWEBREQUEST
 -d:ENABLE_CLOUD_SERVICES
+-d:ENABLE_CLOUD_SERVICES_ADS
 -d:ENABLE_CLOUD_SERVICES_ANALYTICS
 -d:ENABLE_CLOUD_SERVICES_PURCHASING
 -d:ENABLE_CLOUD_SERVICES_CRASH_REPORTING
--d:ENABLE_OUT_OF_PROCESS_CRASH_HANDLER
--d:ENABLE_EVENT_QUEUE
--d:ENABLE_CLUSTERINPUT
+-d:ENABLE_CLOUD_SERVICES_IOS_NATIVE_CRASH_REPORTING
+-d:PLAYERCONNECTION_LISTENS_FIXED_PORT
+-d:DEBUGGER_LISTENS_FIXED_PORT
+-d:PLATFORM_SUPPORTS_ADS_ID
+-d:SUPPORT_ENVIRONMENT_VARIABLES
+-d:PLATFORM_SUPPORTS_PROFILER
+-d:PLATFORM_HAS_NO_SUPPORT_FOR_BUCKET_ALLOCATOR
+-d:STRICTCPP_NEW_DELETE_SIGNATURES
+-d:HAS_NEON_SKINNIG
+-d:UNITY_GFX_USE_PLATFORM_VSYNC
+-d:UNITY_INPUT_SIMULATE_EVENTS
+-d:PLATFORM_ALWAYS_USES_STDOUT_FOR_LOG
+-d:ENABLE_CRUNCH_TEXTURE_COMPRESSION
 -d:ENABLE_VR
 -d:ENABLE_AR
--d:ENABLE_WEBSOCKET_HOST
+-d:ENABLE_SPATIALTRACKING
+-d:ENABLE_UNITYADS_RUNTIME
+-d:UNITY_UNITYADS_API
+-d:PLATFORM_IOS
+-d:UNITY_IOS
+-d:PLATFORM_IPHONE
+-d:UNITY_IPHONE
+-d:UNITY_IPHONE_API
+-d:SUPPORT_MULTIPLE_DISPLAYS
 -d:ENABLE_MONO
 -d:NET_4_6
 -d:ENABLE_PROFILER
@@ -288,6 +299,9 @@
 -d:UNITY_TEAM_LICENSE
 -d:ENABLE_VSTU
 -d:UNITY_PRO_LICENSE
+-d:ENABLE_IOS_ON_DEMAND_RESOURCES
+-d:ENABLE_IOS_APP_SLICING
+-d:UNITY_HAS_GOOGLEVR
 -i:C:/Users/matth/Desktop/Adamooka/Assets/Plugins/WinBTerminal/HoV_BGW.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/Plugins/WinBTerminal/Terminal.cs
 -i:"C:/Users/matth/Desktop/Adamooka/Assets/Standard Assets/CameraIntrinsics.cs"

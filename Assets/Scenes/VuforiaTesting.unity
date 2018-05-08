@@ -14592,7 +14592,7 @@ WindZone:
   m_GameObject: {fileID: 357813069}
   m_Enabled: 1
   m_Mode: 1
-  m_Radius: 5
+  m_Radius: 0.5
   m_WindMain: 0
   m_WindTurbulence: 0
   m_WindPulseMagnitude: 3
