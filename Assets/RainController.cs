@@ -75,9 +75,9 @@ public class RainController : MonoBehaviour
         if (Control)
         {
             Wind.transform.localRotation = Quaternion.Euler(
-                AirSticks.Right.EulerAngles.x * 360,
-                AirSticks.Right.EulerAngles.y * 360,
-                AirSticks.Right.EulerAngles.z * 360
+                AirSticks.Right.EulerAngles.x * 200,
+                AirSticks.Right.EulerAngles.y * 200,
+                AirSticks.Right.EulerAngles.z * 200
             );
         }
         if (Hone)

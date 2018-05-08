@@ -996,7 +996,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 0.2, y: 0.2, z: 0.2}
+    m_Scale: {x: 0.4, y: 0.2, z: 0.2}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -15044,7 +15044,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 620706623}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.21, y: 1.52, z: 1.83}
+  m_LocalPosition: {x: -1.2, y: 1.2, z: 2.8}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 1184549875}
@@ -16506,7 +16506,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 0.2, y: 0.2, z: 0.2}
+    m_Scale: {x: 0.4, y: 0.2, z: 0.2}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -21176,9 +21176,14 @@ MonoBehaviour:
   LimitToLeftHand: 0
   LimitToRightHand: 0
   HandLimit: {x: 0.5, y: 0.1, z: 0.5}
+  Parent: {fileID: 1370444015}
+  NewOffsetRotation: {x: 0, y: 0, z: 0}
+  NewOffsetPosition: {x: 0, y: 0, z: 0}
   OffsetRotationBangAngle: 30
   OffsetRotationDampRate: 4
   OffsetRotationShift: {x: -1, y: 0, z: 0.5}
+  VertexAverageSnapshot: {x: -99, y: 0, z: 0}
+  TriggerAnimatesRotation: 0
 --- !u!23 &1184549878
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -21194,7 +21199,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: 02fbe36bcc0a74a4182157f8ae4fc55c, type: 2}
+  - {fileID: 2100000, guid: ccdbf630bdec9e84ba7e05fb98892e17, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -21349,16 +21354,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90dd82594d57b414097d52403dd269f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LeftParticlesObject: {fileID: 0}
-  RightParticlesObject: {fileID: 0}
-  LeftParticleSystem: {fileID: 0}
-  RightParticleSystem: {fileID: 0}
+  LeftParticlesObject: {fileID: 1002983896}
+  RightParticlesObject: {fileID: 52926562}
+  LeftParticleSystem: {fileID: 1002983899}
+  RightParticleSystem: {fileID: 52926565}
   PositionDampRate: 3
-  BaseMesh: {fileID: 0}
-  ParticleOutputQuad: {fileID: 0}
+  BaseMesh: {fileID: 1184549880}
+  ParticleOutputQuad: {fileID: 1099515547}
   SetParticlesPositionsBasedOnMesh: 0
   TriggerSetsVisibility: 0
-  Visible: 0
+  Visible: 1
   TrackAirsticks: 1
   LeftParticlesPositionOffset: {x: 2, y: -0.3, z: -5}
   RightParticlesPositionOffset: {x: 2, y: -0.3, z: -5}
@@ -22240,8 +22245,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 5
-      minScalar: 1
+      scalar: 1
+      minScalar: 0.4
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -22932,7 +22937,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 500
+      scalar: 1000
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -27111,6 +27116,7 @@ MonoBehaviour:
   NoteOnCloning: 0
   LogLeftNoteEvents: 0
   LogRightNoteEvents: 0
+  CloningActive: 0
   CloneDistance: 0.442
   CloneThreshold: 0.05
   CloneColors:
@@ -27360,11 +27366,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18eb2338e85eea445833c5198332c10e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DeviceName: loopMIDI Port
+  DeviceName: rtpMidi
   AbletonState: -1
   CloneStartCount: 10
   ParticleScene: {fileID: 1859617630}
   RainParticles: {fileID: 27577630}
+  RainParticlesWind: {fileID: 783311390}
   UserParticles: {fileID: 1200004312}
   ParticleCamera: {fileID: 2038676668}
   UserMesh: {fileID: 1184549874}
@@ -27372,9 +27379,9 @@ MonoBehaviour:
   UserMeshRenderer: {fileID: 1184549878}
   UserMeshVisualizer: {fileID: 1184549877}
   TrackerSceneOutputQuad: {fileID: 1852235743}
-  TrackerSceneOutputQuadRenderer: {fileID: 0}
+  TrackerSceneOutputQuadRenderer: {fileID: 1852235745}
   TrackerSceneFlippedOutputQuad: {fileID: 134072654}
-  TrackerSceneFlippedOutputQuadRenderer: {fileID: 0}
+  TrackerSceneFlippedOutputQuadRenderer: {fileID: 134072656}
   TrackerOutputEffector: {fileID: 1852235747}
   PatternScene: {fileID: 1132461866}
   Lines: {fileID: 1211276227}

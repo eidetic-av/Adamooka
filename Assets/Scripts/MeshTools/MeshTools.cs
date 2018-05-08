@@ -172,16 +172,16 @@ public class MeshTools : MonoBehaviour
 
     private void Update()
     {
-        if (AnimateOutline)
-        {
-            if (Mathf.Abs(Outline - NewOutline) > 0)
-            {
-                Outline = Outline + (NewOutline - Outline) / OutlineAnimationDamp;
-            }
-            var color = Renderer.material.GetColor("_OutlineColor");
-            color.a = Outline;
-            Renderer.material.SetColor("_OutlineColor", color);
-        }
+        //if (AnimateOutline)
+        //{
+        //    if (Mathf.Abs(Outline - NewOutline) > 0)
+        //    {
+        //        Outline = Outline + (NewOutline - Outline) / OutlineAnimationDamp;
+        //    }
+        //    var color = Renderer.material.GetColor("_OutlineColor");
+        //    color.a = Outline;
+        //    Renderer.material.SetColor("_OutlineColor", color);
+        //}
 
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -244,12 +244,14 @@ public class MeshTools : MonoBehaviour
             Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, -.3f, .5f);
             Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, 0f, 5f));
 
-            WireframeAlpha = AirSticks.Right.EulerAngles.z.Map(0f, 1f, 0.7f, 1f);
+            // WireframeAlpha = AirSticks.Right.EulerAngles.z.Map(0f, 1f, 0.7f, 1f);
+            WireframeAlpha = 1f;
             WireframeColor.a = WireframeAlpha;
             SetMaterialColor("_Color", WireframeColor);
         }
 
-        NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
+            NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
+        
 
         // if (Input.GetMouseButtonDown(0))
         // {

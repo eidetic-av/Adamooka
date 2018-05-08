@@ -5,9 +5,7 @@
 -out:C:/Users/matth/Desktop/Adamooka/Temp/Assembly-CSharp-Editor.dll
 -nostdlib
 -unsafe
--r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll
 -r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp.dll
--r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.AIModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.ARModule.dll"
@@ -68,7 +66,8 @@
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEngine/UnityEngine.XRModule.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/UnityEditor.dll"
 -r:"C:\Program Files\Unity\Editor\Data\Managed/Unity.Locator.dll"
--r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll
+-r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll
+-r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll
 -r:C:/Users/matth/Desktop/Adamooka/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll"
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/Editor/UnityEditor.UI.dll"
@@ -89,6 +88,8 @@
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/Editor/UnityEditor.SpatialTracking.dll"
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll"
 -r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityVR/Editor/UnityEditor.VR.dll"
+-r:"C:/Program Files/Unity/Editor/Data/PlaybackEngines/VuforiaSupport/Managed/Editor/Vuforia.UnityExtensions.Editor.dll"
+-r:"C:/Program Files/Unity/Editor/Data/PlaybackEngines/VuforiaSupport/Managed/Runtime/Vuforia.UnityExtensions.dll"
 -r:"C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.Graphs.dll"
 -r:"C:/Program Files/Unity/Editor/Data/PlaybackEngines/windowsstandalonesupport/UnityEditor.WindowsStandalone.Extensions.dll"
 -r:C:/Users/matth/Desktop/Adamooka/Assets/Plugins/Eidetic.Utility.dll
@@ -97,16 +98,10 @@
 -r:C:/Users/matth/Desktop/Adamooka/Assets/Plugins/System.Runtime.dll
 -r:C:/Users/matth/Desktop/Adamooka/Assets/Plugins/System.Threading.Thread.dll
 -r:"C:/Users/matth/Desktop/Adamooka/Assets/Standard Assets/Kinect/SharpZipLib/ICSharpCode.SharpZipLib.dll"
--r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.ads@2.0.7/Editor/UnityEditor.Advertisements.dll
--r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.analytics@2.0.16/UnityEngine.Analytics.dll
--r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.analytics@2.0.16/Editor/UnityEditor.Analytics.dll
 -r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.incrementalcompiler@0.0.30/Editor/Plugins/Unity.PureCSharpTests.dll
 -r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.incrementalcompiler@0.0.30/Editor/Plugins/Unity.Services.Base.dll
 -r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.incrementalcompiler@0.0.30/Editor/Plugins/Unity.Services.Broker.dll
 -r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.incrementalcompiler@0.0.30/Editor/Plugins/ZeroMQ.dll
--r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.purchasing@2.0.1/UnityEngine.Purchasing.dll
--r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.purchasing@2.0.1/Editor/UnityEditor.Purchasing.dll
--r:C:/Users/matth/AppData/Local/Unity/cache/packages/staging-packages.unity.com/com.unity.standardevents@1.0.13/UnityEngine.StandardEvents.dll
 -r:"C:/Program Files (x86)/Microsoft Visual Studio Tools for Unity/15.0/Editor/SyntaxTree.VisualStudio.Unity.Bridge.dll"
 -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\mscorlib.dll"
 -r:"C:\Program Files\Unity\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\System.dll"
@@ -366,4 +361,5 @@
 -i:C:/Users/matth/Desktop/Adamooka/Assets/PostProcessing/Editor/Utils/EditorResources.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/PostProcessing/Editor/Utils/FxStyles.cs
 -i:C:/Users/matth/Desktop/Adamooka/Assets/PostProcessing/Editor/Utils/ReflectionUtils.cs
+-i:C:/Users/matth/Desktop/Adamooka/Assets/Vuforia/Editor/Scripts/OpenSourceInitializer.cs
 -v:0

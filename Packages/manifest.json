@@ -1,6 +1,10 @@
 {
-    "dependencies": {
-        "com.unity.incrementalcompiler": "0.0.30"
-    },
-    "registry": "https://staging-packages.unity.com"
+  "dependencies": {
+    "com.unity.incrementalcompiler": "0.0.30",
+    "com.unity.ads": "exclude",
+    "com.unity.analytics": "exclude",
+    "com.unity.standardevents": "exclude",
+    "com.unity.purchasing": "exclude"
+  },
+  "registry": "https://staging-packages.unity.com"
 }

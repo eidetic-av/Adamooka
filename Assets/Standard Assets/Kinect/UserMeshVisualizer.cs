@@ -50,17 +50,19 @@ public class UserMeshVisualizer : MonoBehaviour
 
     public Vector3 HandLimit = new Vector3(0.1f, 0.1f, 0.1f);
 
-    GameObject Parent;
-    Vector3 NewOffsetRotation = Vector3.zero;
-    Vector3 NewOffsetPosition = Vector3.zero;
+    public GameObject Parent;
+    public Vector3 NewOffsetRotation = Vector3.zero;
+    public Vector3 NewOffsetPosition = Vector3.zero;
     public float OffsetRotationBangAngle = -40f;
     public float OffsetRotationDampRate = 4f;
     public Vector3 OffsetRotationShift = new Vector3(0, 0, 0);
-    Vector3 VertexAverageSnapshot = new Vector3(-99, 0, 0);
+    public Vector3 VertexAverageSnapshot = new Vector3(-99, 0, 0);
     int OffsetRotationCount = 0;
 
     bool AnimateUserRotation = false;
     float AnimateRotationAngle = 0;
+
+    public bool TriggerAnimatesRotation = false;
 
     public static Vector3[] vertices;
     public static Vector3 gameObjectPosition;
@@ -146,7 +148,7 @@ public class UserMeshVisualizer : MonoBehaviour
         DisableMeshUpdate = pause;
     }
 
-    void SetMedianVertexPosition()
+    public void SetMedianVertexPosition()
     {
         // first list all the points
         List<float> xPositions = new List<float>();
@@ -218,8 +220,7 @@ public class UserMeshVisualizer : MonoBehaviour
         if (AnimateUserRotation)
         {
             Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, Time.deltaTime * 20f);
-        }
-        else
+        } else 
         {
             Parent.transform.position = DampPosition(Parent.transform.position, NewOffsetPosition, OffsetRotationDampRate);
             Parent.transform.localEulerAngles = DampPosition(Parent.transform.localEulerAngles, NewOffsetRotation, OffsetRotationDampRate);

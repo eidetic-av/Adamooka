@@ -17,6 +17,8 @@ public class TrackerOutputEffector : MonoBehaviour
     public bool LogLeftNoteEvents = false;
     public bool LogRightNoteEvents = false;
 
+    public bool CloningActive = false;
+
     float cloneDistance = 0.5f;
     [Range(0.005f, 0.8f)]
     public float CloneDistance = 0.5f;
@@ -172,28 +174,33 @@ public class TrackerOutputEffector : MonoBehaviour
             }
         }
 
-        if (RightOn)
+        if (CloningActive)
         {
-            CloneDistance = AirSticks.Right.Position.z.Map(0, 1f, 0.01f, 0.8f);
-            CloneCountRight = Mathf.CeilToInt(AirSticks.Right.Position.z.Map(0, Screen.width, 15f, 3f));
-            HideClones(AirSticks.Hand.Right);
-            for (int i = 0; i < CloneCountRight; i++)
-            {
-                InstantiateClone(AirSticks.Hand.Right);
-            }
-            //CloneColourPosition = Mathf.FloorToInt(AirSticks.Right.Position.x.Map(-.5f, .5f, 0, 4));
-        }
 
-        if (LeftOn)
-        {
-            CloneDistance = AirSticks.Left.Position.z.Map(0, Screen.width, 0.005f, 0.8f);
-            CloneCountLeft = Mathf.CeilToInt(AirSticks.Left.Position.z.Map(0, Screen.width, 15f, 3f));
-            HideClones(AirSticks.Hand.Left);
-            for (int i = 0; i < CloneCountLeft; i++)
+            if (RightOn)
             {
-                InstantiateClone(AirSticks.Hand.Left);
+                CloneDistance = AirSticks.Right.Position.z.Map(0, 1f, 0.5f, 0.8f);
+                CloneCountRight = Mathf.CeilToInt(Mathf.Clamp(AirSticks.Right.Position.z.Map(0, Screen.width, 15f, 1f), 1, 8));
+                HideClones(AirSticks.Hand.Right);
+                for (int i = 0; i < CloneCountRight; i++)
+                {
+                    InstantiateClone(AirSticks.Hand.Right);
+                }
+                //CloneColourPosition = Mathf.FloorToInt(AirSticks.Right.Position.x.Map(-.5f, .5f, 0, 4));
             }
-            //CloneColourPosition = Mathf.FloorToInt(AirSticks.Left.Position.x.Map(-.5f, .5f, 0, 4));
+
+            if (LeftOn)
+            {
+                CloneDistance = AirSticks.Left.Position.z.Map(0, Screen.width, 0.5f, 0.8f);
+                CloneCountLeft = Mathf.CeilToInt(Mathf.Clamp(AirSticks.Left.Position.z.Map(0, Screen.width, 15f, 1f), 1, 8));
+                HideClones(AirSticks.Hand.Left);
+                for (int i = 0; i < CloneCountLeft; i++)
+                {
+                    InstantiateClone(AirSticks.Hand.Left);
+                }
+                //CloneColourPosition = Mathf.FloorToInt(AirSticks.Left.Position.x.Map(-.5f, .5f, 0, 4));
+            }
+
         }
 
         // refresh on clone change distance

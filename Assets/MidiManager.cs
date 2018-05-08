@@ -22,6 +22,7 @@ public class MidiManager : MonoBehaviour
 
     public GameObject ParticleScene;
     public GameObject RainParticles;
+    public WindZone RainParticlesWind;
     public GameObject UserParticles;
     public GameObject ParticleCamera;
     public GameObject UserMesh;
@@ -48,6 +49,7 @@ public class MidiManager : MonoBehaviour
     UnityEngine.Material Basic;
     UnityEngine.Material Pink;
     UnityEngine.Material LinePattern;
+    UnityEngine.Material GranOutline;
 
     bool ExitLines = false;
     bool ExitTrackerQuad = false;
@@ -62,6 +64,7 @@ public class MidiManager : MonoBehaviour
         Basic = Resources.Load<UnityEngine.Material>("Basic");
         Pink = Resources.Load<UnityEngine.Material>("Pink");
         LinePattern = Resources.Load<UnityEngine.Material>("LinePattern");
+        GranOutline = Resources.Load<UnityEngine.Material>("GranOutline");
 
 
         TrackerSceneOutputQuadRenderer = TrackerSceneOutputQuad.GetComponent<Renderer>();
@@ -269,6 +272,7 @@ public class MidiManager : MonoBehaviour
         ExitLines = true;
         ExitTrackerQuad = true;
         ExitTime = Time.time;
+        UserParticles.SetActive(false);
     }
     private void DirectKeyCodeScenes()
     {
@@ -294,6 +298,17 @@ public class MidiManager : MonoBehaviour
             UpdateAbletonState(Pitch.A2);
         if (Input.GetKeyDown(KeyCode.Minus))
             UpdateAbletonState(Pitch.B2);
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            UpdateAbletonState(Pitch.ASharp2);
+        }
+
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            GameObject.Find("ParticleScene").SetActive(false);
+            GameObject.Find("TrackerScene").SetActive(false);
+        }
     }
 
     private void UpdateAbletonState(Pitch pitch)
@@ -343,11 +358,25 @@ public class MidiManager : MonoBehaviour
             case Pitch.FSharp2:
                 DesmondOut();
                 break;
+            case Pitch.CSharp3:
+                ActivateHeifen();
+                break;
             case Pitch.G2:
+                TransitionOutOfHeifen();
                 UmbeAnts();
+                break;
+            case Pitch.D3:
+                RemoveRainParticles();
                 break;
             case Pitch.GSharp2:
                 EndUmbeAnts();
+                break;
+            case Pitch.ASharp2:
+                ActivateGranRelatedBody();
+                break;
+            case Pitch.C3:
+                ActivateGranRelatedBody();
+                ActivateGranRelatedHands();
                 break;
             case Pitch.A2:
                 ElectricPartOne();
@@ -360,6 +389,7 @@ public class MidiManager : MonoBehaviour
 
     void UmbeAnts()
     {
+        RainParticlesWind.windMain = 0;
         DriftParticles.SetActive(true);
     }
 
@@ -427,6 +457,8 @@ public class MidiManager : MonoBehaviour
             TrackerOutputEffector.InstantiateClone(AirSticks.Hand.Right);
         }
 
+        TrackerOutputEffector.CloningActive = true;
+
         MeshTools.EnableExplode = false;
 
         AbletonState = 3;
@@ -436,6 +468,7 @@ public class MidiManager : MonoBehaviour
     {
         TrackerOutputEffector.HideClones(AirSticks.Hand.Left);
         TrackerOutputEffector.HideClones(AirSticks.Hand.Right);
+        TrackerOutputEffector.CloningActive = false;
         UserMeshVisualizer.BlockKinectUpdate = true;
         TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 0, 0, 1));
 
@@ -456,6 +489,11 @@ public class MidiManager : MonoBehaviour
         var emissionModule = RainParticles.GetComponentInChildren<ParticleSystem>().emission;
         emissionModule.rateOverTime = 0;
         AbletonState = 5;
+    }
+
+    void RemoveRainParticles()
+    {
+        RainParticles.SetActive(false);
     }
 
     void ShowWireframe()
@@ -512,9 +550,53 @@ public class MidiManager : MonoBehaviour
         ExitTime = Time.time;
     }
 
+    void ActivateGranRelatedBody()
+    {
+        UserParticles.SetActive(false);
+        RainParticles.SetActive(false);
+        DriftParticles.SetActive(false);
+
+        UserMeshRenderer.enabled = true;
+        UserMeshRenderer.material = new UnityEngine.Material(Pink);
+        MeshTools.AnimateWireframeAlpha = false;
+        MeshTools.Noise.SmoothingTimes = 2;
+        MeshTools.Noise.NoiseIntensity = 0.05f;
+        MeshTools.Noise.NewNoiseIntensity = 0.05f;
+        
+        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
+        TrackerSceneFlippedOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
+
+        AbletonState = 88;
+    }
+
+    void ActivateGranRelatedHands()
+    {
+        UserParticles.SetActive(true);
+    }
+
+    void ActivateHeifen()
+    {
+        RainParticles.SetActive(true);
+        RainParticles.GetComponent<RainController>().Hone = true;
+        RainParticlesWind.windMain = 0;
+        var emissionModule = RainParticles.GetComponentInChildren<ParticleSystem>().emission;
+        emissionModule.rateOverTime = 1000;
+        emissionModule.enabled = true;
+        UserMeshRenderer.enabled = false;
+    }
+
+    void TransitionOutOfHeifen()
+    {
+        RainParticles.GetComponent<RainController>().Revert = true;
+        StopRain();
+    }
+
 
     void ElectricPartOne()
     {
+        UserParticles.SetActive(false);
+        RainParticles.SetActive(false);
+        DriftParticles.SetActive(false);
         // enable mesh renderer
         UserMeshRenderer.enabled = true;
         UserMeshRenderer.material = new UnityEngine.Material(LinePattern);
@@ -531,6 +613,9 @@ public class MidiManager : MonoBehaviour
 
     void ElectricPartTwo()
     {
+        UserParticles.SetActive(false);
+        RainParticles.SetActive(false);
+        DriftParticles.SetActive(false);
         UserMeshRenderer.enabled = true;
         UserMeshRenderer.material = new UnityEngine.Material(Basic);
         UserMeshRenderer.material.SetColor("_EmissionColor", Color.yellow);
@@ -575,6 +660,7 @@ public class MidiManager : MonoBehaviour
         }
         if (ExitTrackerQuad)
         {
+
             var alpha = ((Time.time - ExitTime) / 10f);
             float h, s, v;
             Color.RGBToHSV(TrackerSceneOutputQuadRenderer.material.GetColor("_TintColor"), out h, out s, out v);
