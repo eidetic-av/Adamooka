@@ -123,6 +123,7 @@ public class MidiManager : MonoBehaviour
 
     private void RouteDriftMidi(Pitch pitch)
     {
+        Debug.Log(pitch.ToString());
         switch (pitch)
         {
             case Pitch.CNeg1:
