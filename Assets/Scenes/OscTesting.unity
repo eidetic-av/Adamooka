@@ -123,9 +123,6 @@ GameObject:
   - component: {fileID: 174760133}
   - component: {fileID: 174760132}
   - component: {fileID: 174760131}
-  - component: {fileID: 174760136}
-  - component: {fileID: 174760135}
-  - component: {fileID: 174760134}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -189,56 +186,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &174760134
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 174760130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 428938bdf9baa9941b11952adc25ffcb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  TargetComponents:
-  - {fileID: 174760136}
-  - {fileID: 174760135}
---- !u!114 &174760135
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 174760130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3ef09bfb00bb1546be0ca46cc6132cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Repeat: 0
-  Offset: 0
-  Roll: 0
-  AnimateRoll: 0
-  AnimateRollRate: 0.5
-  Symmetry: 0
-  _shader: {fileID: 4800000, guid: 46ce67666b84e15478d1b6d6cff3f092, type: 3}
---- !u!114 &174760136
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 174760130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3ef09bfb00bb1546be0ca46cc6132cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Repeat: 0
-  Offset: 0
-  Roll: 0
-  AnimateRoll: 0
-  AnimateRollRate: 0.5
-  Symmetry: 0
-  _shader: {fileID: 4800000, guid: 46ce67666b84e15478d1b6d6cff3f092, type: 3}
 --- !u!1 &390537161
 GameObject:
   m_ObjectHideFlags: 0
@@ -4962,7 +4909,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d11522be074742409ca8e06ca43b5e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TestPropertyAddress: 
+  TestPropertyAddress: TestParticles/ParticleSystem/startSize
+  TestPropertyValue: 5
   SetTestProperty: 0
 --- !u!4 &1929262416
 Transform:
