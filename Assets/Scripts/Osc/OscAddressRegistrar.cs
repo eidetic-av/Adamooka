@@ -68,9 +68,9 @@ public class OscAddressRegistrar : MonoBehaviour
         });
     }
 
-    void RegisterObjectMemberAddress(object targetObject, Type targetObjectType, MemberInfo member, string parentAddress, bool isProperty)
+    void RegisterObjectMemberAddress(object targetObject, Type targetObjectType, MemberInfo memberInfo, string parentAddress, bool isProperty)
     {
-        var memberAddress = parentAddress + "/" + member.Name;
+        var memberAddress = parentAddress + "/" + memberInfo.Name;
 
         bool isComponent, isClass, isStruct;
         Type memberType;
@@ -80,7 +80,7 @@ public class OscAddressRegistrar : MonoBehaviour
 
         if (isProperty)
         {
-            property = (targetObjectType.GetProperty(member.Name));
+            property = (targetObjectType.GetProperty(memberInfo.Name));
             memberType = property.PropertyType;
 
             isComponent = memberType.IsSubclassOf(typeof(Component));
@@ -90,7 +90,7 @@ public class OscAddressRegistrar : MonoBehaviour
         else
         {
             // if it's not a property it's a field
-            field = (targetObjectType.GetField(member.Name));
+            field = (targetObjectType.GetField(memberInfo.Name));
             memberType = field.FieldType;
 
             isComponent = memberType.IsSubclassOf(typeof(Component));
@@ -143,7 +143,7 @@ public class OscAddressRegistrar : MonoBehaviour
             // which refers to itself -
             // so it would loop through particleSystem.particleSystem.particleSystem...
 
-            if (lastAddressValue == member.Name) return;
+            if (lastAddressValue == memberInfo.Name) return;
 
             MemberInfo[] childMembers = memberType.GetMembers();
 
