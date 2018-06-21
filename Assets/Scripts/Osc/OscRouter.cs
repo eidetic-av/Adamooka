@@ -14,14 +14,14 @@ public class OscRouter : MonoBehaviour
     public Boolean SetTestProperty = false;
 
     public Boolean PrintKeys = false;
+    
+    public List<object> RegisteredMembers = new List<object>();
 
     /// <summary>
     /// Dictionary containing the methods to invoke when attempting to set Component properties or fields.
     /// They key is the OSC Address as a string; the value is the setter method as an Action.
     /// </summary>
-    public Dictionary<string, Action<object>> MemberSetters = new Dictionary<string, Action<object>>();
-
-    public List<object> RegisteredMembers = new List<object>();
+    Dictionary<string, Action<object>> MemberSetters = new Dictionary<string, Action<object>>();
 
     void Awake()
     {
@@ -52,11 +52,10 @@ public class OscRouter : MonoBehaviour
         if (RegisteredMembers.Contains(property)) return false;
 
         // create Property setter Action and register it with the OscRouter
-        MemberSetters.Add(address, (object value) =>
+        AddMemberSetter(address, property, (object value) =>
         {
             property.SetValue(targetObject, value);
         });
-        RegisteredMembers.Add(property);
         return true;
     }
 
@@ -65,11 +64,17 @@ public class OscRouter : MonoBehaviour
         if (RegisteredMembers.Contains(field)) return false;
 
         // create Property setter Action and register it with the OscRouter
-        MemberSetters.Add(address, (object value) =>
+        AddMemberSetter(address, field, (object value) =>
         {
             field.SetValue(targetObject, value);
         });
-        RegisteredMembers.Add(field);
         return true;
+    }
+
+    public void AddMemberSetter(string address, MemberInfo memberInfo, Action<object> setterAction)
+    {
+        MemberSetters.Add(address, setterAction);
+        RegisteredMembers.Add(memberInfo);
+        Debug.Log("Registered setter Action to address:\n" + address);
     }
 }

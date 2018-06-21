@@ -44,7 +44,7 @@ public class OscAddressRegistrar : MonoBehaviour
 
     void RegisterObject(object targetObject, string address)
     {
-        if (OscRouter.Instance.RegisteredMembers.Contains(targetObject)) return;
+        if (!IsValidObject(targetObject)) return;
 
         // Get all the publicly accesible members of the Type
         MemberInfo[] objectMemberInfos = targetObject.GetType().GetMembers();
@@ -55,59 +55,78 @@ public class OscAddressRegistrar : MonoBehaviour
 
     void RegisterObjectMember(object targetObject, MemberInfo memberInfo, string addressPrefix)
     {
-        if (OscRouter.Instance.RegisteredMembers.Contains(targetObject)) return;
+        if (!IsValidMember(memberInfo)) return;
 
-        Type targetObjectType = targetObject.GetType();
-
-        // only address properties and fields... ignore methods, enums etc.
-        if (!memberInfo.IsProperty() && !memberInfo.IsField()) return;
-
+        // the address node is the name of the member
         var memberAddress = addressPrefix + "/" + memberInfo.Name;
-
-        Type memberType = memberInfo.GetPropertyOrFieldType();
-
-        // Ignore any members whose types are in the IgnoreTypes list
-        if (IgnoreMemberTypes.Contains(memberType)) return;
 
         if (memberInfo.IsPrimitive())
         {
             // if it is a primitive, register an OSC address for it
             if (memberInfo.IsProperty())
             {
-                PropertyInfo propertyInfo = memberInfo.ToPropertyInfo(targetObjectType);
+                PropertyInfo propertyInfo = memberInfo.ToPropertyInfo(targetObject.GetType());
                 OscRouter.Instance.RegisterMember(targetObject, propertyInfo, memberAddress);
             }
             else if (memberInfo.IsField())
             {
-                FieldInfo fieldInfo = memberInfo.ToFieldInfo(targetObjectType);
+                FieldInfo fieldInfo = memberInfo.ToFieldInfo(targetObject.GetType());
                 OscRouter.Instance.RegisterMember(targetObject, fieldInfo, memberAddress);
             }
         }
         else
         {
-            RegisterChildMembers(targetObject, memberInfo, memberAddress);
+            RegisterChildMembers(memberInfo, memberAddress);
         }
     }
 
-    bool skip = false;
-
-    void RegisterChildMembers(object parentTargetObject, MemberInfo memberInfoToTraverse, string addressPrefix)
+    void RegisterChildMembers(MemberInfo memberInfoToTraverse, string addressPrefix)
     {
-        if (skip) return;
-        Debug.Log("Traversing: \n" + addressPrefix);
-        skip = true;
-
         var memberType = memberInfoToTraverse.GetPropertyOrFieldType();
-        Debug.Log(memberType.Name);
 
         memberType.GetMembers().ToList().ForEach(childMemberInfo =>
         {
-            var childMemberName = childMemberInfo.Name;
-            var childMemberType = childMemberInfo.GetPropertyOrFieldType();
+            if (!IsValidMember(childMemberInfo)) return;
 
-            if (childMemberType == null) return;
+            var childMemberAddress = addressPrefix + "/" + childMemberInfo.Name;
 
-            Debug.Log(" -> " + childMemberName + "\n      " + childMemberType.Name);
+            // how do we traverse any further?
+            
+            if (childMemberInfo.IsPrimitive())
+            {
+                Debug.Log("Child setter Action SHOULD register to address:\n" + childMemberAddress);
+            }
+            else
+            {
+                // TODO: traversing further is still causing a stack overflow...
+                //RegisterChildMembers(childMemberInfo, childMemberAddress);
+            }
         });
+    }
+
+    bool IsValidObject(object objectToCheck)
+    {
+        // if it's already registered to an OSC address, skip the object
+        if (OscRouter.Instance.RegisteredMembers.Contains(objectToCheck)) return false;
+
+        // otherwise it's valid
+        return true;
+    }
+
+    bool IsValidMember(MemberInfo memberInfoToCheck)
+    {
+        // if it's already registered to an OSC address, skip the object
+        if (OscRouter.Instance.RegisteredMembers.Contains(memberInfoToCheck)) return false;
+
+        Type memberType = memberInfoToCheck.GetPropertyOrFieldType();
+
+        // if above returns null, it's not a property or a field, so ignore it
+        if (memberType == null) return false;
+
+        // Ignore any members whose types are in the IgnoreTypes list
+        if (IgnoreMemberTypes.Contains(memberType)) return false;
+
+        // otherwise it's valid
+        return true;
     }
 }
