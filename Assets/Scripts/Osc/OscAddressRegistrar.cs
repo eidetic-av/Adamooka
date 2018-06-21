@@ -76,11 +76,11 @@ public class OscAddressRegistrar : MonoBehaviour
         }
         else
         {
-            RegisterChildMembers(memberInfo, memberAddress);
+            RegisterChildMembers(targetObject, memberInfo, memberAddress);
         }
     }
 
-    void RegisterChildMembers(MemberInfo memberInfoToTraverse, string addressPrefix)
+    void RegisterChildMembers(object parentObject, MemberInfo memberInfoToTraverse, string addressPrefix)
     {
         var memberType = memberInfoToTraverse.GetPropertyOrFieldType();
 
@@ -90,11 +90,20 @@ public class OscAddressRegistrar : MonoBehaviour
 
             var childMemberAddress = addressPrefix + "/" + childMemberInfo.Name;
 
-            // how do we traverse any further?
-            
             if (childMemberInfo.IsPrimitive())
             {
-                Debug.Log("Child setter Action SHOULD register to address:\n" + childMemberAddress);
+                if (childMemberInfo.IsField())
+                {
+                    Debug.Log(childMemberInfo.Name);
+                    var parentPropertyInfo = memberInfoToTraverse as PropertyInfo;
+                    var member = parentPropertyInfo.GetValue(parentObject);
+                    var childMember = (childMemberInfo as FieldInfo).GetValue(member);
+                    Debug.Log(childMember == null);
+                }
+                //OscRouter.Instance.AddMemberSetter(childMemberAddress, childMemberInfo, (object value) =>
+                //{
+                    
+                //});
             }
             else
             {

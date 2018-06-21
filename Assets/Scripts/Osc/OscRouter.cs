@@ -75,6 +75,6 @@ public class OscRouter : MonoBehaviour
     {
         MemberSetters.Add(address, setterAction);
         RegisteredMembers.Add(memberInfo);
-        Debug.Log("Registered setter Action to address:\n" + address);
+        //Debug.Log("Registered setter Action to address:\n" + address);
     }
 }
