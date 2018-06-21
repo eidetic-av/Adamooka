@@ -10,8 +10,6 @@ public class OscAddressRegistrar : MonoBehaviour
 {
     public List<Component> TargetComponents;
 
-    List<string> ComponentAddresses { get; set; } = new List<string>();
-
     string RootAddress { get; set; }
 
     /// <summary>
@@ -35,45 +33,37 @@ public class OscAddressRegistrar : MonoBehaviour
 
     void RegisterAddresses()
     {
-        // For every component added to the public TargetComponents list
-        TargetComponents.ForEach(targetComponent => RegisterComponentAdresses(targetComponent, targetComponent.GetType().Name, RootAddress));
+        // Register every component in the TargetComponents list
+        // Use the Component's Type name for the address node
+        TargetComponents.ForEach(targetComponent => RegisterObject(targetComponent, RootAddress + "/" + targetComponent.GetType().Name));
     }
 
-    void RegisterComponentAdresses(Component targetComponent, string targetComponentName, string parentAddress)
+    void RegisterObject(object targetObject, string address)
     {
-        // Set the address of each component to its Component type name...
-        // Add it to the ComponentAddresses list so that we don't double up
-        var componentTypeIndex = 0;
-        var componentAddress = parentAddress + "/" + targetComponentName;
+        if (OscRouter.Instance.RegisteredMembers.Contains(targetObject)) return;
 
-        while (ComponentAddresses.Contains(componentAddress))
-        {
-            componentTypeIndex++;
-            componentAddress = parentAddress + "/" + targetComponentName + componentTypeIndex;
-        }
-        ComponentAddresses.Add(componentAddress);
+        // Get all the publicly accesible members of the Type
+        MemberInfo[] objectMemberInfos = targetObject.GetType().GetMembers();
 
-        // Find the Type, and get all the publicly accesible members of the Type
-        Type targetComponentType = targetComponent.GetType();
-        MemberInfo[] componentMembers = targetComponentType.GetMembers();
-
-        componentMembers.ToList().ForEach(member =>
-        {
-            var isProperty = (targetComponentType.GetProperty(member.Name) != null);
-            var isField = (targetComponentType.GetField(member.Name) != null);
-            // only address properties and fields... ignore methods, enums etc.
-            if (!isProperty && !isField) return;
-
-            RegisterObjectMemberAddress(targetComponent, targetComponentType, member, componentAddress, isProperty);
-        });
+        // Register each member to an OSC address
+        objectMemberInfos.ToList().ForEach(member => RegisterObjectMember(targetObject, member, address));
     }
 
-    void RegisterObjectMemberAddress(object targetObject, Type targetObjectType, MemberInfo memberInfo, string parentAddress, bool isProperty)
+    void RegisterObjectMember(object targetObject, MemberInfo memberInfo, string addressPrefix)
     {
-        var memberAddress = parentAddress + "/" + memberInfo.Name;
+        if (OscRouter.Instance.RegisteredMembers.Contains(targetObject)) return;
+
+        Type targetObjectType = targetObject.GetType();
+
+        var isProperty = (targetObjectType.GetProperty(memberInfo.Name) != null);
+        var isField = (targetObjectType.GetField(memberInfo.Name) != null);
+        // only address properties and fields... ignore methods, enums etc.
+        if (!isProperty && !isField) return;
+
+        var memberAddress = addressPrefix + "/" + memberInfo.Name;
 
         bool isComponent, isClass, isStruct;
-        Type memberType;
+        Type memberType = GetUnderlyingType(memberInfo);
 
         PropertyInfo property = null;
         FieldInfo field = null;
@@ -81,7 +71,6 @@ public class OscAddressRegistrar : MonoBehaviour
         if (isProperty)
         {
             property = (targetObjectType.GetProperty(memberInfo.Name));
-            memberType = property.PropertyType;
 
             isComponent = memberType.IsSubclassOf(typeof(Component));
             isClass = memberType.IsClass;
@@ -91,7 +80,6 @@ public class OscAddressRegistrar : MonoBehaviour
         {
             // if it's not a property it's a field
             field = (targetObjectType.GetField(memberInfo.Name));
-            memberType = field.FieldType;
 
             isComponent = memberType.IsSubclassOf(typeof(Component));
             isClass = memberType.IsClass;
@@ -104,65 +92,48 @@ public class OscAddressRegistrar : MonoBehaviour
         // if the type isn't a primitive value type,
         // we need to add addresses to it's own members recursively
         bool isPrimitive = !(isComponent || isClass || isStruct);
-        // if it's a String (as opposed to a string), also treat it as a primitive
+        // if it's a String, also treat it as a primitive
         if (memberType == typeof(String)) isPrimitive = true;
+
+        object member = null;
+        try
+        {
+            if (isProperty) member = property.GetValue(targetObject);
+            else member = field.GetValue(targetObject);
+        }
+        catch
+        {
+            // log the exception as a warning
+            Debug.LogWarningFormat("Registering OSC address for '{0}' skipped due to get member object failure.\nTarget: {1}", memberType, memberAddress);
+            return;
+        }
+        if (member == null) return;
 
         if (isPrimitive)
         {
             // if it is a primitive, register an OSC address for it
-            if (isProperty)
-            {
-                // create Property setter Action and register it with the OscRouter
-                OscRouter.Instance.MemberSetters.Add(memberAddress, (object value) =>
-                {
-                    property.SetValue(targetObject, value);
-                });
-            }
-            else
-            {
-                // create Field setter Action and register it with the OscRouter
-                OscRouter.Instance.MemberSetters.Add(memberAddress, (object value) =>
-                {
-                    field.SetValue(targetObject, value);
-                });
-            }
-            Debug.Log(memberAddress + "\n");
+            if (isProperty) OscRouter.Instance.RegisterMember(targetObject, property, memberAddress);
+            else OscRouter.Instance.RegisterMember(targetObject, field, memberAddress);
         }
         else
         {
-            // TODO: figure out child members!!!
+            // If it's not a primitive, traverse through its own child members to register OSC addresses for them
 
-            var addressValues = memberAddress.Split('/');
-            var lastAddressValue = addressValues[addressValues.Length - 2];
-
-            // if the lastAddressValue is the same as the name of this member,
-            // it probably refers to itself.
-            // Skip it so we dont recurse infinitely
-
-            // e.g. ParticleSystem contains a member called particleSystem,
-            // which refers to itself -
-            // so it would loop through particleSystem.particleSystem.particleSystem...
-
-            if (lastAddressValue == memberInfo.Name) return;
-
-            MemberInfo[] childMembers = memberType.GetMembers();
-
-            childMembers.ToList().ForEach(childMember =>
-            {
-                var childMemberIsProperty = (memberType.GetProperty(childMember.Name) != null);
-                var childMemberIsField = (memberType.GetField(childMember.Name) != null);
-                // only address properties and fields... ignore methods, enums etc.
-                if (!childMemberIsProperty && !childMemberIsField) return;
-
-                if (childMemberIsProperty)
-                {
-                    //var memberObject = targetObjectType.GetProperty(member.Name).GetValue(targetObject);
-                    //var memberObjectType = memberObject.GetType();
-
-                    //RegisterObjectMemberAddress(memberObject, memberObjectType, childMember, memberAddress, childMemberIsProperty);
-                }
-            });
-
+            // TODO: Why does traversing through the members and registering them not work!?
+            //RegisterObject(member, memberAddress);
+        }
     }
+
+    public static Type GetUnderlyingType(MemberInfo member)
+    {
+        switch (member.MemberType)
+        {
+            case MemberTypes.Field:
+                return ((FieldInfo)member).FieldType;
+            case MemberTypes.Property:
+                return ((PropertyInfo)member).PropertyType;
+            default:
+                return null;
+        }
     }
 }
