@@ -8,8 +8,7 @@ public class PollockController : MonoBehaviour
 {
     GameObject UserMesh;
     MeshFilter UserMeshFilter;
-
-    public GameObject Wind;
+    
     public GameObject Particles;
 
     ParticleSystem ParticleSystem;
@@ -38,8 +37,7 @@ public class PollockController : MonoBehaviour
     float NewShapeSize = 10f;
     float ShapeSizeDamp = 1f;
 
-    public bool Control = true;
-    public bool Hone;
+    public bool Hone = true;
     public bool Revert;
     bool DoingHoneOff;
 
@@ -71,21 +69,10 @@ public class PollockController : MonoBehaviour
             HoneOff();
             Revert = false;
         }
-
-        if (Control)
-        {
-            Wind.transform.localRotation = Quaternion.Euler(
-                AirSticks.Right.EulerAngles.x * 200,
-                AirSticks.Right.EulerAngles.y * 200,
-                AirSticks.Right.EulerAngles.z * 200
-            );
-        }
         if (Hone)
         {
             if (KinectManager.Instance.GetUsersCount() != 0)
             {
-                if (Wind != null)
-                    Wind.SetActive(false);
 
                 if (ParticleArray == null)
                 {
@@ -195,9 +182,6 @@ public class PollockController : MonoBehaviour
     void RevertToDefault(ParticleSystem.Particle[] currentParticles)
     {
         DoingHoneOff = false;
-        // set wind to active
-        if (Wind != null)
-            Wind.SetActive(true);
         var noiseModule = ParticleSystem.noise;
         noiseModule.enabled = OriginalNoiseEnabled;
         // replace particles with new ones with original lifetime
