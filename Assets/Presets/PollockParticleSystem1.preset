@@ -245,11 +245,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: InitialModule.startLifetime.scalar
-    value: 1
+    value: 1000
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: InitialModule.startLifetime.minScalar
-    value: 0.01
+    value: 1000
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: InitialModule.startLifetime.maxCurve.m_Curve.Array.size
@@ -2065,7 +2065,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: InitialModule.maxNumParticles
-    value: 50
+    value: 200
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: InitialModule.size3D
@@ -2781,7 +2781,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: EmissionModule.rateOverTime.scalar
-    value: 200
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: EmissionModule.rateOverTime.minScalar
@@ -8529,7 +8529,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.strength.scalar
-    value: 5
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.strength.minScalar
@@ -8873,7 +8873,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.strengthZ.scalar
-    value: 1
+    value: 5
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.strengthZ.minScalar
@@ -9041,11 +9041,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.separateAxes
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.frequency
-    value: 2
+    value: 0.1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.damping
@@ -9053,7 +9053,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.octaves
-    value: 1
+    value: 4
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: NoiseModule.octaveMultiplier
@@ -12865,11 +12865,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: TrailModule.lifetime.scalar
-    value: 0.0005
+    value: 0.0001
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: TrailModule.lifetime.minScalar
-    value: 0
+    value: 0.0001
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: TrailModule.lifetime.maxCurve.m_Curve.Array.size
@@ -13049,7 +13049,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: TrailModule.dieWithParticles
-    value: 1
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: TrailModule.sizeAffectsWidth

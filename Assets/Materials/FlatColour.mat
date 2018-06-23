@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: FlatColour
   m_Shader: {fileID: 4800000, guid: 1b3156b1217d40741b462f030ade3762, type: 3}
@@ -72,6 +72,6 @@ Material:
     - _UVSec: 0
     - _ZWrite: 0
     m_Colors:
-    - _Color: {r: 0, g: 0, b: 0, a: 0.23921569}
+    - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0.6102941, g: 0.6102941, b: 0.6102941, a: 1}
     - _KeyColor: {r: 0, g: 0, b: 0, a: 0}
