@@ -47,7 +47,7 @@ public class MeshTools : MonoBehaviour
         public bool ContinuousUpdate = true;
         public float LastUpdateTime;
         public FilterType Type = FilterType.Laplacian;
-        public int SmoothingTimes = 3;
+        public int SmoothingTimes = 6;
         public float HCAlpha = 0.5f;
         public float HCBeta = 0.5f;
 

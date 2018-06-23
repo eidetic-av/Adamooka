@@ -89,6 +89,16 @@ public class UserMeshVisualizer : MonoBehaviour
     private byte[] vertexType;
     private int[] vertexIndex;
 
+    public bool DoOrigin = false;
+    public bool DoSetMedianVertexPosition = false;
+    public bool DoRight = false;
+
+    public bool StartRotateAnimation = false;
+    public bool StopRotateAnimation = true;
+
+    [Range(-1, 1)]
+    public float RotationSlider = 0;
+
     void Start()
     {
         manager = KinectManager.Instance;
@@ -118,95 +128,47 @@ public class UserMeshVisualizer : MonoBehaviour
         }
     }
 
-    private void CreateMesh(int width, int height)
-    {
-        Mesh = new Mesh();
-        Mesh.name = "UserMesh";
-
-        GetComponent<MeshFilter>().mesh = Mesh;
-    }
-
-    void OffsetRotationBang(float angle, bool pause)
-    {
-        // find the median point to rotate around if we don't already have it
-        if (VertexAverageSnapshot.x == -99)
-        {
-            SetMedianVertexPosition();
-        }
-
-        OffsetRotationCount++;
-
-        Parent.transform.localEulerAngles = Vector3.zero;
-        Parent.transform.localPosition = Vector3.zero;
-        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, angle * OffsetRotationCount);
-        NewOffsetRotation = Parent.transform.localEulerAngles;
-        NewOffsetPosition = Parent.transform.localPosition;
-        // reset now that we have set the new positions to move towards
-        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, -angle);
-
-        // Disbale updating
-        DisableMeshUpdate = pause;
-    }
-
-    public void SetMedianVertexPosition()
-    {
-        // first list all the points
-        List<float> xPositions = new List<float>();
-        List<float> yPositions = new List<float>();
-        List<float> zPositions = new List<float>();
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            xPositions.Add(vertices[i].x);
-            yPositions.Add(vertices[i].y);
-            zPositions.Add(vertices[i].z);
-        }
-        // sort the lists into order 
-        xPositions.Sort();
-        yPositions.Sort();
-        zPositions.Sort();
-
-        Debug.Log(Mathf.FloorToInt(xPositions.Count / 2f) + ": " + xPositions[Mathf.FloorToInt(xPositions.Count / 2f)]);
-        // and grab the middle(ish) value of the array
-        VertexAverageSnapshot = new Vector3(
-            xPositions[Mathf.FloorToInt(xPositions.Count / 2f)] + transform.localPosition.x + OffsetRotationShift.x,
-            yPositions[Mathf.FloorToInt(yPositions.Count / 2f)] + transform.localPosition.y + OffsetRotationShift.y,
-            zPositions[Mathf.FloorToInt(zPositions.Count / 2f)] + transform.localPosition.z + OffsetRotationShift.z
-        );
-    }
-
-    void ResetOffsetRotation()
-    {
-        NewOffsetRotation = Vector3.zero;
-        NewOffsetPosition = Vector3.zero;
-        VertexAverageSnapshot = new Vector3(-99, 0, 0);
-        OffsetRotationCount = 0;
-        DisableMeshUpdate = false;
-    }
-
-    public void StartAnimateUserRotation()
-    {
-        AnimateUserRotation = true;
-        OffsetRotationDampRate = 1;
-        SetMedianVertexPosition();
-    }
-
-    public void EndAnimateUserRotation()
-    {
-        if (AnimateUserRotation)
-        {
-            AnimateUserRotation = false;
-            NewOffsetRotation = Vector3.zero;
-            NewOffsetPosition = Vector3.zero;
-            VertexAverageSnapshot = new Vector3(-99, 0, 0);
-            AnimateRotationAngle = 0;
-        }
-
-    }
-
     void Update()
     {
         if (manager == null || !manager.IsInitialized())
             return;
+
+        if (StartRotateAnimation)
+        {
+            StartAnimateUserRotation();
+            StartRotateAnimation = false;
+        }
+
+        if (StopRotateAnimation)
+        {
+            EndAnimateUserRotation();
+            StopRotateAnimation = false;
+        }
+
+        if (DoOrigin)
+        {
+            DoOrigin = false;
+            NewOffsetPosition = Vector3.zero;
+            NewOffsetRotation = Vector3.zero;
+        }
+        if (DoRight)
+        {
+            if (VertexAverageSnapshot.x == -99)
+                SetMedianVertexPosition();
+
+            // reset to 0 every frame so we can just control the rotationAngle value
+            Parent.transform.localEulerAngles = Vector3.zero;
+            Parent.transform.localPosition = Vector3.zero;
+            Parent.transform.eulerAngles = Vector3.zero;
+            Parent.transform.position = Vector3.zero;
+
+            var rotateAngle = RotationSlider * 90;
+            Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, rotateAngle);
+
+        } else
+        {
+            VertexAverageSnapshot = new Vector3(-99, 0, 0);
+        }
 
         //if (Input.GetKeyDown(KeyCode.Alpha8))
         //{
@@ -219,11 +181,18 @@ public class UserMeshVisualizer : MonoBehaviour
 
         if (AnimateUserRotation)
         {
-            Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, Time.deltaTime * 20f);
-        } else 
+            //Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, RotationSlider);
+        }
+        else
         {
             Parent.transform.position = DampPosition(Parent.transform.position, NewOffsetPosition, OffsetRotationDampRate);
             Parent.transform.localEulerAngles = DampPosition(Parent.transform.localEulerAngles, NewOffsetRotation, OffsetRotationDampRate);
+        }
+
+        if (DoSetMedianVertexPosition)
+        {
+            DoSetMedianVertexPosition = false;
+            SetMedianVertexPosition();
         }
 
         if (manager.GetUsersCount() != 0)
@@ -337,6 +306,98 @@ public class UserMeshVisualizer : MonoBehaviour
                     LimitToRightHand = true;
                     break;
             }
+        }
+
+
+
+    }
+
+    public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)
+    {
+        return Quaternion.Euler(angles) * (point - pivot) + pivot;
+    }
+
+    private void CreateMesh(int width, int height)
+    {
+        Mesh = new Mesh();
+        Mesh.name = "UserMesh";
+
+        GetComponent<MeshFilter>().mesh = Mesh;
+    }
+
+    void OffsetRotationBang(float angle, bool pause)
+    {
+        // find the median point to rotate around if we don't already have it
+        if (VertexAverageSnapshot.x == -99)
+        {
+            SetMedianVertexPosition();
+        }
+
+        OffsetRotationCount++;
+
+        Parent.transform.localEulerAngles = Vector3.zero;
+        Parent.transform.localPosition = Vector3.zero;
+        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, angle * OffsetRotationCount);
+        NewOffsetRotation = Parent.transform.localEulerAngles;
+        NewOffsetPosition = Parent.transform.localPosition;
+        // reset now that we have set the new positions to move towards
+        Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, -angle);
+
+        // Disbale updating
+        DisableMeshUpdate = pause;
+    }
+
+    public void SetMedianVertexPosition()
+    {
+        // first list all the points
+        List<float> xPositions = new List<float>();
+        List<float> yPositions = new List<float>();
+        List<float> zPositions = new List<float>();
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            xPositions.Add(vertices[i].x);
+            yPositions.Add(vertices[i].y);
+            zPositions.Add(vertices[i].z);
+        }
+        // sort the lists into order 
+        xPositions.Sort();
+        yPositions.Sort();
+        zPositions.Sort();
+
+        Debug.Log(Mathf.FloorToInt(xPositions.Count / 2f) + ": " + xPositions[Mathf.FloorToInt(xPositions.Count / 2f)]);
+        // and grab the middle(ish) value of the array
+        VertexAverageSnapshot = new Vector3(
+            xPositions[Mathf.FloorToInt(xPositions.Count / 2f)] + transform.localPosition.x + OffsetRotationShift.x,
+            yPositions[Mathf.FloorToInt(yPositions.Count / 2f)] + transform.localPosition.y + OffsetRotationShift.y,
+            zPositions[Mathf.FloorToInt(zPositions.Count / 2f)] + transform.localPosition.z + OffsetRotationShift.z
+        );
+    }
+
+    void ResetOffsetRotation()
+    {
+        NewOffsetRotation = Vector3.zero;
+        NewOffsetPosition = Vector3.zero;
+        VertexAverageSnapshot = new Vector3(-99, 0, 0);
+        OffsetRotationCount = 0;
+        DisableMeshUpdate = false;
+    }
+
+    public void StartAnimateUserRotation()
+    {
+        AnimateUserRotation = true;
+        OffsetRotationDampRate = 1;
+        SetMedianVertexPosition();
+    }
+
+    public void EndAnimateUserRotation()
+    {
+        if (AnimateUserRotation)
+        {
+            AnimateUserRotation = false;
+            NewOffsetRotation = Vector3.zero;
+            NewOffsetPosition = Vector3.zero;
+            VertexAverageSnapshot = new Vector3(-99, 0, 0);
+            AnimateRotationAngle = 0;
         }
 
     }

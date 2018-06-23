@@ -38,7 +38,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: Scaling.y
-    value: 3
+    value: 2.4
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: Scaling.z
@@ -50,7 +50,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: HonedOffset.y
-    value: -4
+    value: -2.7
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: HonedOffset.z
@@ -58,7 +58,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: HoneDampingSpeed.x
-    value: 0
+    value: 8
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: HoneDampingSpeed.y
