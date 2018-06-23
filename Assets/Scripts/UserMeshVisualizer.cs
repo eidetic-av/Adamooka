@@ -381,7 +381,6 @@ public class UserMeshVisualizer : MonoBehaviour
         yPositions.Sort();
         zPositions.Sort();
 
-        Debug.Log(Mathf.FloorToInt(xPositions.Count / 2f) + ": " + xPositions[Mathf.FloorToInt(xPositions.Count / 2f)]);
         // and grab the middle(ish) value of the array
         VertexAverageSnapshot = new Vector3(
             xPositions[Mathf.FloorToInt(xPositions.Count / 2f)] + transform.localPosition.x + OffsetRotationShift.x,

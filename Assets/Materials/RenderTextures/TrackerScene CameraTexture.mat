@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: TrackerScene CameraTexture
   m_Shader: {fileID: 4800000, guid: e8ead98c69ad5af48894c74cd2414f3d, type: 3}

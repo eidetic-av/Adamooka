@@ -21296,22 +21296,37 @@ MonoBehaviour:
   FadeOutWhiteBlockout: 0
   WhiteBlockoutFadeInTime: 10000
   WhiteBlockoutFadeOutTime: 150
-  EnableGranRelatedTransiton: 0
-  GranRelatedTransitionBaseNoiseIntensity: 1
+  EnableGranRelatedTransition: 0
+  GranRelatedTransitionBaseNoiseIntensity: 0.5
   GranRelatedTransitionExplodeIntensity: 2
   GranRelatedTransitionExplodeDamping: 20
   GranRelatedTransitionReversionNoiseIntensity: -0.005
   GranRelatedTransitionReversionDamping: 20
+  EnableMainGranRelatedScene: 0
   EnableGranRelatedAirsticksControl: 0
   EnableGranRelatedControlIntensity: 0
   EnableGranRelatedControlSmoothing: 0
   GranRelatedExplodeReversionDamping: 5
-  GranRelatedNoiseIntensity: {x: -0.3, y: 5}
-  GranRelatedSmoothing: {x: 0, y: 5}
-  GranRelatedLeftExplodeIntensity: 1
+  GranRelatedNoiseIntensity: {x: -0.1, y: 0.1}
+  GranRelatedSmoothing: {x: 0, y: 0}
+  GranRelatedLeftExplodeIntensity: 15
   GranRelatedLeftExplodeDamping: 3
-  GranRelatedRightExplodeIntensity: 1
+  GranRelatedRightExplodeIntensity: 15
   GranRelatedRightExplodeDamping: 3
+  Iridescence: {fileID: 0}
+  ActivateGranRelatedIridescence: 0
+  IridescenceFilmStrength: 185
+  IridescenceFilmFrequency: 1
+  IridescenceFilmAnimationRate: 2
+  IridescenceColourAnimationRate: 2
+  ActivateGranRelatedColourCycle: 0
+  OutputQuadToTint: {fileID: 1852235743}
+  TintSaturation: 0.6
+  ControlSaturationWithAirsticks: 0
+  AirsticksSaturation: {x: 0, y: 1}
+  OnlyControlSaturationWhileNoteOn: 0
+  TintCycleDistance: {x: 10, y: 20}
+  ResetTint: 0
   Prototyping: {fileID: 0}
   ActiveMaterial: 0
   AnimateOutline: 0

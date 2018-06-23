@@ -22,7 +22,7 @@ public class IridescenceController : MonoBehaviour
 
     /* CLASS COMPONENTS*/
 
-    [Range(0f, 50f)]
+    [Range(0f, 200f)]
     public float FilmStrength = 0.5f;
     [Range(1f, 1000f)]
     public float FilmFrequency = 0f;
@@ -78,7 +78,7 @@ public class IridescenceController : MonoBehaviour
         {
             gameObject.GetComponent<Renderer>().sharedMaterial = Instantiate(IridescenceMaterial);
             Activate = false;
-            LightIntensity = 0.75f;
+            LightIntensity = 0.3f;
         }
         if (SceneLight != null && LightIntensity != PreviousLightIntensity)
         {

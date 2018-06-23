@@ -25,6 +25,8 @@ public static class AirSticks
 
         public float JoystickY;
 
+        public bool NoteIsOn { get; private set; } = false;
+
         private Vector3 position;
         public Vector3 Position
         {
@@ -59,11 +61,13 @@ public static class AirSticks
         {
             if (NoteOn == null) return;
             Threading.RunOnMain(NoteOn);
+            NoteIsOn = true;
         }
         public void TriggerNoteOff()
         {
             if (NoteOff == null) return;
             Threading.RunOnMain(NoteOff);
+            NoteIsOn = false;
         }
     }
 }

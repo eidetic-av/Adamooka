@@ -66,7 +66,7 @@ public class MeshTools : MonoBehaviour
     public int WhiteBlockoutFadeInTime = 10000;
     public int WhiteBlockoutFadeOutTime = 250;
 
-    public bool EnableGranRelatedTransiton;
+    public bool EnableGranRelatedTransition;
 
     public float GranRelatedTransitionBaseNoiseIntensity = 0f;
     public float GranRelatedTransitionExplodeIntensity = 0f;
@@ -74,6 +74,8 @@ public class MeshTools : MonoBehaviour
 
     public float GranRelatedTransitionReversionNoiseIntensity = 0f;
     public float GranRelatedTransitionReversionDamping = 0f;
+
+    public bool EnableMainGranRelatedScene = false;
 
     public bool EnableGranRelatedAirsticksControl;
     public bool EnableGranRelatedControlIntensity;
@@ -88,6 +90,22 @@ public class MeshTools : MonoBehaviour
     public float GranRelatedLeftExplodeDamping = 3f;
     public float GranRelatedRightExplodeIntensity = 1f;
     public float GranRelatedRightExplodeDamping = 3f;
+
+    public IridescenceController Iridescence;
+    public bool ActivateGranRelatedIridescence = false;
+    public float IridescenceFilmStrength = 50;
+    public float IridescenceFilmFrequency = 1;
+    public float IridescenceFilmAnimationRate = 2;
+    public float IridescenceColourAnimationRate = 2;
+
+    public bool ActivateGranRelatedColourCycle = false;
+    public GameObject OutputQuadToTint;
+    public float TintSaturation = 0.6f;
+    public bool ControlSaturationWithAirsticks = false;
+    public Vector2 AirsticksSaturation = new Vector2(0, 1);
+    public bool OnlyControlSaturationWhileNoteOn = false;
+    public Vector2 TintCycleDistance = new Vector2(20, 40);
+    public bool ResetTint = false;
 
     public Prototyping Prototyping;
 
@@ -135,6 +153,9 @@ public class MeshTools : MonoBehaviour
         AirSticks.Right.NoteOff += GranRelatedOff;
         AirSticks.Left.NoteOff += GranRelatedOff;
 
+        Iridescence = gameObject.GetComponent<IridescenceController>();
+
+
         MidiManager.OneFiveNine.Beep += BangOutline;
 
         gameObject.InstanceMaterial();
@@ -176,7 +197,7 @@ public class MeshTools : MonoBehaviour
 
     void GranRelatedExplode(AirSticks.Hand hand)
     {
-        if (!EnableGranRelatedTransiton)
+        if (!EnableGranRelatedTransition)
         {
             if (hand == AirSticks.Hand.Left)
             {
@@ -190,6 +211,16 @@ public class MeshTools : MonoBehaviour
                 Noise.NoiseIntensity = GranRelatedRightExplodeIntensity;
                 Noise.NoiseChangeDamping = GranRelatedRightExplodeDamping;
             }
+            if (ActivateGranRelatedColourCycle)
+            {
+                var material = OutputQuadToTint.GetComponent<Renderer>().material;
+                var currentColor = material.GetColor("_TintColor");
+                float h, s, v;
+                Color.RGBToHSV(currentColor, out h, out s, out v);
+                s = TintSaturation;
+                h = (h + Random.value.Map(0, 1, TintCycleDistance.x, TintCycleDistance.y)) % 1;
+                material.SetColor("_TintColor", Color.HSVToRGB(h, s, 1));
+            }
         } else
         {
             if (WhiteBlockoutController.Full || WhiteBlockoutController.FadingIn)
@@ -197,15 +228,24 @@ public class MeshTools : MonoBehaviour
                 WhiteBlockoutController.FadeOut(WhiteBlockoutFadeOutTime);
             }
             UserMeshVisualizer.BlockKinectUpdate = false;
+            UserMeshVisualizer.ControlRotationSliderByAirsticks = true;
+            UserMeshVisualizer.StartRotateAnimation = true;
             Noise.NewNoiseIntensity = GranRelatedTransitionBaseNoiseIntensity;
             Noise.NoiseIntensity = GranRelatedTransitionExplodeIntensity;
+            Noise.SmoothingTimes = 6;
             Noise.NoiseChangeDamping = GranRelatedTransitionExplodeDamping;
         }
     }
 
+    void ResetOutputQuadTint()
+    {
+        var material = OutputQuadToTint.GetComponent<Renderer>().material;
+        material.SetColor("_TintColor", new Color(1, 1, 1, 1));
+    }
+
     void GranRelatedExplodeReversion()
     {
-        if (!EnableGranRelatedTransiton)
+        if (!EnableGranRelatedTransition)
         {
             Noise.NewNoiseIntensity = 0.01f;
             Noise.NoiseChangeDamping = GranRelatedExplodeReversionDamping;
@@ -254,6 +294,47 @@ public class MeshTools : MonoBehaviour
 
     private void Update()
     {
+        if (EnableMainGranRelatedScene)
+        {
+            EnableGranRelatedTransition = false;
+            EnableGranRelatedAirsticksControl = true;
+            EnableGranRelatedControlIntensity = true;
+            EnableGranRelatedControlSmoothing = true;
+            UserMeshVisualizer.ControlRotationSliderByAirsticks = true;
+            UserMeshVisualizer.StartRotateAnimation = true;
+            UserMeshVisualizer.BlockKinectUpdate = false;
+            UserMeshVisualizer.DisableMeshUpdate = false;
+            EnableMainGranRelatedScene = false;
+        }
+
+
+        if (ActivateGranRelatedColourCycle)
+        {
+            if (ControlSaturationWithAirsticks)
+            {
+                var updateSaturation = true;
+                if (OnlyControlSaturationWhileNoteOn && (!AirSticks.Left.NoteIsOn && !AirSticks.Right.NoteIsOn))
+                {
+                    updateSaturation = false;
+                }
+                if (updateSaturation)
+                {
+                    var material = OutputQuadToTint.GetComponent<Renderer>().material;
+                    var currentColor = material.GetColor("_TintColor");
+                    float h, s, v;
+                    Color.RGBToHSV(currentColor, out h, out s, out v);
+                    s = AirSticks.Right.Position.y.Map(-1, 1, AirsticksSaturation.x, AirsticksSaturation.y);
+                    material.SetColor("_TintColor", Color.HSVToRGB(h, s, v));
+                }
+            }
+        }
+
+        if (ResetTint)
+        {
+            ResetOutputQuadTint();
+            ResetTint = false;
+        }
+
         if (FadeInWhiteBlockout)
         {
             WhiteBlockoutController.FadeIn(WhiteBlockoutFadeInTime);
@@ -262,6 +343,18 @@ public class MeshTools : MonoBehaviour
         {
             WhiteBlockoutController.FadeOut(WhiteBlockoutFadeOutTime);
             FadeOutWhiteBlockout = false;
+        }
+
+        if (ActivateGranRelatedIridescence)
+        {
+            Iridescence.Activate = true;
+            Iridescence.FilmStrength = IridescenceFilmStrength;
+            Iridescence.FilmFrequency = IridescenceFilmFrequency;
+            Iridescence.AnimateColorOffset = true;
+            Iridescence.ColorOffsetAnimationRate = IridescenceColourAnimationRate;
+            Iridescence.AnimateNoiseOffset = true;
+            Iridescence.NoiseOffsetAnimationRate = IridescenceFilmAnimationRate;
+            ActivateGranRelatedIridescence = false;
         }
 
         if (Input.GetKeyDown(KeyCode.E))
@@ -273,11 +366,11 @@ public class MeshTools : MonoBehaviour
             ExplodeB();
         }
 
-        if (EnableGranRelatedAirsticksControl || EnableGranRelatedTransiton)
+        if (EnableGranRelatedAirsticksControl || EnableGranRelatedTransition)
         {
             if (GranControl)
             {
-                if (EnableGranRelatedControlIntensity || EnableGranRelatedTransiton)
+                if (EnableGranRelatedControlIntensity || EnableGranRelatedTransition)
                 {
                     Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, GranRelatedNoiseIntensity.x, GranRelatedNoiseIntensity.y);
                 }
@@ -393,13 +486,13 @@ public class MeshTools : MonoBehaviour
     void GranRelatedOn(AirSticks.Hand hand)
     {
         GranRelatedExplode(hand);
-        if (!EnableGranRelatedTransiton) GranControl = true;
+        if (!EnableGranRelatedTransition) GranControl = true;
     }
 
     void GranRelatedOff()
     {
         GranRelatedExplodeReversion();
-        if (!EnableGranRelatedTransiton) GranControl = false;
+        if (!EnableGranRelatedTransition) GranControl = false;
     }
 
     bool NoteOn = false;
