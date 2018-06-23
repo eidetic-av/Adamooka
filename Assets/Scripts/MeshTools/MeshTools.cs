@@ -60,12 +60,27 @@ public class MeshTools : MonoBehaviour
     public bool EnableExplode;
     public bool EnableDesmondAirsticksControl;
 
+    public BlockoutController WhiteBlockoutController;
+    public bool FadeInWhiteBlockout = false;
+    public bool FadeOutWhiteBlockout = false;
+    public int WhiteBlockoutFadeInTime = 10000;
+    public int WhiteBlockoutFadeOutTime = 250;
+
+    public bool EnableGranRelatedTransiton;
+
+    public float GranRelatedTransitionBaseNoiseIntensity = 0f;
+    public float GranRelatedTransitionExplodeIntensity = 0f;
+    public float GranRelatedTransitionExplodeDamping = 1f;
+
+    public float GranRelatedTransitionReversionNoiseIntensity = 0f;
+    public float GranRelatedTransitionReversionDamping = 0f;
+
     public bool EnableGranRelatedAirsticksControl;
     public bool EnableGranRelatedControlIntensity;
     public bool EnableGranRelatedControlSmoothing;
     private bool GranControl;
 
-    public float GranRelatedExplodeRevestionDamping = 5f;
+    public float GranRelatedExplodeReversionDamping = 5f;
     public Vector2 GranRelatedNoiseIntensity = new Vector2(-.3f, 5f);
     public Vector2 GranRelatedSmoothing = new Vector2(0f, 5f);
 
@@ -161,23 +176,45 @@ public class MeshTools : MonoBehaviour
 
     void GranRelatedExplode(AirSticks.Hand hand)
     {
-        if (hand == AirSticks.Hand.Left)
+        if (!EnableGranRelatedTransiton)
         {
-            Noise.NewNoiseIntensity = 0.01f;
-            Noise.NoiseIntensity = GranRelatedLeftExplodeIntensity;
-            Noise.NoiseChangeDamping = GranRelatedLeftExplodeDamping;
-        } else if (hand == AirSticks.Hand.Right)
+            if (hand == AirSticks.Hand.Left)
+            {
+                Noise.NewNoiseIntensity = 0.01f;
+                Noise.NoiseIntensity = GranRelatedLeftExplodeIntensity;
+                Noise.NoiseChangeDamping = GranRelatedLeftExplodeDamping;
+            }
+            else if (hand == AirSticks.Hand.Right)
+            {
+                Noise.NewNoiseIntensity = 0.01f;
+                Noise.NoiseIntensity = GranRelatedRightExplodeIntensity;
+                Noise.NoiseChangeDamping = GranRelatedRightExplodeDamping;
+            }
+        } else
         {
-            Noise.NewNoiseIntensity = 0.01f;
-            Noise.NoiseIntensity = GranRelatedRightExplodeIntensity;
-            Noise.NoiseChangeDamping = GranRelatedRightExplodeDamping;
+            if (WhiteBlockoutController.Full || WhiteBlockoutController.FadingIn)
+            {
+                WhiteBlockoutController.FadeOut(WhiteBlockoutFadeOutTime);
+            }
+            UserMeshVisualizer.BlockKinectUpdate = false;
+            Noise.NewNoiseIntensity = GranRelatedTransitionBaseNoiseIntensity;
+            Noise.NoiseIntensity = GranRelatedTransitionExplodeIntensity;
+            Noise.NoiseChangeDamping = GranRelatedTransitionExplodeDamping;
         }
     }
 
     void GranRelatedExplodeReversion()
     {
-        Noise.NewNoiseIntensity = 0.01f;
-        Noise.NoiseChangeDamping = GranRelatedExplodeRevestionDamping;
+        if (!EnableGranRelatedTransiton)
+        {
+            Noise.NewNoiseIntensity = 0.01f;
+            Noise.NoiseChangeDamping = GranRelatedExplodeReversionDamping;
+        } else
+        {
+            UserMeshVisualizer.BlockKinectUpdate = true;
+            Noise.NewNoiseIntensity = GranRelatedTransitionReversionNoiseIntensity;
+            Noise.NoiseChangeDamping = GranRelatedTransitionReversionDamping;
+        }
     }
 
     void ApplySmoothing()
@@ -217,16 +254,15 @@ public class MeshTools : MonoBehaviour
 
     private void Update()
     {
-        //if (AnimateOutline)
-        //{
-        //    if (Mathf.Abs(Outline - NewOutline) > 0)
-        //    {
-        //        Outline = Outline + (NewOutline - Outline) / OutlineAnimationDamp;
-        //    }
-        //    var color = Renderer.material.GetColor("_OutlineColor");
-        //    color.a = Outline;
-        //    Renderer.material.SetColor("_OutlineColor", color);
-        //}
+        if (FadeInWhiteBlockout)
+        {
+            WhiteBlockoutController.FadeIn(WhiteBlockoutFadeInTime);
+            FadeInWhiteBlockout = false;
+        } else if (FadeOutWhiteBlockout)
+        {
+            WhiteBlockoutController.FadeOut(WhiteBlockoutFadeOutTime);
+            FadeOutWhiteBlockout = false;
+        }
 
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -237,11 +273,11 @@ public class MeshTools : MonoBehaviour
             ExplodeB();
         }
 
-        if (EnableGranRelatedAirsticksControl)
+        if (EnableGranRelatedAirsticksControl || EnableGranRelatedTransiton)
         {
             if (GranControl)
             {
-                if (EnableGranRelatedControlIntensity)
+                if (EnableGranRelatedControlIntensity || EnableGranRelatedTransiton)
                 {
                     Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, GranRelatedNoiseIntensity.x, GranRelatedNoiseIntensity.y);
                 }
@@ -357,13 +393,13 @@ public class MeshTools : MonoBehaviour
     void GranRelatedOn(AirSticks.Hand hand)
     {
         GranRelatedExplode(hand);
-        GranControl = true;
+        if (!EnableGranRelatedTransiton) GranControl = true;
     }
 
     void GranRelatedOff()
     {
-        GranControl = false;
         GranRelatedExplodeReversion();
+        if (!EnableGranRelatedTransiton) GranControl = false;
     }
 
     bool NoteOn = false;
