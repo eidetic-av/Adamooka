@@ -91,13 +91,19 @@ public class UserMeshVisualizer : MonoBehaviour
 
     public bool DoOrigin = false;
     public bool DoSetMedianVertexPosition = false;
-    public bool DoRight = false;
+
+    private bool DoRotate = false;
 
     public bool StartRotateAnimation = false;
     public bool StopRotateAnimation = true;
 
     [Range(-1, 1)]
-    public float RotationSlider = 0;
+    public float NewRotationSlider = 0;
+    private float RotationSlider = 0;
+    [Range(1, 30)]
+    public float RotationSliderDamping = 2;
+    public bool ControlRotationSliderByAirsticks = false;
+    public float MaxRotationAngle = 90f;
 
     void Start()
     {
@@ -151,7 +157,18 @@ public class UserMeshVisualizer : MonoBehaviour
             NewOffsetPosition = Vector3.zero;
             NewOffsetRotation = Vector3.zero;
         }
-        if (DoRight)
+
+        if (ControlRotationSliderByAirsticks)
+        {
+            var averageHandYRotation = (AirSticks.Right.EulerAngles.y + AirSticks.Left.EulerAngles.y) / 2;
+            NewRotationSlider = averageHandYRotation;
+        }
+        if (Mathf.Abs(NewRotationSlider - RotationSlider) > 0)
+        {
+            RotationSlider = RotationSlider + (NewRotationSlider - RotationSlider) / RotationSliderDamping;
+        }
+
+        if (DoRotate)
         {
             if (VertexAverageSnapshot.x == -99)
                 SetMedianVertexPosition();
@@ -162,7 +179,7 @@ public class UserMeshVisualizer : MonoBehaviour
             Parent.transform.eulerAngles = Vector3.zero;
             Parent.transform.position = Vector3.zero;
 
-            var rotateAngle = RotationSlider * 90;
+            var rotateAngle = RotationSlider * MaxRotationAngle;
             Parent.transform.RotateAround(VertexAverageSnapshot, Vector3.up, rotateAngle);
 
         } else
@@ -387,6 +404,7 @@ public class UserMeshVisualizer : MonoBehaviour
         AnimateUserRotation = true;
         OffsetRotationDampRate = 1;
         SetMedianVertexPosition();
+        DoRotate = true;
     }
 
     public void EndAnimateUserRotation()
@@ -399,6 +417,7 @@ public class UserMeshVisualizer : MonoBehaviour
             VertexAverageSnapshot = new Vector3(-99, 0, 0);
             AnimateRotationAngle = 0;
         }
+        DoRotate = false;
 
     }
 

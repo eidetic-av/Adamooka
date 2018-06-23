@@ -58,7 +58,21 @@ public class MeshTools : MonoBehaviour
     public NoiseAndSmoothing Noise = new NoiseAndSmoothing();
 
     public bool EnableExplode;
-    public bool EnableAirsticksControl;
+    public bool EnableDesmondAirsticksControl;
+
+    public bool EnableGranRelatedAirsticksControl;
+    public bool EnableGranRelatedControlIntensity;
+    public bool EnableGranRelatedControlSmoothing;
+    private bool GranControl;
+
+    public float GranRelatedExplodeRevestionDamping = 5f;
+    public Vector2 GranRelatedNoiseIntensity = new Vector2(-.3f, 5f);
+    public Vector2 GranRelatedSmoothing = new Vector2(0f, 5f);
+
+    public float GranRelatedLeftExplodeIntensity = 1f;
+    public float GranRelatedLeftExplodeDamping = 3f;
+    public float GranRelatedRightExplodeIntensity = 1f;
+    public float GranRelatedRightExplodeDamping = 3f;
 
     public Prototyping Prototyping;
 
@@ -92,9 +106,19 @@ public class MeshTools : MonoBehaviour
             LimitingMesh = true;
         }
 
+        
+        //Desmond
 
         AirSticks.Right.NoteOn += ExplodeA;
         AirSticks.Left.NoteOn += ExplodeB;
+
+        //Gran Related cuts
+
+        AirSticks.Right.NoteOn += () => GranRelatedOn(AirSticks.Hand.Right);
+        AirSticks.Left.NoteOn += () => GranRelatedOn(AirSticks.Hand.Left);
+
+        AirSticks.Right.NoteOff += GranRelatedOff;
+        AirSticks.Left.NoteOff += GranRelatedOff;
 
         MidiManager.OneFiveNine.Beep += BangOutline;
 
@@ -133,6 +157,27 @@ public class MeshTools : MonoBehaviour
             Noise.NoiseIntensity = explosionIntensity;
             Noise.NoiseChangeDamping = dampRate;
         }
+    }
+
+    void GranRelatedExplode(AirSticks.Hand hand)
+    {
+        if (hand == AirSticks.Hand.Left)
+        {
+            Noise.NewNoiseIntensity = 0.01f;
+            Noise.NoiseIntensity = GranRelatedLeftExplodeIntensity;
+            Noise.NoiseChangeDamping = GranRelatedLeftExplodeDamping;
+        } else if (hand == AirSticks.Hand.Right)
+        {
+            Noise.NewNoiseIntensity = 0.01f;
+            Noise.NoiseIntensity = GranRelatedRightExplodeIntensity;
+            Noise.NoiseChangeDamping = GranRelatedRightExplodeDamping;
+        }
+    }
+
+    void GranRelatedExplodeReversion()
+    {
+        Noise.NewNoiseIntensity = 0.01f;
+        Noise.NoiseChangeDamping = GranRelatedExplodeRevestionDamping;
     }
 
     void ApplySmoothing()
@@ -192,6 +237,22 @@ public class MeshTools : MonoBehaviour
             ExplodeB();
         }
 
+        if (EnableGranRelatedAirsticksControl)
+        {
+            if (GranControl)
+            {
+                if (EnableGranRelatedControlIntensity)
+                {
+                    Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, GranRelatedNoiseIntensity.x, GranRelatedNoiseIntensity.y);
+                }
+
+                if (EnableGranRelatedControlSmoothing)
+                {
+                    Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, GranRelatedSmoothing.x, GranRelatedSmoothing.y));
+                }
+            }
+        }
+
         //if (Input.GetKeyDown(KeyCode.Alpha0))
         //{
         //    Renderer.enabled = !Renderer.enabled;
@@ -239,7 +300,7 @@ public class MeshTools : MonoBehaviour
         //}
         //IridescenceUpdate();
 
-        if (EnableAirsticksControl)
+        if (EnableDesmondAirsticksControl)
         {
             Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, -.3f, .5f);
             Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, 0f, 5f));
@@ -291,6 +352,18 @@ public class MeshTools : MonoBehaviour
 
         // }
 
+    }
+
+    void GranRelatedOn(AirSticks.Hand hand)
+    {
+        GranRelatedExplode(hand);
+        GranControl = true;
+    }
+
+    void GranRelatedOff()
+    {
+        GranControl = false;
+        GranRelatedExplodeReversion();
     }
 
     bool NoteOn = false;

@@ -425,7 +425,7 @@ public class MidiManager : MonoBehaviour
     {
         if (AbletonState == 1)
         {
-            MeshTools.EnableAirsticksControl = false;
+            MeshTools.EnableDesmondAirsticksControl = false;
             // enable mesh renderer
             UserMeshRenderer.enabled = true;
             UserMeshRenderer.material = new UnityEngine.Material(ToonLit);
@@ -505,7 +505,7 @@ public class MidiManager : MonoBehaviour
         TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
         UserMeshRenderer.material = Wireframe;
         MeshTools.EnableExplode = false;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
         AbletonState = 6;
     }
 
@@ -514,7 +514,7 @@ public class MidiManager : MonoBehaviour
         Debug.Log("ExplodeEnable");
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
         AbletonState = 7;
     }
 
@@ -523,7 +523,7 @@ public class MidiManager : MonoBehaviour
         Debug.Log("ExplodeDisable");
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = false;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
         AbletonState = 8;
     }
 
@@ -532,7 +532,7 @@ public class MidiManager : MonoBehaviour
         Debug.Log("ExplodeRena");
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
         AbletonState = 9;
     }
 
@@ -540,7 +540,7 @@ public class MidiManager : MonoBehaviour
     {
         Debug.Log("DesmondBreak");
         MeshTools.EnableExplode = false;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
         UserMeshVisualizer.BlockKinectUpdate = true;
         AbletonState = 10;
     }
@@ -606,7 +606,7 @@ public class MidiManager : MonoBehaviour
         TrackerSceneFlippedOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
 
         MeshTools.EnableExplode = true;
-        MeshTools.EnableAirsticksControl = false;
+        MeshTools.EnableDesmondAirsticksControl = false;
         UserMeshVisualizer.BlockKinectUpdate = false;
 
 
@@ -621,7 +621,7 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.material = new UnityEngine.Material(Basic);
         UserMeshRenderer.material.SetColor("_EmissionColor", Color.yellow);
 
-        MeshTools.EnableAirsticksControl = false;
+        MeshTools.EnableDesmondAirsticksControl = false;
         MeshTools.EnableExplode = false;
         MeshTools.Noise.NoiseIntensity = 0.06f;
         MeshTools.Noise.NewNoiseIntensity = 0.06f;

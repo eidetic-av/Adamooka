@@ -9910,6 +9910,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ebefdae6758af9418077bc41aa60cba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  LogOSC: 0
 --- !u!114 &380649945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21282,13 +21283,19 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1184549874}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 350217bdfc7d7e445b233fac696aebcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   EnableExplode: 0
-  EnableAirsticksControl: 0
+  EnableDesmondAirsticksControl: 0
+  EnableGranRelatedAirsticksControl: 0
+  EnableGranRelatedControlIntensity: 0
+  EnableGranRelatedControlSmoothing: 0
+  GranRelatedExplodeRevestionDamping: 5
+  GranRelatedNoiseIntensity: {x: -0.3, y: 5}
+  GranRelatedSmoothing: {x: 0, y: 5}
   Prototyping: {fileID: 0}
   ActiveMaterial: 0
   AnimateOutline: 0
@@ -21301,7 +21308,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1184549874}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2dba1aa9cbd9a544b0875f9ebe900f5, type: 3}
+  m_Script: {fileID: 11500000, guid: fdab6a64d9578e740937a925933920ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   AutoPosition: 0
@@ -21319,21 +21326,23 @@ MonoBehaviour:
   BlockKinectUpdate: 0
   LimitToLeftHand: 0
   LimitToRightHand: 0
-  HandLimit: {x: 0.5, y: 0.1, z: 0.5}
-  Parent: {fileID: 1370444015}
+  HandLimit: {x: 0.1, y: 0.1, z: 0.1}
+  Parent: {fileID: 0}
   NewOffsetRotation: {x: 0, y: 0, z: 0}
   NewOffsetPosition: {x: 0, y: 0, z: 0}
   OffsetRotationBangAngle: 30
   OffsetRotationDampRate: 4
-  OffsetRotationShift: {x: 0, y: 0, z: 0.5}
+  OffsetRotationShift: {x: 0, y: 0, z: 1.5}
   VertexAverageSnapshot: {x: -99, y: 0, z: 0}
   TriggerAnimatesRotation: 0
   DoOrigin: 0
   DoSetMedianVertexPosition: 0
-  DoRight: 0
   StartRotateAnimation: 0
-  StopRotateAnimation: 0
-  RotationSlider: 0
+  StopRotateAnimation: 1
+  NewRotationSlider: 0
+  RotationSliderDamping: 8
+  ControlRotationSliderByAirsticks: 0
+  MaxRotationAngle: 90
 --- !u!23 &1184549878
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -27624,7 +27633,7 @@ MonoBehaviour:
   UserMesh: {fileID: 1184549874}
   MeshTools: {fileID: 1184549876}
   UserMeshRenderer: {fileID: 1184549878}
-  UserMeshVisualizer: {fileID: 1184549877}
+  UserMeshVisualizer: {fileID: 0}
   TrackerSceneOutputQuad: {fileID: 1852235743}
   TrackerSceneOutputQuadRenderer: {fileID: 1852235745}
   TrackerSceneFlippedOutputQuad: {fileID: 134072654}

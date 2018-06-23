@@ -13,7 +13,7 @@ public partial class OSCReceive : MonoBehaviour
 
     public static Dictionary<string, ServerLog> Servers = new Dictionary<string, ServerLog>();
 
-
+    public bool LogOSC = false;
 
     void Start()
     {
@@ -53,6 +53,20 @@ public partial class OSCReceive : MonoBehaviour
 
     private void RouteOSC(string[] address, List<object> data)
     {
+        if (LogOSC)
+        {
+            var logString = "";
+            for (int i = 0; i < address.Length; i++)
+            {
+                logString += address[i] + "/";
+            }
+            logString += "\n";
+            for (int i = 0; i < data.Count; i++)
+            {
+                logString += data.ToString() + ", ";
+            }
+            Debug.Log(logString);
+        }
         if (address[1] == "airsticks")
         {
             AirSticks.Stick targetStick = AirSticks.Left;
