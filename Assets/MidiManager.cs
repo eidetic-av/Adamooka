@@ -100,17 +100,36 @@ public class MidiManager : MonoBehaviour
             {
                 case Channel.Channel1:
                     {
-                        //OneFiveNine.Beep.Invoke();
+                        if (noteOnMessage.Pitch == Pitch.D2)
+                        {
+                            OneFiveNineCircleController.Instance.Beep = true;
+                        }
+                        break;
+                    }
+                case Channel.Channel2:
+                    {
+                        if (noteOnMessage.Pitch == Pitch.C2)
+                        {
+                            OneFiveNineCircleController.Instance.FlashNonagon = true;
+                        }
+                        break;
+                    }
+                case Channel.Channel3:
+                    {
+                        OneFiveNineCircleController instance = OneFiveNineCircleController.Instance;
+                        if (noteOnMessage.Pitch == Pitch.C2)
+                        {
+                            // Kick
+                            
+                        } else if (noteOnMessage.Pitch == Pitch.D2)
+                        {
+                            // Snare
+                        }
                         break;
                     }
                 case Channel.Channel4:
                     {
                         RouteHyphenMidi(noteOnMessage.Pitch);
-                        break;
-                    }
-                case Channel.Channel2:
-                    {
-                        //OneFiveNine.Bass.Invoke(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel14:
@@ -130,6 +149,11 @@ public class MidiManager : MonoBehaviour
                     }
             }
         });
+    }
+
+    private void RouteOneFiveNine(Pitch pitch)
+    {
+            SnakeController.Instance.Advance = true;
     }
 
     private void RouteDriftMidi(Pitch pitch)
@@ -579,7 +603,7 @@ public class MidiManager : MonoBehaviour
         MeshTools.Noise.SmoothingTimes = 2;
         MeshTools.Noise.NoiseIntensity = 0.05f;
         MeshTools.Noise.NewNoiseIntensity = 0.05f;
-        
+
         TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
         TrackerSceneFlippedOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
 
