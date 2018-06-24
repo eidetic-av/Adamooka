@@ -9,6 +9,8 @@ public class MidiManager : MonoBehaviour
     public string DeviceName = "rtpMIDI";
     InputDevice InputDevice;
 
+    public bool LogNoteOns = false;
+
     public int AbletonState = -1;
 
     public static class OneFiveNine
@@ -25,6 +27,7 @@ public class MidiManager : MonoBehaviour
     public WindZone RainParticlesWind;
     public GameObject UserParticles;
     public GameObject ParticleCamera;
+    public ParticleController HitParticlesController;
     public GameObject UserMesh;
     public MeshTools MeshTools;
     public Renderer UserMeshRenderer;
@@ -83,23 +86,31 @@ public class MidiManager : MonoBehaviour
             InputDevice.Open();
             InputDevice.StartReceiving(null);
             InputDevice.NoteOn += RouteNoteOn;
+            Debug.Log("Opened MIDI Device");
         }
     }
 
     private void RouteNoteOn(NoteOnMessage noteOnMessage)
     {
+        if (LogNoteOns) Debug.Log(noteOnMessage.Pitch);
+
         Threading.RunOnMain(() =>
         {
             switch (noteOnMessage.Channel)
             {
                 case Channel.Channel1:
                     {
-                        OneFiveNine.Beep.Invoke();
+                        //OneFiveNine.Beep.Invoke();
+                        break;
+                    }
+                case Channel.Channel4:
+                    {
+                        RouteHyphenMidi(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel2:
                     {
-                        OneFiveNine.Bass.Invoke(noteOnMessage.Pitch);
+                        //OneFiveNine.Bass.Invoke(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel14:
@@ -161,7 +172,6 @@ public class MidiManager : MonoBehaviour
 
     private void RouteElectricMidi(Pitch pitch)
     {
-        Debug.Log("pitch: " + pitch);
         switch (pitch)
         {
             case Pitch.CNeg1:
@@ -194,6 +204,12 @@ public class MidiManager : MonoBehaviour
                 LinesOut();
                 break;
         }
+    }
+
+    private void RouteHyphenMidi(Pitch pitch)
+    {
+        //Debug.Log(pitch.NoteNumber());
+        HitParticlesController.MidiHit(pitch);
     }
 
     private void RandomiseKaleidoscope()

@@ -317,7 +317,7 @@ public class UserForceController : MonoBehaviour
 
 
 	// returns the world- or camera-overlay joint position 
-	private Vector3 GetJointPosition(KinectManager manager, long userID, int iJoint)
+	public Vector3 GetJointPosition(KinectManager manager, long userID, int iJoint)
 	{
 		if (foregroundCamera) 
 		{
