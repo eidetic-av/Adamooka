@@ -40,6 +40,12 @@ public class OneFiveNineCircleController : MonoBehaviour {
     private bool SnareAffectOn = false;
     public float SnareOnBeepMinimum = 0.6f;
 
+    public bool Rotate = false;
+    public float RotationAngle = 10f;
+    public float RotationDamping = 5f;
+    private Vector2 Rotation = Vector2.zero;
+        
+
     void Start () {
         Instance = this;
 
@@ -115,6 +121,25 @@ public class OneFiveNineCircleController : MonoBehaviour {
                 mainModule.startSizeY = SnareRadius.x;
             }
         }
+
+        if (Rotate)
+        {
+            Rotation.y += RotationAngle;
+            Rotate = false;
+        }
+
+        if (Mathf.Abs(Rotation.x - Rotation.y) > 0)
+        {
+            Rotation.x = Rotation.x + (Rotation.y - Rotation.x) / RotationDamping;
+            transform.eulerAngles = new Vector3(0, 0, Rotation.x);
+        }
+    }
+
+    void DoRotate(float angle, float damping)
+    {
+        Rotate = true;
+        RotationAngle = angle;
+        RotationDamping = damping;
     }
 
     void KickOn()
