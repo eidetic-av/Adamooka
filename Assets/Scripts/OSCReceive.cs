@@ -108,6 +108,10 @@ public partial class OSCReceive : MonoBehaviour
                 var value = Convert.ToSingle(data[1].ToString());
                 targetStick.JoystickY = value;
             }
+            if (address[3] == "buttons")
+            {
+
+            }
         }
     }
 }

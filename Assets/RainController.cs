@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Midi;
 using System;
+using System.Diagnostics;
 
 public class RainController : MonoBehaviour
 {
@@ -34,6 +35,8 @@ public class RainController : MonoBehaviour
 
     public float RevertThreshold = 0.05f;
 
+    public Vector3 RotationMultiply = new Vector3(1f, 1f, 1f);
+
     float ShapeSize = 10f;
     float NewShapeSize = 10f;
     float ShapeSizeDamp = 1f;
@@ -43,7 +46,17 @@ public class RainController : MonoBehaviour
     public bool Revert;
     bool DoingHoneOff;
 
+    Stopwatch ReversionTimer = new Stopwatch();
+    public int ReversionMilliseconds = 750;
+
     public Action HoneCallback;
+
+    public bool HitOut = false;
+    public bool HitOutSecondStage = false;
+
+    public bool AirStickHoneOnHit = false;
+    private bool SetAirsticksHit = false;
+
 
     // Use this for initialization
     void Start()
@@ -53,11 +66,41 @@ public class RainController : MonoBehaviour
 
         //AirSticks.Right.NoteOn += HoneOn;
         //AirSticks.Right.NoteOff += HoneOff;
+        AirSticks.Right.NoteOn += DoHitOut;
+    }
+
+    void DoHitOut()
+    {
+        if (AirStickHoneOnHit)
+        {
+            SetAirsticksHit = true;
+        }
+    }
+
+    void Update()
+    {
+        if (SetAirsticksHit)
+        {
+            HitOut = true;
+            SetAirsticksHit = false;
+        }
     }
 
     // Update is called once per frame
     void LateUpdate()
     {
+        if (HitOut)
+        {
+            Hone = true;
+            HitOutSecondStage = true;
+            HitOut = false;
+        }
+        else if (HitOutSecondStage)
+        {
+            Revert = true;
+            HitOutSecondStage = false;
+        }
+
         if (Input.GetKeyDown(KeyCode.N))
         {
             HoneOn();
@@ -75,9 +118,9 @@ public class RainController : MonoBehaviour
         if (Control)
         {
             Wind.transform.localRotation = Quaternion.Euler(
-                AirSticks.Right.EulerAngles.x * 200,
-                AirSticks.Right.EulerAngles.y * 200,
-                AirSticks.Right.EulerAngles.z * 200
+                (AirSticks.Right.EulerAngles.x * 200) * RotationMultiply.x,
+                (AirSticks.Right.EulerAngles.y * 200) * RotationMultiply.y,
+                (AirSticks.Right.EulerAngles.z * 200) * RotationMultiply.z
             );
         }
         if (Hone)
@@ -145,6 +188,7 @@ public class RainController : MonoBehaviour
                 }
                 if (positionsDamped == 0)
                 {
+                    Revert = true;
                     if (HoneCallback != null)
                     {
                         HoneCallback.Invoke();
@@ -167,9 +211,15 @@ public class RainController : MonoBehaviour
             }
             ParticleSystem.SetParticles(ParticleArray, ParticleArray.Length);
             // if we are not damping any more particles, revert all the default settings
-            if (positionsDamped == 0)
+            //if (positionsDamped == 0)
+            //{
+            //    RevertToDefault(ParticleArray);
+            //}
+            // Timer based instead of position based
+            if (ReversionTimer.ElapsedMilliseconds >= ReversionMilliseconds)
             {
                 RevertToDefault(ParticleArray);
+                ReversionTimer.Stop();
             }
         }
     }
@@ -190,6 +240,8 @@ public class RainController : MonoBehaviour
         forcesModule.multiplier = OriginalParticleForceMultiplier;
         var mainModule = ParticleSystem.main;
         mainModule.startLifetime = OriginalLifetime;
+
+        ReversionTimer.Restart();
     }
 
     void RevertToDefault(ParticleSystem.Particle[] currentParticles)

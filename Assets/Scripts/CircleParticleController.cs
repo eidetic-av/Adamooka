@@ -9,11 +9,20 @@ using static UnityEngine.ParticleSystem;
 
 public class CircleParticleController : MonoBehaviour
 {
+    public static CircleParticleController Instance;
 
     public GameObject ParticlesObject;
     public ParticleSystem ParticleSystem;
 
+    public bool Visible = false;
+    public bool Expanded = false;
+    public bool Increasing = false;
+    public float IncreaseRate = 0.01f;
+    private Vector2 ExpandedScale = new Vector2(1f, 1f);
+    public float ExpandedScaleDamping = 20f;
+
     public bool EmitConstantly = true;
+    public bool CentrePosition = false;
 
     public bool TrackAirsticks = false;
 
@@ -34,25 +43,42 @@ public class CircleParticleController : MonoBehaviour
 
 void Start()
     {
+        Instance = this;
         AirSticks.Right.NoteOn += () => EnableEmission();
         AirSticks.Right.NoteOff += () => DisableEmission();
-
+        ParticleSystem.gameObject.SetActive(false);
     }
 
     void EnableEmission()
     {
         EmissionEnabled = true;
-        Debug.Log(EmissionEnabled);
     }
 
     void DisableEmission()
     {
         EmissionEnabled = false;
-        Debug.Log(EmissionEnabled);
     }
 
     void Update()
     {
+        ParticleSystem.gameObject.SetActive(Visible);
+
+        if (Expanded)
+        {
+            if (!Increasing)
+            {
+                ExpandedScale.y = 1f;
+            } else
+            {
+                ExpandedScale.y += IncreaseRate;
+            }
+            CentrePosition = true;
+            EmitConstantly = true;
+        } else
+        {
+            ExpandedScale.y = 0.01f;
+        }
+
         if (TrackAirsticks)
         {
             var leftPosition = new Vector3(
@@ -68,11 +94,20 @@ void Start()
             var averageX = (leftPosition.x + rightPosition.x) / 2;
             var averageY = (leftPosition.x + rightPosition.x) / 2;
             var averageZ = (leftPosition.x + rightPosition.x) / 2;
-            
-            ParticleSystem.transform.position = new Vector3(
-                    (averageX * SpherePositionMultiplier.x) + SpherePositionOffset.x,
-                    (averageY * SpherePositionMultiplier.y) + SpherePositionOffset.y,
-                    (averageZ * SpherePositionMultiplier.z) + SpherePositionOffset.z);
+
+            if (!CentrePosition)
+            {
+                ParticleSystem.transform.position = new Vector3(
+                        (averageX * SpherePositionMultiplier.x) + SpherePositionOffset.x,
+                        (averageY * SpherePositionMultiplier.y) + SpherePositionOffset.y,
+                        (averageZ * SpherePositionMultiplier.z) + SpherePositionOffset.z);
+            } else
+            {
+                ParticleSystem.transform.position = new Vector3(
+                        SpherePositionOffset.x,
+                        SpherePositionOffset.y,
+                        SpherePositionOffset.z);
+            }
 
             if (ControlSphereSize)
             {
@@ -83,7 +118,16 @@ void Start()
                 outputSize.z = Mathf.Abs(rightPosition.z - leftPosition.z);
 
                 var shapeModule = ParticleSystem.shape;
-                shapeModule.scale = new Vector3(outputSize.x * SphereSizeMultiplier.x, outputSize.y * SphereSizeMultiplier.y, outputSize.z * SphereSizeMultiplier.z);
+                if (!Expanded)
+                    shapeModule.scale = new Vector3(outputSize.x * SphereSizeMultiplier.x, outputSize.y * SphereSizeMultiplier.y, outputSize.z * SphereSizeMultiplier.z);
+                else
+                {
+                    if (ExpandedScale.x != ExpandedScale.y)
+                    {
+                        ExpandedScale.x = ExpandedScale.x + (ExpandedScale.y - ExpandedScale.x) / ExpandedScaleDamping;
+                    }
+                    shapeModule.scale = new Vector3(1 * ExpandedScale.x, 1 * ExpandedScale.x, 2 * ExpandedScale.x);
+                }
             }
 
             if (EmissionEnabled || EmitConstantly) ParticleSystem.Emit(ParticleEmissionCount);

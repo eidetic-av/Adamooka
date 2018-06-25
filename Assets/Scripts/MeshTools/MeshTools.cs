@@ -81,6 +81,7 @@ public class MeshTools : MonoBehaviour
     public bool EnableGranRelatedControlIntensity;
     public bool EnableGranRelatedControlSmoothing;
     private bool GranControl;
+    public bool EnableGranRelatedExplode = false;
 
     public float GranRelatedExplodeReversionDamping = 5f;
     public Vector2 GranRelatedNoiseIntensity = new Vector2(-.3f, 5f);
@@ -197,6 +198,7 @@ public class MeshTools : MonoBehaviour
 
     void GranRelatedExplode(AirSticks.Hand hand)
     {
+        if (!EnableGranRelatedExplode) return;
         if (!EnableGranRelatedTransition)
         {
             if (hand == AirSticks.Hand.Left)

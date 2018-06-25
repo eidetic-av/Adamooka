@@ -189,15 +189,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Wind: {fileID: 783311388}
   Particles: {fileID: 1562466829}
-  Scaling: {x: 4, y: 4, z: 0.1}
-  HonedOffset: {x: 2.42, y: -4.58, z: 0.81}
-  HoneDampingSpeed: {x: 5, y: 1.2}
-  HoneDampingSpeedDamp: 8
-  RevertDamping: 5
+  Scaling: {x: 2.5, y: 2.5, z: 0}
+  HonedOffset: {x: 0, y: -3, z: 0}
+  HoneDampingSpeed: {x: 1, y: 1}
+  HoneDampingSpeedDamp: 1
+  RevertDamping: 10
   RevertThreshold: 0.05
+  RotationMultiply: {x: 0, y: -0.6, z: 0}
   Control: 1
   Hone: 0
   Revert: 0
+  ReversionMilliseconds: 750
+  HitOut: 0
+  HitOutSecondStage: 0
+  AirStickHoneOnHit: 1
 --- !u!1 &41210188
 GameObject:
   m_ObjectHideFlags: 0
@@ -14442,7 +14447,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1031702107}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!131 &188435788
 GUITexture:
@@ -14475,7 +14480,7 @@ GameObject:
   - component: {fileID: 191773798}
   - component: {fileID: 191773797}
   m_Layer: 10
-  m_Name: Plane
+  m_Name: LightPlane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14565,7 +14570,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &232447493
 Transform:
   m_ObjectHideFlags: 0
@@ -14593,6 +14598,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ParticlesObject: {fileID: 1715864765}
   ParticleSystem: {fileID: 1715864768}
+  ConstantEmission: 0
   EmissionEnabled: 1
   TrackAirsticks: 1
   LeftHandOffset: {x: 0, y: 0, z: -5}
@@ -19422,7 +19428,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff26db721962cdf4a8edcdfa9a767d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  profile: {fileID: 11400000, guid: 4c540aadbb0a8b24c8ab04edd8a2ea98, type: 2}
+  profile: {fileID: 11400000, guid: fc5b2cda7ec7ae64695f2c7d02c9cd33, type: 2}
 --- !u!114 &429068173
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19449,7 +19455,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &456211263
 Transform:
   m_ObjectHideFlags: 0
@@ -19477,7 +19483,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ParticlesObject: {fileID: 70111417}
   ParticleSystem: {fileID: 70111420}
+  Visible: 0
+  Expanded: 0
+  Increasing: 0
+  IncreaseRate: 0.01
+  ExpandedScaleDamping: 1
   EmitConstantly: 1
+  CentrePosition: 0
   TrackAirsticks: 1
   LeftMultiplier: {x: 2, y: 2, z: 1}
   RightMultiplier: {x: 2, y: 2, z: 1}
@@ -19643,6 +19655,72 @@ MonoBehaviour:
   ControlHueAndSaturationWithAirsticks: 1
   Hue: 0
   Saturation: 0
+--- !u!1 &559110514
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 559110515}
+  - component: {fileID: 559110516}
+  m_Layer: 9
+  m_Name: UserLight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &559110515
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 559110514}
+  m_LocalRotation: {x: 0.14804262, y: -0.009499462, z: 0.02904654, w: 0.9885087}
+  m_LocalPosition: {x: -0.000000003733762, y: 0.58, z: 0.000000017660533}
+  m_LocalScale: {x: 1, y: 0.9999999, z: 0.9999999}
+  m_Children: []
+  m_Father: {fileID: 1031702107}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 17.052, y: -0.61, z: 3.275}
+--- !u!108 &559110516
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 559110514}
+  m_Enabled: 0
+  serializedVersion: 8
+  m_Type: 0
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Intensity: 5
+  m_Range: 10
+  m_SpotAngle: 30
+  m_CookieSize: 10
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
 --- !u!1 &559615850
 GameObject:
   m_ObjectHideFlags: 0
@@ -20084,7 +20162,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &716629293
 Transform:
   m_ObjectHideFlags: 0
@@ -30065,7 +30143,7 @@ Transform:
   - {fileID: 1111377442}
   - {fileID: 1050815421}
   m_Father: {fileID: 1031702107}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &962114191
 MonoBehaviour:
@@ -34811,13 +34889,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1031702107}
+  - component: {fileID: 1031702108}
   m_Layer: 9
   m_Name: TrackerScene
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1031702107
 Transform:
   m_ObjectHideFlags: 0
@@ -34829,6 +34908,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1973977056}
+  - {fileID: 559110515}
   - {fileID: 1370444016}
   - {fileID: 1317965349}
   - {fileID: 962114190}
@@ -34838,6 +34918,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1031702108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1031702106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6711e40ccf76a774ea6ccaa5b1a4fc69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DisableKinectUpdate: 0
+  EnableKinectUpdate: 0
+  DisableUserRender: 0
+  EnableUserRender: 0
+  ActivateClones: 0
+  TrackerOutputEffector: {fileID: 1852235747}
+  CycleCloneColours: 0
 --- !u!1 &1050815420
 GameObject:
   m_ObjectHideFlags: 0
@@ -35613,7 +35711,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1184549874}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.75, z: 4.2}
+  m_LocalPosition: {x: 0, y: -1.9, z: 4.2}
   m_LocalScale: {x: 1.8, y: 1.6, z: 1.4}
   m_Children:
   - {fileID: 716629293}
@@ -35649,6 +35747,7 @@ MonoBehaviour:
   EnableGranRelatedAirsticksControl: 0
   EnableGranRelatedControlIntensity: 0
   EnableGranRelatedControlSmoothing: 0
+  EnableGranRelatedExplode: 0
   GranRelatedExplodeReversionDamping: 5
   GranRelatedNoiseIntensity: {x: -0.1, y: 0.1}
   GranRelatedSmoothing: {x: 0, y: 0}
@@ -35732,7 +35831,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: 02fbe36bcc0a74a4182157f8ae4fc55c, type: 2}
+  - {fileID: 2100000, guid: ccdbf630bdec9e84ba7e05fb98892e17, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -40638,24 +40737,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ParticleSystem: {fileID: 1304381464}
+  ActivateScene: 0
+  HideRings: 1
   Beep: 0
   AlphaDamping: 15
   NonagonRenderer: {fileID: 1596840407}
-  FlashNonagon: 0
+  FlashNonagon: 1
   NonagonDamping: 22
   AlphaAnimation: {x: 1, y: 0.18}
   KickLightDamping: 30
   KickLightOffDamping: 20
   MinLight: 0.5
   MaxLight: 1
-  SendTrackingToSceneLight: 1
+  ResetSceneLight: 1
+  SendTrackingToSceneLight: 0
   HueMapping: {x: -1, y: 1}
   SaturationMapping: {x: 1, y: -1}
-  SendSnareToParticles: 1
-  SnareMapping: {x: 0.8, y: 20}
+  SendSnareToParticles: 0
+  SnareMapping: {x: 0.8, y: 5}
   SnareOnDamping: 3
   SnareOffDamping: 5
   SnareOnBeepMinimum: 0.8
+  Rotate: 0
+  RotationAngle: 10
+  RotationDamping: 5
 --- !u!1 &1317965348
 GameObject:
   m_ObjectHideFlags: 0
@@ -40684,7 +40789,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1031702107}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1317965351
 MonoBehaviour:
@@ -40844,7 +40949,7 @@ Transform:
   m_Children:
   - {fileID: 1184549875}
   m_Father: {fileID: 1031702107}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1374984593
 GameObject:
@@ -40906,7 +41011,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1031702107}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &1377116444
 MeshRenderer:
@@ -46108,7 +46213,7 @@ ParticleSystemRenderer:
   m_ReflectionProbeUsage: 0
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: c9e6294c9d11cb8d11006bf944295342, type: 2}
+  - {fileID: 2100000, guid: 02fbe36bcc0a74a4182157f8ae4fc55c, type: 2}
   - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -46719,7 +46824,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 0.3
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -60499,7 +60604,7 @@ MonoBehaviour:
   LogLeftNoteEvents: 0
   LogRightNoteEvents: 0
   CloningActive: 0
-  CloneDistance: 0.442
+  CloneDistance: 0.655
   CloneThreshold: 0.05
   CloneColors:
   - {r: 1, g: 0.1882353, b: 0.70980394, a: 1}
@@ -60515,6 +60620,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1859617631}
+  - component: {fileID: 1859617632}
   m_Layer: 0
   m_Name: ParticleScene
   m_TagString: Untagged
@@ -60545,6 +60651,27 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1859617632
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1859617630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235cb0bf3fe2c054c8696712c1c8bea7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IntroVisuals: 0
+  IncreaseExpandCircle: 0
+  EnableRods: 0
+  DisableRods: 0
+  KickAndSnareWithRing: 0
+  Breakdown: 0
+  OneFiveNineFull: 0
+  StartOneFiveNineOut: 0
+  OneFiveNineOut: 1
+  ActivateRain: 0
 --- !u!1 &1870738319
 GameObject:
   m_ObjectHideFlags: 0
@@ -65721,7 +65848,7 @@ Transform:
   - {fileID: 1852235744}
   - {fileID: 134072655}
   m_Father: {fileID: 1031702107}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2125584028
 MonoBehaviour:

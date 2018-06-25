@@ -6,6 +6,8 @@ using System.Linq;
 
 public class UserMeshVisualizer : MonoBehaviour
 {
+    public static UserMeshVisualizer Instance;
+
     [Tooltip("Auto position the UserMesh object and a Camera (set below) based on the height of the camera.")]
     public bool AutoPosition = false;
     private bool PerformedAutoPosition = false;
@@ -107,6 +109,7 @@ public class UserMeshVisualizer : MonoBehaviour
 
     void Start()
     {
+        Instance = this;
         manager = KinectManager.Instance;
         Parent = GameObject.Find("Users");
 
