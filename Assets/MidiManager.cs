@@ -380,7 +380,7 @@ public class MidiManager : MonoBehaviour
             case Pitch.DSharp2:
                 if (AbletonState != 3)
                     // Activate clone scene
-                    ShowClones();
+                    TrackerSceneController.Instance.ActivateClones = true;
                 else
                     // Cycle colours
                     TrackerOutputEffector.CycleCloneColours();
@@ -576,6 +576,7 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
         MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = true;
         AbletonState = 7;
     }
 
@@ -585,6 +586,7 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = false;
         MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = false;
         AbletonState = 8;
     }
 
@@ -594,6 +596,7 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
         MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = true;
         AbletonState = 9;
     }
 

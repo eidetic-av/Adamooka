@@ -14675,7 +14675,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ebefdae6758af9418077bc41aa60cba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LogOSC: 0
+  LogRecievedAddresses: 0
+  LogHandPosition: 0
 --- !u!114 &380649945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34896,7 +34897,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1031702107
 Transform:
   m_ObjectHideFlags: 0
@@ -41283,7 +41284,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1475929155
 Transform:
   m_ObjectHideFlags: 0
@@ -60670,7 +60671,7 @@ MonoBehaviour:
   Breakdown: 0
   OneFiveNineFull: 0
   StartOneFiveNineOut: 0
-  OneFiveNineOut: 1
+  OneFiveNineOut: 0
   ActivateRain: 0
 --- !u!1 &1870738319
 GameObject:
@@ -61361,8 +61362,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 1000
-      minScalar: 1000
+      scalar: 2
+      minScalar: 0.5
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -63754,7 +63755,7 @@ ParticleSystem:
     strength:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.1
+      scalar: 0.5
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -65011,7 +65012,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 3
       scalar: 0.0001
-      minScalar: 0.0001
+      minScalar: 0.5
       maxCurve:
         serializedVersion: 2
         m_Curve:
