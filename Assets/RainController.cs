@@ -24,8 +24,17 @@ public class RainController : MonoBehaviour
 
     bool OriginalNoiseEnabled;
 
+    public bool RadialModifier = false;
+    [Range(-2f, 2f)]
+    public float RadialModifierIntesity = 0f;
+
+    public KinectInterop.JointType RadialOriginJoint;
+    public Vector3 JointScaling;
+    public Vector3 JointOffset;
+
     public Vector3 Scaling = new Vector3(0, 0, 0);
     public Vector3 HonedOffset = new Vector3(0, 0, 0);
+
 
     float HoneDamping = 10f;
     public Vector2 HoneDampingSpeed = new Vector2(5f, 1f);
@@ -53,11 +62,26 @@ public class RainController : MonoBehaviour
 
         //AirSticks.Right.NoteOn += HoneOn;
         //AirSticks.Right.NoteOff += HoneOff;
+
+        ParticleSystem = Particles.GetComponent<ParticleSystem>();
     }
 
     // Update is called once per frame
     void LateUpdate()
     {
+        if (RadialModifier)
+        {
+            var manager = KinectManager.Instance;
+            var origin = manager.GetJointPosition(manager.GetUserIdByIndex(0), (int)RadialOriginJoint);
+            var velocityModule = ParticleSystem.velocityOverLifetime;
+
+            velocityModule.orbitalOffsetX = (origin.x * JointScaling.x) + JointOffset.x;
+            velocityModule.orbitalOffsetY = (origin.y * JointScaling.y) + JointOffset.y;
+            velocityModule.orbitalOffsetZ = (origin.z * JointScaling.z) + JointOffset.z;
+
+            velocityModule.radialMultiplier = RadialModifierIntesity;
+
+        }
         if (Input.GetKeyDown(KeyCode.N))
         {
             HoneOn();
@@ -89,7 +113,6 @@ public class RainController : MonoBehaviour
 
                 if (ParticleArray == null)
                 {
-                    ParticleSystem = Particles.GetComponent<ParticleSystem>();
                     ParticleArray = new ParticleSystem.Particle[ParticleSystem.main.maxParticles];
 
                     // and stop emission and forces

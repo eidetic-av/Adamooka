@@ -41,6 +41,8 @@ public class UserMeshVisualizer : MonoBehaviour
 
     public Mesh Mesh;
 
+    public bool OnlyComputeTrackedUsers = false;
+
     public bool DisableMeshUpdate = false;
     public bool BlockKinectUpdate = false;
 
@@ -239,7 +241,7 @@ public class UserMeshVisualizer : MonoBehaviour
         // get kinect-to-world matrix
         kinectToWorld = manager.GetKinectToWorldMatrix();
 
-        if (playerIndex >= 0)
+        if (playerIndex >= 0 && OnlyComputeTrackedUsers == false)
         {
 
             long lastUserId = userId;
