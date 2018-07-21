@@ -10,6 +10,10 @@ public class OneFiveNineCircleController : MonoBehaviour {
 
     public ParticleSystem ParticleSystem;
 
+    public bool ActivateScene = false;
+
+    public bool HideRings = true;
+
     public bool Beep = false;
     public float AlphaDamping = 4f;
 
@@ -26,7 +30,8 @@ public class OneFiveNineCircleController : MonoBehaviour {
     public float KickLightOffDamping = 20f;
     public float MinLight = 0f;
     public float MaxLight = 1f;
-    
+
+    public bool ResetSceneLight = false;
     public bool SendTrackingToSceneLight = false;
     public Vector2 HueMapping = new Vector2(-1, 1);
     public Vector2 SaturationMapping = new Vector2(-1, 1);
@@ -57,6 +62,21 @@ public class OneFiveNineCircleController : MonoBehaviour {
     }
 	
 	void Update () {
+
+        if (ActivateScene)
+        {
+            HideRings = false;
+            Beep = true;
+            FlashNonagon = true;
+            SendTrackingToSceneLight = true;
+            ResetSceneLight = false;
+            SendSnareToParticles = true;
+            ActivateScene = false;
+            CircleParticleController.Instance.Visible = false;
+            CircleParticleController.Instance.Expanded = true;
+            CircleParticleController.Instance.ParticleEmissionCount = 500;
+        }
+
 		if (Beep)
         {
             Alpha.x = AlphaAnimation.x;
@@ -74,6 +94,14 @@ public class OneFiveNineCircleController : MonoBehaviour {
             NonagonAlpha.x = 1f;
             NonagonAlpha.y = 0f;
             FlashNonagon = false;
+        }
+
+        if (HideRings)
+        {
+            var mainModule = ParticleSystem.main;
+            mainModule.startColor = new Color(1, 1, 1, 0);
+            Alpha.y = 0;
+            NonagonAlpha.y = 0f;
         }
 
         if (Mathf.Abs(Alpha.y - Alpha.x) > 0)
@@ -109,6 +137,13 @@ public class OneFiveNineCircleController : MonoBehaviour {
             SceneLightController.Instance.Hue = hue;
             SceneLightController.Instance.Saturation = saturation;
 
+        }
+
+        if (ResetSceneLight)
+        {
+            SceneLightController.Instance.SetValue(1f, 0f, 1f);
+            SceneLightController.Instance.Hue = 0;
+            SceneLightController.Instance.Saturation = 0;
         }
 
         if (SendSnareToParticles)

@@ -6,6 +6,8 @@ using UnityEngine;
 public class MidiManager : MonoBehaviour
 {
 
+    public static MidiManager Instance;
+
     public string DeviceName = "rtpMIDI";
     InputDevice InputDevice;
 
@@ -61,6 +63,8 @@ public class MidiManager : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        Instance = this;
+
         ToonLit = Resources.Load<UnityEngine.Material>("ToonLit");
         BlackOcclusion = Resources.Load<UnityEngine.Material>("BlackOcclusion");
         Wireframe = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
@@ -102,6 +106,10 @@ public class MidiManager : MonoBehaviour
                     {
                         if (noteOnMessage.Pitch == Pitch.D2)
                         {
+                            if (RipParticleController.Instance.TrackAirsticks == true)
+                            {
+                                OneFiveNineCircleController.Instance.ActivateScene = true;
+                            }
                             OneFiveNineCircleController.Instance.Beep = true;
                         }
                         break;
@@ -359,6 +367,7 @@ public class MidiManager : MonoBehaviour
             case Pitch.E2:
                 // Rain
                 ActivateRainState();
+                ParticleSceneController.Instance.OneFiveNineOut = true;
                 break;
             case Pitch.E1:
                 // SuckRain
@@ -366,12 +375,12 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.D2:
                 // Clone transition
-                ExplodeMeshBeforeClones();
+                PreClones();
                 break;
             case Pitch.DSharp2:
                 if (AbletonState != 3)
                     // Activate clone scene
-                    ShowClones();
+                    TrackerSceneController.Instance.ActivateClones = true;
                 else
                     // Cycle colours
                     TrackerOutputEffector.CycleCloneColours();
@@ -382,11 +391,10 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.F2:
                 if (AbletonState != 5 && AbletonState < 6)
-                    // stop producing rain particles
-                    StopRain();
+                    PreDesmond();
                 else if (AbletonState == 5)
                     // activate wireframe scene
-                    ShowWireframe();
+                    ShowDesmond();
                 else if (AbletonState == 6)
                     WireframeExplodeEnable();
                 else if (AbletonState == 7)
@@ -439,7 +447,7 @@ public class MidiManager : MonoBehaviour
         DriftParticles.SetActive(false);
     }
 
-    void ActivateRainState()
+    public void ActivateRainState()
     {
         ClearAllStates();
         RainParticles.SetActive(true);
@@ -450,31 +458,33 @@ public class MidiManager : MonoBehaviour
         AbletonState = 0;
     }
 
-    void SuckRain()
+    public void SuckRain()
     {
         if (AbletonState == 0)
         {
             var rainController = RainParticles.GetComponent<RainController>();
+            rainController.HoneDampingSpeed = new Vector2(5, 5);
+            rainController.HoneDampingSpeedDamp = 5f;
             rainController.Hone = true;
         }
 
         AbletonState = 1;
     }
 
-    void ExplodeMeshBeforeClones()
+    public void PreClones()
     {
         if (AbletonState == 1)
         {
             MeshTools.EnableDesmondAirsticksControl = false;
             // enable mesh renderer
             UserMeshRenderer.enabled = true;
-            UserMeshRenderer.material = new UnityEngine.Material(ToonLit);
-            // set it to red
-            TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 0, 0, 1));
+            //UserMeshRenderer.material = new UnityEngine.Material(ToonLit);
+            //// set it to red
+            //TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 0, 0, 1));
 
-            // and explode it
-            MeshTools.EnableExplode = true;
-            MeshTools.ExplodeA();
+            //// and explode it
+            //MeshTools.EnableExplode = true;
+            //MeshTools.ExplodeA();
 
             // disable rain
             RainParticles.GetComponent<RainController>().Control = false;
@@ -484,23 +494,33 @@ public class MidiManager : MonoBehaviour
         AbletonState = 2;
     }
 
-    void ShowClones()
+    public void ShowClones()
     {
         // enable mesh renderer
         UserMeshRenderer.enabled = true;
-        // and set the base output layer as occlusion with black tint
-        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(0, 0, 0, 1));
+        TrackerOutputEffector.CloningActive = false;
+
+        //MeshTools.EnableExplode = false;
 
         // add some clones to the scene
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             TrackerOutputEffector.InstantiateClone(AirSticks.Hand.Left);
             TrackerOutputEffector.InstantiateClone(AirSticks.Hand.Right);
         }
 
-        TrackerOutputEffector.CloningActive = true;
+        // and set the base output layer as occlusion with black tint
+        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(0, 0, 0, 1));
+        TrackerSceneController.Instance.ActivateClones = true;
 
-        MeshTools.EnableExplode = false;
+        // set the mesh deformation levels
+        var meshTools = GameObject.Find("UserMesh").GetComponent<MeshTools>();
+        meshTools.Noise.NewNoiseIntensity = 0;
+        meshTools.Noise.NoiseIntensity = 0;
+        meshTools.Noise.SmoothingTimes = 1;
+
+        // activate the UserLight
+        GameObject.Find("UserLight").GetComponent<Light>().enabled = true;
 
         AbletonState = 3;
     }
@@ -510,25 +530,26 @@ public class MidiManager : MonoBehaviour
         TrackerOutputEffector.HideClones(AirSticks.Hand.Left);
         TrackerOutputEffector.HideClones(AirSticks.Hand.Right);
         TrackerOutputEffector.CloningActive = false;
-        UserMeshVisualizer.BlockKinectUpdate = true;
-        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 0, 0, 1));
+        //UserMeshVisualizer.Instance.BlockKinectUpdate = true;
 
-        RainParticles.SetActive(true);
-        var RainController = RainParticles.GetComponent<RainController>();
-        RainController.Control = true;
-        RainController.Revert = true;
-        RainController.RevertDamping = 10f;
+        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(0, 0, 0, 1));
+
+        //RainParticles.SetActive(true);
+        //var RainController = RainParticles.GetComponent<RainController>();
+        //RainController.Control = true;
+        //RainController.Revert = true;
+        //RainController.RevertDamping = 10f;
 
         ParticleCamera.SetActive(true);
 
         AbletonState = 4;
     }
 
-    void StopRain()
+    void PreDesmond()
     {
-        Debug.Log("StopRain");
-        var emissionModule = RainParticles.GetComponentInChildren<ParticleSystem>().emission;
-        emissionModule.rateOverTime = 0;
+        Debug.Log("PreDesmond");
+        //var emissionModule = RainParticles.GetComponentInChildren<ParticleSystem>().emission;
+        //emissionModule.rateOverTime = 0;
         AbletonState = 5;
     }
 
@@ -537,11 +558,11 @@ public class MidiManager : MonoBehaviour
         RainParticles.SetActive(false);
     }
 
-    void ShowWireframe()
+    void ShowDesmond()
     {
-        Debug.Log("ShowWireframe");
+        Debug.Log("ShowDesmond");
         UserMeshRenderer.enabled = true;
-        UserMeshVisualizer.BlockKinectUpdate = false;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = false;
         TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
         UserMeshRenderer.material = Wireframe;
         MeshTools.EnableExplode = false;
@@ -555,6 +576,7 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
         MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = true;
         AbletonState = 7;
     }
 
@@ -564,6 +586,7 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = false;
         MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = false;
         AbletonState = 8;
     }
 
@@ -573,6 +596,7 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
         MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = true;
         AbletonState = 9;
     }
 
@@ -629,7 +653,7 @@ public class MidiManager : MonoBehaviour
     void TransitionOutOfHeifen()
     {
         RainParticles.GetComponent<RainController>().Revert = true;
-        StopRain();
+        PreDesmond();
     }
 
 

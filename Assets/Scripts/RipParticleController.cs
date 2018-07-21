@@ -10,10 +10,13 @@ using static UnityEngine.ParticleSystem;
 public class RipParticleController : MonoBehaviour
 {
 
+    public static RipParticleController Instance;
+
     public GameObject ParticlesObject;
     public ParticleSystem ParticleSystem;
     private Renderer Renderer;
 
+    public bool ConstantEmission = false;
     public bool EmissionEnabled = false;
 
     public bool TrackAirsticks = true;
@@ -41,6 +44,7 @@ public class RipParticleController : MonoBehaviour
 
     void Start()
     {
+        Instance = this;
         AirSticks.Right.NoteOn += () => EnableEmission();
         AirSticks.Right.NoteOff += () => DisableEmission();
 
@@ -50,13 +54,11 @@ public class RipParticleController : MonoBehaviour
     void EnableEmission()
     {
         EmissionEnabled = true;
-        Debug.Log(EmissionEnabled);
     }
 
     void DisableEmission()
     {
         EmissionEnabled = false;
-        Debug.Log(EmissionEnabled);
     }
 
     void Update()
@@ -67,6 +69,7 @@ public class RipParticleController : MonoBehaviour
             SetColor = false;
         }
 
+        if (ConstantEmission) EmissionEnabled = true;
         if (TrackAirsticks)
         {
             Vector3 modulatedScale = BaseHandScale;
