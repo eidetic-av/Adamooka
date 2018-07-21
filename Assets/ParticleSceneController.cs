@@ -42,7 +42,7 @@ public class ParticleSceneController : MonoBehaviour
         else if (IncreaseExpandCircle)
         {
             CircleParticleController.Instance.Expanded = true;
-            CircleParticleController.Instance.Increasing = true;
+            //CircleParticleController.Instance.Increasing = true;
             IncreaseExpandCircle = false;
         }
         else if (EnableRods)

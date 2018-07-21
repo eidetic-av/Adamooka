@@ -1,6 +1,7 @@
 ﻿using Eidetic.Unity.Utility;
 using Midi;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MidiManager : MonoBehaviour
@@ -60,6 +61,8 @@ public class MidiManager : MonoBehaviour
     bool ExitTrackerQuad = false;
     float ExitTime = 0f;
 
+    public Dictionary<String, ParticleSystem> RingKitSystems;
+
     // Use this for initialization
     void Start()
     {
@@ -92,6 +95,14 @@ public class MidiManager : MonoBehaviour
             InputDevice.NoteOn += RouteNoteOn;
             Debug.Log("Opened MIDI Device");
         }
+
+        RingKitSystems = new Dictionary<string, ParticleSystem>();
+        var ringKitParent = GameObject.Find("RingKit");
+        var systems = ringKitParent.GetComponentsInChildren<ParticleSystem>();
+        foreach(var system in systems)
+        {
+            RingKitSystems.Add(system.gameObject.name, system);
+        }
     }
 
     private void RouteNoteOn(NoteOnMessage noteOnMessage)
@@ -104,13 +115,24 @@ public class MidiManager : MonoBehaviour
             {
                 case Channel.Channel1:
                     {
-                        if (noteOnMessage.Pitch == Pitch.D2)
+                        //if (noteOnMessage.Pitch == Pitch.D2)
+                        //{
+                        //    if (RipParticleController.Instance.TrackAirsticks == true)
+                        //    {
+                        //        OneFiveNineCircleController.Instance.ActivateScene = true;
+                        //    }
+                        //    OneFiveNineCircleController.Instance.Beep = true;
+
+                        //}
+                        RouteOneFiveNineRingKit(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel14:
+                    {
+                        //RouteElectricMidi(noteOnMessage.Pitch);
+                        if (noteOnMessage.Pitch == Pitch.C0)
                         {
-                            if (RipParticleController.Instance.TrackAirsticks == true)
-                            {
-                                OneFiveNineCircleController.Instance.ActivateScene = true;
-                            }
-                            OneFiveNineCircleController.Instance.Beep = true;
+                            CircleParticleController.Instance.BangRotation = true;
                         }
                         break;
                     }
@@ -140,11 +162,6 @@ public class MidiManager : MonoBehaviour
                         RouteHyphenMidi(noteOnMessage.Pitch);
                         break;
                     }
-                case Channel.Channel14:
-                    {
-                        RouteElectricMidi(noteOnMessage.Pitch);
-                        break;
-                    }
                 case Channel.Channel15:
                     {
                         RouteDriftMidi(noteOnMessage.Pitch);
@@ -162,6 +179,77 @@ public class MidiManager : MonoBehaviour
     private void RouteOneFiveNine(Pitch pitch)
     {
             SnakeController.Instance.Advance = true;
+    }
+
+    private void RouteOneFiveNineRingKit(Pitch pitch)
+    {
+        ParticleSystem particleSystem = null;
+
+        switch(pitch)
+        {
+            case Pitch.F2:
+                // Kick Rec
+                particleSystem = RingKitSystems["Kick"];
+                break;
+            case Pitch.E2:
+                particleSystem = RingKitSystems["Kick"];
+                // Kick Loop
+                break;
+            case Pitch.CSharp3:
+                particleSystem = RingKitSystems["Snare2"];
+                // Snare2 Rec
+                break;
+            case Pitch.C3:
+                particleSystem = RingKitSystems["Snare2"];
+                // Snare2 Loop
+                break;
+            case Pitch.G2:
+                particleSystem = RingKitSystems["Snare1"];
+                // Snare1 Rec
+                break;
+            case Pitch.FSharp2:
+                particleSystem = RingKitSystems["Snare1"];
+                // Snare1 Loop
+                break;
+            case Pitch.DSharp3:
+                // Snare3 Rec
+                particleSystem = RingKitSystems["Snare3"];
+                break;
+            case Pitch.D3:
+                // Snare3 Loop
+                particleSystem = RingKitSystems["Snare3"];
+                break;
+            case Pitch.DSharp2:
+                // Growl Rec
+                particleSystem = RingKitSystems["Growl"];
+                break;
+            case Pitch.D2:
+                // Growl Loop
+                particleSystem = RingKitSystems["Growl"];
+                break;
+            case Pitch.A2:
+                // Open HH Rec
+                particleSystem = RingKitSystems["OpenHH"];
+                break;
+            case Pitch.GSharp2:
+                // Open HH Loop
+                particleSystem = RingKitSystems["OpenHH"];
+                break;
+            case Pitch.ASharp2:
+                // Kick2 Rec
+                particleSystem = RingKitSystems["Kick2"];
+                break;
+            case Pitch.B2:
+                // Kick2 Loop
+                particleSystem = RingKitSystems["Kick2"];
+                break;
+        }
+
+        if (particleSystem != null)
+        {
+            particleSystem.Stop();
+            particleSystem.Play();
+        }
     }
 
     private void RouteDriftMidi(Pitch pitch)

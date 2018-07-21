@@ -41,6 +41,12 @@ public class CircleParticleController : MonoBehaviour
 
     private bool EmissionEnabled = false;
 
+    public bool BangRotation = false;
+    public float RotationIncrement = 8f;
+
+    public bool ControlTrailThickness = false;
+    public Vector2 ThicknessMinMax = new Vector2(0.3f, 2);
+
 void Start()
     {
         Instance = this;
@@ -74,9 +80,29 @@ void Start()
             }
             CentrePosition = true;
             EmitConstantly = true;
+
+            var mainModule = ParticleSystem.main;
+            mainModule.simulationSpeed = 0.5f;
+            mainModule.simulationSpace = ParticleSystemSimulationSpace.Local;
+            mainModule.startLifetime = new MinMaxCurve(0.2f, 1f);
+
         } else
         {
             ExpandedScale.y = 0.01f;
+
+            var mainModule = ParticleSystem.main;
+            mainModule.simulationSpeed = 1f;
+            mainModule.simulationSpace = ParticleSystemSimulationSpace.World;
+            mainModule.startLifetime = new MinMaxCurve(0.2f, 0.3f);
+        }
+
+        if (BangRotation)
+        {
+            var euler = transform.rotation.eulerAngles;
+            euler.z = euler.z + RotationIncrement;
+            var rotation = Quaternion.Euler(euler);
+            transform.SetPositionAndRotation(Vector3.zero, rotation);
+            BangRotation = false;
         }
 
         if (TrackAirsticks)
@@ -128,6 +154,14 @@ void Start()
                     }
                     shapeModule.scale = new Vector3(1 * ExpandedScale.x, 1 * ExpandedScale.x, 2 * ExpandedScale.x);
                 }
+            }
+
+            if (ControlTrailThickness)
+            {
+                var trailModule = ParticleSystem.trails;
+                var shiftedRotation = (AirSticks.Left.EulerAngles.x + 1) / 2;
+                var mappedThickness = shiftedRotation.Map(0, 1, ThicknessMinMax.x, ThicknessMinMax.y);
+                trailModule.widthOverTrail = new MinMaxCurve(mappedThickness, 0.1f);
             }
 
             if (EmissionEnabled || EmitConstantly) ParticleSystem.Emit(ParticleEmissionCount);

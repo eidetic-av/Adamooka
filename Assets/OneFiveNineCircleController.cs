@@ -10,6 +10,12 @@ public class OneFiveNineCircleController : MonoBehaviour {
 
     public ParticleSystem ParticleSystem;
 
+    public GameObject Sphere;
+    public bool SphereScaleBang;
+    public Vector2 SphereScaleFromTo;
+    private Vector2 SphereScale = new Vector2(1f, 1f);
+    public float SphereScaleDamping = 5f;
+
     public bool ActivateScene = false;
 
     public bool HideRings = true;
@@ -59,6 +65,8 @@ public class OneFiveNineCircleController : MonoBehaviour {
 
         AirSticks.Left.NoteOn += SnareOn;
         AirSticks.Left.NoteOff += SnareOff;
+
+        SphereScaleFromTo = SphereScale;
     }
 	
 	void Update () {
@@ -75,6 +83,19 @@ public class OneFiveNineCircleController : MonoBehaviour {
             CircleParticleController.Instance.Visible = false;
             CircleParticleController.Instance.Expanded = true;
             CircleParticleController.Instance.ParticleEmissionCount = 500;
+        }
+
+        if (SphereScaleBang)
+        {
+            SphereScale.x = SphereScaleFromTo.x;
+            SphereScale.y = SphereScaleFromTo.y;
+            SphereScaleBang = false;
+        }
+
+        if (Mathf.Abs(SphereScale.x - SphereScale.y) > 0.01f)
+        {
+            SphereScale.x = SphereScale.x + (SphereScale.y - SphereScale.x) / SphereScaleDamping;
+            Sphere.transform.localScale = new Vector3(SphereScale.x, SphereScale.x, 0.1f);
         }
 
 		if (Beep)
