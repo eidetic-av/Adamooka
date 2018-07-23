@@ -93115,7 +93115,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ParticleSystem: {fileID: 719979573}
-  Radius: 1
+  InitialRadius: 1.5
+  CurrentMaxRadius: 1.5
   ParticleCount: 50
   WeightCurves:
   - serializedVersion: 2
@@ -93595,7 +93596,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
-  Triggers: 000000000000
+  Triggers: 
 --- !u!1 &1753922629
 GameObject:
   m_ObjectHideFlags: 0

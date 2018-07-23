@@ -20,6 +20,8 @@ public class NoiseCircleController : MonoBehaviour
     public List<AnimationCurve> DecayResponses = new List<AnimationCurve>();
     public List<bool> Triggers = new List<bool>();
 
+    private Vector2[] NoiseValues;
+
     void Start()
     {
         Instance = this;
@@ -29,6 +31,8 @@ public class NoiseCircleController : MonoBehaviour
                 WeightCurve = curve
             });
         }
+
+        NoiseValues = new Vector2[ParticleCount];
 
         ParticleSystem.Emit(ParticleCount);
     }
@@ -45,11 +49,11 @@ public class NoiseCircleController : MonoBehaviour
 
         ParticleSystem.GetParticles(particles);
 
-        if (ParticleSystem.particleCount != ParticleCount)
-        {
-            ParticleSystem.Clear();
-            ParticleSystem.Emit(ParticleCount);
-        }
+        // if (ParticleSystem.particleCount != ParticleCount)
+        // {
+        //     ParticleSystem.Clear();
+        //     ParticleSystem.Emit(ParticleCount);
+        // }
 
         var subAngle = (2 * Mathf.PI) / ParticleCount;
 
