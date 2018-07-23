@@ -7,7 +7,8 @@ public class NoiseCircleController : MonoBehaviour
     public static NoiseCircleController Instance;
     public ParticleSystem ParticleSystem;
 
-    public float Radius = 1.5f;
+    public float InitialRadius = 1.5f;
+    public float CurrentMaxRadius = 1.5f;
 
     public int ParticleCount = 50;
 
@@ -52,11 +53,13 @@ public class NoiseCircleController : MonoBehaviour
 
         var subAngle = (2 * Mathf.PI) / ParticleCount;
 
+        CurrentMaxRadius = InitialRadius;
+
         for (int i = 0; i < ParticleCount; i++)
         {
             var angle = subAngle * i;
-            var x = Mathf.Cos(angle) * Radius;
-            var y = Mathf.Sin(angle) * Radius;
+            var x = Mathf.Cos(angle) * InitialRadius;
+            var y = Mathf.Sin(angle) * InitialRadius;
 
             var curveOffset = 0f;
 
@@ -65,7 +68,10 @@ public class NoiseCircleController : MonoBehaviour
                 curveOffset += hitPoint.CurveIntensity * weight;
             }
 
-            particles[i].position = new Vector2(x + (x * curveOffset), y + (y * curveOffset));
+            var pos = particles[i].position = new Vector2(x + (x * curveOffset), y + (y * curveOffset));
+
+            var radius = GetDistanceBetweenPoints(0, 0, pos.x, pos.y);
+            if (radius > CurrentMaxRadius) CurrentMaxRadius = radius;
         }
 
         ParticleSystem.SetParticles(particles, ParticleCount);
@@ -98,6 +104,12 @@ public class NoiseCircleController : MonoBehaviour
                 hitPoint.UpdateEnvelope();
             }
         }
+    }
+
+    public float GetDistanceBetweenPoints(float x1, float y1, float x2, float y2) {
+        var xDiff = x2 - x1;
+        var yDiff = y2 - y1;
+        return Mathf.Sqrt(Mathf.Pow(xDiff, 2) + (Mathf.Pow(yDiff, 2)));
     }
 
     public enum EnvelopeState
