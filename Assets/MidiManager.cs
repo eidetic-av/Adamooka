@@ -95,14 +95,6 @@ public class MidiManager : MonoBehaviour
             InputDevice.NoteOn += RouteNoteOn;
             Debug.Log("Opened MIDI Device");
         }
-
-        RingKitSystems = new Dictionary<string, ParticleSystem>();
-        var ringKitParent = GameObject.Find("RingKit");
-        var systems = ringKitParent.GetComponentsInChildren<ParticleSystem>();
-        foreach(var system in systems)
-        {
-            RingKitSystems.Add(system.gameObject.name, system);
-        }
     }
 
     private void RouteNoteOn(NoteOnMessage noteOnMessage)
@@ -115,16 +107,16 @@ public class MidiManager : MonoBehaviour
             {
                 case Channel.Channel1:
                     {
-                        //if (noteOnMessage.Pitch == Pitch.D2)
-                        //{
+                        // if (noteOnMessage.Pitch == Pitch.D2)
+                        // {
                         //    if (RipParticleController.Instance.TrackAirsticks == true)
                         //    {
                         //        OneFiveNineCircleController.Instance.ActivateScene = true;
                         //    }
                         //    OneFiveNineCircleController.Instance.Beep = true;
 
-                        //}
-                        RouteOneFiveNineRingKit(noteOnMessage.Pitch);
+                        // }
+                        // RouteOneFiveNineRingKit(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel14:
@@ -183,72 +175,72 @@ public class MidiManager : MonoBehaviour
 
     private void RouteOneFiveNineRingKit(Pitch pitch)
     {
-        ParticleSystem particleSystem = null;
+        var instance = NoiseCircleController.Instance;
+        NoiseCircleController.HitPoint hitPoint = null;
 
         switch(pitch)
         {
             case Pitch.F2:
                 // Kick Rec
-                particleSystem = RingKitSystems["Kick"];
+                hitPoint = instance.HitPoints[0];
                 break;
             case Pitch.E2:
-                particleSystem = RingKitSystems["Kick"];
+                hitPoint = instance.HitPoints[0];
                 // Kick Loop
                 break;
             case Pitch.CSharp3:
-                particleSystem = RingKitSystems["Snare2"];
+                hitPoint = instance.HitPoints[1];
                 // Snare2 Rec
                 break;
             case Pitch.C3:
-                particleSystem = RingKitSystems["Snare2"];
+                hitPoint = instance.HitPoints[1];
                 // Snare2 Loop
                 break;
             case Pitch.G2:
-                particleSystem = RingKitSystems["Snare1"];
+                hitPoint = instance.HitPoints[2];
                 // Snare1 Rec
                 break;
             case Pitch.FSharp2:
-                particleSystem = RingKitSystems["Snare1"];
+                hitPoint = instance.HitPoints[2];
                 // Snare1 Loop
                 break;
             case Pitch.DSharp3:
                 // Snare3 Rec
-                particleSystem = RingKitSystems["Snare3"];
+                hitPoint = instance.HitPoints[3];
                 break;
             case Pitch.D3:
                 // Snare3 Loop
-                particleSystem = RingKitSystems["Snare3"];
+                hitPoint = instance.HitPoints[3];
                 break;
             case Pitch.DSharp2:
                 // Growl Rec
-                particleSystem = RingKitSystems["Growl"];
+                hitPoint = instance.HitPoints[4];
                 break;
             case Pitch.D2:
                 // Growl Loop
-                particleSystem = RingKitSystems["Growl"];
+                hitPoint = instance.HitPoints[4];
                 break;
             case Pitch.A2:
                 // Open HH Rec
-                particleSystem = RingKitSystems["OpenHH"];
+                hitPoint = instance.HitPoints[5];
                 break;
             case Pitch.GSharp2:
                 // Open HH Loop
-                particleSystem = RingKitSystems["OpenHH"];
+                hitPoint = instance.HitPoints[5];
                 break;
             case Pitch.ASharp2:
                 // Kick2 Rec
-                particleSystem = RingKitSystems["Kick2"];
+                hitPoint = instance.HitPoints[6];
                 break;
             case Pitch.B2:
                 // Kick2 Loop
-                particleSystem = RingKitSystems["Kick2"];
+                hitPoint = instance.HitPoints[6];
                 break;
         }
 
-        if (particleSystem != null)
+        if (hitPoint != null)
         {
-            particleSystem.Stop();
-            particleSystem.Play();
+            hitPoint.Trigger = true;
         }
     }
 

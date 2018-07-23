@@ -12,33 +12,42 @@ public class NoiseCircleController : MonoBehaviour
 
     public int ParticleCount = 50;
 
+    public bool EnableBaseNoise = false;
+    public float BaseNoiseIntensity = 0f;
+    public float BaseNoiseDamping = 2f;
+    private Vector2[] BaseNoiseValues;
+
     public List<HitPoint> HitPoints = new List<HitPoint>();
 
     public List<AnimationCurve> WeightCurves = new List<AnimationCurve>();
     public List<Vector2Int> AttackDecayMs = new List<Vector2Int>();
     public List<AnimationCurve> AttackResponses = new List<AnimationCurve>();
     public List<AnimationCurve> DecayResponses = new List<AnimationCurve>();
+    public List<float> NoiseIntensities = new List<float>();
+    public List<float> NoiseDamps = new List<float>();
     public List<bool> Triggers = new List<bool>();
-
-    private Vector2[] NoiseValues;
 
     void Start()
     {
         Instance = this;
 
-        foreach(var curve in WeightCurves) {
-            HitPoints.Add(new HitPoint() {
+        foreach (var curve in WeightCurves)
+        {
+            HitPoints.Add(new HitPoint()
+            {
                 WeightCurve = curve
             });
         }
 
-        NoiseValues = new Vector2[ParticleCount];
+        BaseNoiseValues = new Vector2[ParticleCount];
 
         ParticleSystem.Emit(ParticleCount);
     }
 
     void Update()
     {
+        CheckVariables();
+
         UpdateHitPointVaraibles();
         UpdateHitPointEnvelopes();
 
@@ -67,18 +76,50 @@ public class NoiseCircleController : MonoBehaviour
 
             var curveOffset = 0f;
 
-            foreach(var hitPoint in HitPoints) {
+            foreach (var hitPoint in HitPoints)
+            {
                 var weight = hitPoint.WeightCurve.Evaluate((float)i / ParticleCount);
                 curveOffset += hitPoint.CurveIntensity * weight;
+
+                // Apply individual hit noise
+                // Create the value
+                var newNoiseValue = (Random.value * 2) - 1;
+                hitPoint.NoiseValues.y = (newNoiseValue * (hitPoint.CurveIntensity * weight)) * hitPoint.NoiseIntensity;
+                // Damp it
+                hitPoint.NoiseValues.x =
+                    hitPoint.NoiseValues.x + (hitPoint.NoiseValues.y - hitPoint.NoiseValues.x) / hitPoint.NoiseDamping;
+
+                // Add it to the curve offset
+                curveOffset += hitPoint.NoiseValues.x;
             }
 
             var pos = particles[i].position = new Vector2(x + (x * curveOffset), y + (y * curveOffset));
 
             var radius = GetDistanceBetweenPoints(0, 0, pos.x, pos.y);
             if (radius > CurrentMaxRadius) CurrentMaxRadius = radius;
+
+            // Apply base circle noise
+            if (EnableBaseNoise) {
+                // Create a new noise value between -1 and 1
+                var newNoiseValue = (Random.value * 2) - 1;
+                BaseNoiseValues[i].y = newNoiseValue;
+
+                // Damp it's movement
+                BaseNoiseValues[i].x =
+                    BaseNoiseValues[i].x + (BaseNoiseValues[i].y - BaseNoiseValues[i].x) / BaseNoiseDamping;
+
+                var noisyX = pos.x + ((BaseNoiseValues[i].x * pos.x) * BaseNoiseIntensity);
+                var noisyY = pos.y + ((BaseNoiseValues[i].x * pos.y) * BaseNoiseIntensity);
+
+                pos = particles[i].position = new Vector2(noisyX, noisyY);
+            }
         }
 
         ParticleSystem.SetParticles(particles, ParticleCount);
+    }
+
+    void CheckVariables() {
+        if (BaseNoiseDamping < 1) BaseNoiseDamping = 1;
     }
 
     void UpdateHitPointVaraibles()
@@ -90,6 +131,8 @@ public class NoiseCircleController : MonoBehaviour
             HitPoints[i].DecayMs = AttackDecayMs[i].y;
             HitPoints[i].AttackResponse = AttackResponses[i];
             HitPoints[i].DecayResponse = DecayResponses[i];
+            HitPoints[i].NoiseIntensity = NoiseIntensities[i];
+            HitPoints[i].NoiseDamping = NoiseDamps[i];
             HitPoints[i].Trigger = Triggers[i];
         }
     }
@@ -110,7 +153,8 @@ public class NoiseCircleController : MonoBehaviour
         }
     }
 
-    public float GetDistanceBetweenPoints(float x1, float y1, float x2, float y2) {
+    public float GetDistanceBetweenPoints(float x1, float y1, float x2, float y2)
+    {
         var xDiff = x2 - x1;
         var yDiff = y2 - y1;
         return Mathf.Sqrt(Mathf.Pow(xDiff, 2) + (Mathf.Pow(yDiff, 2)));
@@ -138,10 +182,9 @@ public class NoiseCircleController : MonoBehaviour
 
         public AnimationCurve WeightCurve = AnimationCurve.Linear(0, 1, 1, 0);
 
-        public HitPoint()
-        {
-            NoiseCircleController.Instance.Triggers.Add(false);
-        }
+        public float NoiseIntensity = 1f;
+        public float NoiseDamping = 2f;
+        public Vector2 NoiseValues = new Vector2(0f, 0f);
 
         public void StartEnvelope()
         {

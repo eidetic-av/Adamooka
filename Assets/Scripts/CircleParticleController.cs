@@ -43,9 +43,13 @@ public class CircleParticleController : MonoBehaviour
 
     public bool BangRotation = false;
     public float RotationIncrement = 8f;
+    public float RotationDamping = 5f;
+    private Vector2 Rotation = Vector2.zero;
 
     public bool ControlTrailThickness = false;
     public Vector2 ThicknessMinMax = new Vector2(0.3f, 2);
+    public bool ControlScaleFromMembrane = false;
+    public float ScaleMultiplier = 1f;
 
 void Start()
     {
@@ -98,12 +102,16 @@ void Start()
 
         if (BangRotation)
         {
-            var euler = transform.rotation.eulerAngles;
-            euler.z = euler.z + RotationIncrement;
-            var rotation = Quaternion.Euler(euler);
-            transform.SetPositionAndRotation(Vector3.zero, rotation);
+            Rotation.y = Rotation.y + RotationIncrement;
             BangRotation = false;
         }
+
+        Rotation.x = Rotation.x + (Rotation.y - Rotation.x) / RotationDamping;
+
+        var euler = transform.rotation.eulerAngles;
+        euler.z = Rotation.x;
+        var quaternion = Quaternion.Euler(euler);
+        transform.SetPositionAndRotation(Vector3.zero, quaternion);
 
         if (TrackAirsticks)
         {
@@ -162,6 +170,13 @@ void Start()
                 var shiftedRotation = (AirSticks.Left.EulerAngles.x + 1) / 2;
                 var mappedThickness = shiftedRotation.Map(0, 1, ThicknessMinMax.x, ThicknessMinMax.y);
                 trailModule.widthOverTrail = new MinMaxCurve(mappedThickness, 0.1f);
+            }
+
+            if (ControlScaleFromMembrane) {
+                var scale = ParticleSystem.transform.localScale;
+                scale.x = MembraneController.Instance.Radius.x * ScaleMultiplier;
+                scale.y = MembraneController.Instance.Radius.x * ScaleMultiplier;
+                ParticleSystem.transform.localScale = scale;
             }
 
             if (EmissionEnabled || EmitConstantly) ParticleSystem.Emit(ParticleEmissionCount);
