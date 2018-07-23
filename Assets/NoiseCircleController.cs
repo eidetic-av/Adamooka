@@ -4,49 +4,38 @@ using UnityEngine;
 
 public class NoiseCircleController : MonoBehaviour
 {
-
+    public static NoiseCircleController Instance;
     public ParticleSystem ParticleSystem;
 
     public float Radius = 1.5f;
 
     public int ParticleCount = 50;
 
-    public bool Trigger;
-    public int AttackMs = 10;
-    public int DecayMs = 500;
-    public AnimationCurve AttackCurve = AnimationCurve.Linear(0, 0, 1, 1);
-    public AnimationCurve DecayCurve= AnimationCurve.Linear(0, 1, 1, 0);
+    public List<HitPoint> HitPoints = new List<HitPoint>();
 
-    private int EnvelopeStartTime;
-    private EnvelopeState CurrentEnvelopeState;
-    private float CurrentEnvelopeValue = 0f;
-
-    private Vector2 CurveIntensity = Vector2.zero;
-    public float IntensityMultiplier = 0f;
-    public float BangDamping = 5f;
-
-    public AnimationCurve WeightCurve;
-
-    public bool CurveNoise = true;
-    public float CurveNoiseIntensity = 1f;
-    private float[] CurveNoiseValues;
+    public List<AnimationCurve> WeightCurves = new List<AnimationCurve>();
+    public List<Vector2Int> AttackDecayMs = new List<Vector2Int>();
+    public List<AnimationCurve> AttackResponses = new List<AnimationCurve>();
+    public List<AnimationCurve> DecayResponses = new List<AnimationCurve>();
+    public List<bool> Triggers = new List<bool>();
 
     void Start()
     {
+        Instance = this;
+
+        foreach(var curve in WeightCurves) {
+            HitPoints.Add(new HitPoint() {
+                WeightCurve = curve
+            });
+        }
+
         ParticleSystem.Emit(ParticleCount);
     }
 
     void Update()
     {
-        if (Trigger)
-        {
-            StartEnvelope();
-        }
-        else if (CurrentEnvelopeState != EnvelopeState.Off)
-        {
-            UpdateEnvelope();
-            CurveIntensity.y = CurrentEnvelopeValue * IntensityMultiplier;
-        }
+        UpdateHitPointVaraibles();
+        UpdateHitPointEnvelopes();
 
         var main = ParticleSystem.main;
         main.maxParticles = ParticleCount;
@@ -61,11 +50,6 @@ public class NoiseCircleController : MonoBehaviour
             ParticleSystem.Emit(ParticleCount);
         }
 
-        if (CurveIntensity.x != CurveIntensity.y)
-        {
-            CurveIntensity.x = CurveIntensity.x + (CurveIntensity.y - CurveIntensity.x) / BangDamping;
-        }
-
         var subAngle = (2 * Mathf.PI) / ParticleCount;
 
         for (int i = 0; i < ParticleCount; i++)
@@ -74,84 +58,122 @@ public class NoiseCircleController : MonoBehaviour
             var x = Mathf.Cos(angle) * Radius;
             var y = Mathf.Sin(angle) * Radius;
 
-            var weight = WeightCurve.Evaluate((float)i / ParticleCount);
+            var curveOffset = 0f;
 
-            if (Trigger)
-            {
-                if (CurveNoise)
-                {
-                    if (CurveNoiseValues == null || CurveNoiseValues.Length != ParticleCount)
-                    {
-                        CurveNoiseValues = new float[ParticleCount];
-                    }
-                    CurveNoiseValues[i] = 1 + (Mathf.PerlinNoise(x, y) * CurveNoiseIntensity);
-                }
+            foreach(var hitPoint in HitPoints) {
+                var weight = hitPoint.WeightCurve.Evaluate((float)i / ParticleCount);
+                curveOffset += hitPoint.CurveIntensity * weight;
             }
-
-            float noiseScale = 1;
-
-            if (CurveNoiseValues != null && CurveNoise)
-            {
-                noiseScale = CurveNoiseValues[i];
-            }
-
-            var curveOffset = CurveIntensity.x * weight;
 
             particles[i].position = new Vector2(x + (x * curveOffset), y + (y * curveOffset));
         }
 
         ParticleSystem.SetParticles(particles, ParticleCount);
-
-        Trigger = false;
     }
 
-    void StartEnvelope()
+    void UpdateHitPointVaraibles()
     {
-        // Start time = current time in Ms
-        EnvelopeStartTime = GetCurrentMs();
-
-        // set state to attack
-        CurrentEnvelopeState = EnvelopeState.Attack;
-
-        Trigger = false;
-    }
-
-    void UpdateEnvelope()
-    {
-        switch (CurrentEnvelopeState)
+        for (int i = 0; i < HitPoints.Count; i++)
         {
-            case EnvelopeState.Attack:
-                {
-                    var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float)AttackMs;
-                    if (envelopeTime >= 1) {
-                        envelopeTime = 1;
-                        CurrentEnvelopeState = EnvelopeState.Decay;
-                        EnvelopeStartTime = GetCurrentMs();
-                    }
-                    CurrentEnvelopeValue = AttackCurve.Evaluate(envelopeTime);
-                    break;
-                }
-            case EnvelopeState.Decay:
-                {
-                    var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float)DecayMs;
-                    if (envelopeTime >= 1) {
-                        envelopeTime = 1;
-                        CurrentEnvelopeState = EnvelopeState.Off;
-                        EnvelopeStartTime = 0;
-                    }
-                    CurrentEnvelopeValue = DecayCurve.Evaluate(envelopeTime);
-                    break;
-                }
+            HitPoints[i].WeightCurve = WeightCurves[i];
+            HitPoints[i].AttackMs = AttackDecayMs[i].x;
+            HitPoints[i].DecayMs = AttackDecayMs[i].y;
+            HitPoints[i].AttackResponse = AttackResponses[i];
+            HitPoints[i].DecayResponse = DecayResponses[i];
+            HitPoints[i].Trigger = Triggers[i];
         }
     }
 
-    int GetCurrentMs()
+    void UpdateHitPointEnvelopes()
     {
-        return Mathf.RoundToInt(Time.time * 1000);
+        foreach (var hitPoint in HitPoints)
+        {
+            if (hitPoint.Trigger)
+            {
+                hitPoint.StartEnvelope();
+                Triggers[HitPoints.IndexOf(hitPoint)] = false;
+            }
+            else if (hitPoint.CurrentEnvelopeState != EnvelopeState.Off)
+            {
+                hitPoint.UpdateEnvelope();
+            }
+        }
     }
 
     public enum EnvelopeState
     {
         Off, Attack, Decay
+    }
+
+    public class HitPoint
+    {
+        public bool Trigger;
+        public int AttackMs = 100;
+        public int DecayMs = 500;
+        public AnimationCurve AttackResponse = AnimationCurve.Linear(0, 0, 1, 1);
+        public AnimationCurve DecayResponse = AnimationCurve.Linear(0, 1, 1, 0);
+
+        private int EnvelopeStartTime;
+        public EnvelopeState CurrentEnvelopeState;
+        public float CurrentEnvelopeValue = 0f;
+
+        public float CurveIntensity = 0f;
+        public float IntensityMultiplier = 1f;
+
+        public AnimationCurve WeightCurve = AnimationCurve.Linear(0, 1, 1, 0);
+
+        public HitPoint()
+        {
+            NoiseCircleController.Instance.Triggers.Add(false);
+        }
+
+        public void StartEnvelope()
+        {
+            // Start time = current time in Ms
+            EnvelopeStartTime = GetCurrentMs();
+
+            // set state to attack
+            CurrentEnvelopeState = EnvelopeState.Attack;
+
+            Trigger = false;
+        }
+
+        public void UpdateEnvelope()
+        {
+            switch (CurrentEnvelopeState)
+            {
+                case EnvelopeState.Attack:
+                    {
+                        var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float)AttackMs;
+                        if (envelopeTime >= 1)
+                        {
+                            envelopeTime = 1;
+                            CurrentEnvelopeState = EnvelopeState.Decay;
+                            EnvelopeStartTime = GetCurrentMs();
+                        }
+                        CurrentEnvelopeValue = AttackResponse.Evaluate(envelopeTime);
+                        break;
+                    }
+                case EnvelopeState.Decay:
+                    {
+                        var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float)DecayMs;
+                        if (envelopeTime >= 1)
+                        {
+                            envelopeTime = 1;
+                            CurrentEnvelopeState = EnvelopeState.Off;
+                            EnvelopeStartTime = 0;
+                        }
+                        CurrentEnvelopeValue = DecayResponse.Evaluate(envelopeTime);
+                        break;
+                    }
+            }
+
+            CurveIntensity = CurrentEnvelopeValue * IntensityMultiplier;
+        }
+
+        int GetCurrentMs()
+        {
+            return Mathf.RoundToInt(Time.time * 1000);
+        }
     }
 }
