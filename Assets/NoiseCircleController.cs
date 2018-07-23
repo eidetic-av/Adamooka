@@ -9,7 +9,18 @@ public class NoiseCircleController : MonoBehaviour
 
     public float Radius = 1.5f;
 
-    public bool Bang;
+    public int ParticleCount = 50;
+
+    public bool Trigger;
+    public int AttackMs = 10;
+    public int DecayMs = 500;
+    public AnimationCurve AttackCurve = AnimationCurve.Linear(0, 0, 1, 1);
+    public AnimationCurve DecayCurve= AnimationCurve.Linear(0, 1, 1, 0);
+
+    private int EnvelopeStartTime;
+    private EnvelopeState CurrentEnvelopeState;
+    private float CurrentEnvelopeValue = 0f;
+
     private Vector2 CurveIntensity = Vector2.zero;
     public float IntensityMultiplier = 0f;
     public float BangDamping = 5f;
@@ -20,16 +31,34 @@ public class NoiseCircleController : MonoBehaviour
     public float CurveNoiseIntensity = 1f;
     private float[] CurveNoiseValues;
 
+    void Start()
+    {
+        ParticleSystem.Emit(ParticleCount);
+    }
+
     void Update()
     {
-        var particles = new ParticleSystem.Particle[ParticleSystem.particleCount];
+        if (Trigger)
+        {
+            StartEnvelope();
+        }
+        else if (CurrentEnvelopeState != EnvelopeState.Off)
+        {
+            UpdateEnvelope();
+            CurveIntensity.y = CurrentEnvelopeValue * IntensityMultiplier;
+        }
+
+        var main = ParticleSystem.main;
+        main.maxParticles = ParticleCount;
+
+        var particles = new ParticleSystem.Particle[ParticleCount];
+
         ParticleSystem.GetParticles(particles);
 
-        if (particles.Length <= 0) return;
-
-        if (Bang)
+        if (ParticleSystem.particleCount != ParticleCount)
         {
-            CurveIntensity.y = IntensityMultiplier;
+            ParticleSystem.Clear();
+            ParticleSystem.Emit(ParticleCount);
         }
 
         if (CurveIntensity.x != CurveIntensity.y)
@@ -37,23 +66,23 @@ public class NoiseCircleController : MonoBehaviour
             CurveIntensity.x = CurveIntensity.x + (CurveIntensity.y - CurveIntensity.x) / BangDamping;
         }
 
-        var subAngle = (2 * Mathf.PI) / particles.Length;
+        var subAngle = (2 * Mathf.PI) / ParticleCount;
 
-        for (int i = 0; i < particles.Length; i++)
+        for (int i = 0; i < ParticleCount; i++)
         {
             var angle = subAngle * i;
             var x = Mathf.Cos(angle) * Radius;
             var y = Mathf.Sin(angle) * Radius;
 
-            var weight = WeightCurve.Evaluate((float)i / particles.Length);
+            var weight = WeightCurve.Evaluate((float)i / ParticleCount);
 
-            if (Bang)
+            if (Trigger)
             {
                 if (CurveNoise)
                 {
-                    if (CurveNoiseValues == null || CurveNoiseValues.Length != particles.Length)
+                    if (CurveNoiseValues == null || CurveNoiseValues.Length != ParticleCount)
                     {
-                        CurveNoiseValues = new float[particles.Length];
+                        CurveNoiseValues = new float[ParticleCount];
                     }
                     CurveNoiseValues[i] = 1 + (Mathf.PerlinNoise(x, y) * CurveNoiseIntensity);
                 }
@@ -68,11 +97,61 @@ public class NoiseCircleController : MonoBehaviour
 
             var curveOffset = CurveIntensity.x * weight;
 
-            particles[i].position = new Vector2(x + (x * (curveOffset * noiseScale)), y + (y * (curveOffset * noiseScale)));
+            particles[i].position = new Vector2(x + (x * curveOffset), y + (y * curveOffset));
         }
 
-        ParticleSystem.SetParticles(particles, particles.Length);
+        ParticleSystem.SetParticles(particles, ParticleCount);
 
-        Bang = false;
+        Trigger = false;
+    }
+
+    void StartEnvelope()
+    {
+        // Start time = current time in Ms
+        EnvelopeStartTime = GetCurrentMs();
+
+        // set state to attack
+        CurrentEnvelopeState = EnvelopeState.Attack;
+
+        Trigger = false;
+    }
+
+    void UpdateEnvelope()
+    {
+        switch (CurrentEnvelopeState)
+        {
+            case EnvelopeState.Attack:
+                {
+                    var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float)AttackMs;
+                    if (envelopeTime >= 1) {
+                        envelopeTime = 1;
+                        CurrentEnvelopeState = EnvelopeState.Decay;
+                        EnvelopeStartTime = GetCurrentMs();
+                    }
+                    CurrentEnvelopeValue = AttackCurve.Evaluate(envelopeTime);
+                    break;
+                }
+            case EnvelopeState.Decay:
+                {
+                    var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float)DecayMs;
+                    if (envelopeTime >= 1) {
+                        envelopeTime = 1;
+                        CurrentEnvelopeState = EnvelopeState.Off;
+                        EnvelopeStartTime = 0;
+                    }
+                    CurrentEnvelopeValue = DecayCurve.Evaluate(envelopeTime);
+                    break;
+                }
+        }
+    }
+
+    int GetCurrentMs()
+    {
+        return Mathf.RoundToInt(Time.time * 1000);
+    }
+
+    public enum EnvelopeState
+    {
+        Off, Attack, Decay
     }
 }
