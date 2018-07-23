@@ -14,6 +14,13 @@ public class MembraneController : MonoBehaviour
 
     public int ParticleCount = 50;
 
+    public Material TrailMaterial;
+
+    private Vector2 ColorValue = Vector2.zero;
+    public float ColorDamp = 5f;
+    public bool FlashColor = false;
+    public Vector2 FlashMinMax = new Vector2(0, 1);
+
     void Start()
     {
         Instance = this;
@@ -32,7 +39,8 @@ public class MembraneController : MonoBehaviour
 
         ParticleSystem.GetParticles(particles);
 
-        var subAngle = (2 * Mathf.PI) / ParticleCount;
+        // ParticleCount - 2 here so that it joins up with itself
+        var subAngle = (2 * Mathf.PI) / (ParticleCount - 2);
 
         var noiseCircle = NoiseCircleController.Instance;
         Radius.y = Mathf.Clamp(noiseCircle.CurrentMaxRadius, BaseRadius, 5000) + RadiusOffset;
@@ -49,6 +57,24 @@ public class MembraneController : MonoBehaviour
         }
 
         ParticleSystem.SetParticles(particles, ParticleCount);
+
+        UpdateColor();
+    }
+
+    void UpdateColor() {
+
+        if (FlashColor) {
+            ColorValue.x = FlashMinMax.y;
+            ColorValue.y = FlashMinMax.x;
+            FlashColor = false;
+        }
+
+        float h, s, v;
+        Color.RGBToHSV(TrailMaterial.GetColor("_Color"), out h, out s, out v);
+        ColorValue.x = ColorValue.x + (ColorValue.y - ColorValue.x) / ColorDamp;
+        v = ColorValue.x;
+        var color = Color.HSVToRGB(h, s, v);
+        TrailMaterial.SetColor("_Color", color);
     }
 
     void CheckVariables() {

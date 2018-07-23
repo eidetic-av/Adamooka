@@ -116,7 +116,7 @@ public class MidiManager : MonoBehaviour
                         //    OneFiveNineCircleController.Instance.Beep = true;
 
                         // }
-                        // RouteOneFiveNineRingKit(noteOnMessage.Pitch);
+                        RouteOneFiveNineRingKit(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel14:
@@ -142,8 +142,9 @@ public class MidiManager : MonoBehaviour
                         if (noteOnMessage.Pitch == Pitch.C2)
                         {
                             // Kick
-                            
-                        } else if (noteOnMessage.Pitch == Pitch.D2)
+
+                        }
+                        else if (noteOnMessage.Pitch == Pitch.D2)
                         {
                             // Snare
                         }
@@ -170,77 +171,79 @@ public class MidiManager : MonoBehaviour
 
     private void RouteOneFiveNine(Pitch pitch)
     {
-            SnakeController.Instance.Advance = true;
+        SnakeController.Instance.Advance = true;
     }
 
     private void RouteOneFiveNineRingKit(Pitch pitch)
     {
         var instance = NoiseCircleController.Instance;
-        NoiseCircleController.HitPoint hitPoint = null;
 
-        switch(pitch)
+        switch (pitch)
         {
-            case Pitch.F2:
-                // Kick Rec
-                hitPoint = instance.HitPoints[0];
+            case Pitch.CSharp2:
+                // Beep Rec
+                MembraneController.Instance.FlashColor = true;
                 break;
-            case Pitch.E2:
-                hitPoint = instance.HitPoints[0];
-                // Kick Loop
-                break;
-            case Pitch.CSharp3:
-                hitPoint = instance.HitPoints[1];
-                // Snare2 Rec
-                break;
-            case Pitch.C3:
-                hitPoint = instance.HitPoints[1];
-                // Snare2 Loop
-                break;
-            case Pitch.G2:
-                hitPoint = instance.HitPoints[2];
-                // Snare1 Rec
-                break;
-            case Pitch.FSharp2:
-                hitPoint = instance.HitPoints[2];
-                // Snare1 Loop
-                break;
-            case Pitch.DSharp3:
-                // Snare3 Rec
-                hitPoint = instance.HitPoints[3];
-                break;
-            case Pitch.D3:
-                // Snare3 Loop
-                hitPoint = instance.HitPoints[3];
+            case Pitch.C2:
+                MembraneController.Instance.FlashColor = true;
+                // Beep Loop
                 break;
             case Pitch.DSharp2:
                 // Growl Rec
-                hitPoint = instance.HitPoints[4];
+                instance.Triggers[0] = true;
                 break;
             case Pitch.D2:
                 // Growl Loop
-                hitPoint = instance.HitPoints[4];
+                instance.Triggers[0] = true;
+                break;
+            case Pitch.F2:
+                // Kick Rec
+                instance.Triggers[1] = true;
+                break;
+            case Pitch.E2:
+                instance.Triggers[1] = true;
+                // Kick Loop
+                break;
+            case Pitch.G2:
+                instance.Triggers[2] = true;
+                // Snare1 Rec
+                break;
+            case Pitch.FSharp2:
+                instance.Triggers[2] = true;
+                // Snare1 Loop
                 break;
             case Pitch.A2:
                 // Open HH Rec
-                hitPoint = instance.HitPoints[5];
+                instance.Triggers[3] = true;
                 break;
             case Pitch.GSharp2:
                 // Open HH Loop
-                hitPoint = instance.HitPoints[5];
+                instance.Triggers[3] = true;
                 break;
             case Pitch.ASharp2:
                 // Kick2 Rec
-                hitPoint = instance.HitPoints[6];
+                instance.Triggers[4] = true;
                 break;
             case Pitch.B2:
                 // Kick2 Loop
-                hitPoint = instance.HitPoints[6];
+                instance.Triggers[4] = true;
                 break;
-        }
-
-        if (hitPoint != null)
-        {
-            hitPoint.Trigger = true;
+            case Pitch.CSharp3:
+                instance.Triggers[5] = true;
+                // Snare2 Rec
+                break;
+            case Pitch.C3:
+                instance.Triggers[5] = true;
+                // Snare2 Loop
+                break;
+            case Pitch.DSharp3:
+                // Snare3 Rec
+                instance.Triggers[6] = true;
+                break;
+            case Pitch.D3:
+                // Snare3 Loop
+                instance.Triggers[6] = true;
+                break;
         }
     }
 

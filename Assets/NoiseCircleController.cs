@@ -11,6 +11,7 @@ public class NoiseCircleController : MonoBehaviour
     public float CurrentMaxRadius = 1.5f;
 
     public int ParticleCount = 50;
+    public bool CloseCircle = true;
 
     public bool EnableBaseNoise = false;
     public float BaseNoiseIntensity = 0f;
@@ -112,6 +113,12 @@ public class NoiseCircleController : MonoBehaviour
                 var noisyY = pos.y + ((BaseNoiseValues[i].x * pos.y) * BaseNoiseIntensity);
 
                 pos = particles[i].position = new Vector2(noisyX, noisyY);
+            }
+
+            if (CloseCircle) {
+                if (i == ParticleCount - 1) {
+                    pos = particles[i].position = particles[i -1].position;
+                }
             }
         }
 
