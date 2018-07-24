@@ -101,58 +101,36 @@ public class MidiManager : MonoBehaviour
     {
         if (LogNoteOns) Debug.Log(noteOnMessage.Pitch);
 
-        Threading.RunOnMain(() =>
+        Threading.RunOnMain((Action)(() =>
         {
             switch (noteOnMessage.Channel)
             {
                 case Channel.Channel1:
                     {
-                        // if (noteOnMessage.Pitch == Pitch.D2)
-                        // {
-                        //    if (RipParticleController.Instance.TrackAirsticks == true)
-                        //    {
-                        //        OneFiveNineCircleController.Instance.ActivateScene = true;
-                        //    }
-                        //    OneFiveNineCircleController.Instance.Beep = true;
-
-                        // }
-                        RouteOneFiveNineRingKit(noteOnMessage.Pitch);
+                        RouteOneFiveNine(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel2:
+                    {
+                        RouteComputerRain(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel14:
                     {
-                        //RouteElectricMidi(noteOnMessage.Pitch);
                         if (noteOnMessage.Pitch == Pitch.C0)
                         {
                             CircleParticleController.Instance.BangRotation = true;
                         }
                         break;
                     }
-                case Channel.Channel2:
-                    {
-                        if (noteOnMessage.Pitch == Pitch.C2)
-                        {
-                            OneFiveNineCircleController.Instance.FlashNonagon = true;
-                        }
-                        break;
-                    }
-                case Channel.Channel3:
-                    {
-                        OneFiveNineCircleController instance = OneFiveNineCircleController.Instance;
-                        if (noteOnMessage.Pitch == Pitch.C2)
-                        {
-                            // Kick
-
-                        }
-                        else if (noteOnMessage.Pitch == Pitch.D2)
-                        {
-                            // Snare
-                        }
-                        break;
-                    }
                 case Channel.Channel4:
                     {
                         RouteHyphenMidi(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel13:
+                    {
+                        RouteDesmondMidi(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel15:
@@ -166,15 +144,9 @@ public class MidiManager : MonoBehaviour
                         break;
                     }
             }
-        });
+        }));
     }
-
     private void RouteOneFiveNine(Pitch pitch)
-    {
-        SnakeController.Instance.Advance = true;
-    }
-
-    private void RouteOneFiveNineRingKit(Pitch pitch)
     {
         var instance = NoiseCircleController.Instance;
 
@@ -188,6 +160,7 @@ public class MidiManager : MonoBehaviour
                 MembraneController.Instance.FlashColor = true;
                 // Beep Loop
                 break;
+
             case Pitch.DSharp2:
                 // Growl Rec
                 instance.Triggers[0] = true;
@@ -244,9 +217,127 @@ public class MidiManager : MonoBehaviour
                 // Snare3 Loop
                 instance.Triggers[6] = true;
                 break;
+            case Pitch.B1:
+                // Sub kick
+                break;
+
+            case Pitch.F3:
+                // Invasion start
+                // Takes 1 min 15 seconds to get to centre
+                break;
+            case Pitch.FSharp3:
+                // Invasion explode / beat in
+                // Eighteen seconds until full fade out
+
+                // Noisier high hat? Different texture, colour?
+                break;
+
+            case Pitch.G3:
+                // Go back to Airsticks Note On/Off with the
+                // reverb kick/snare
+                break;
         }
     }
 
+    private void RouteComputerRain(Pitch pitch) {
+        switch(pitch) {
+            case Pitch.C3:
+                // Start computer rain / end one five nine
+                break;
+            case Pitch.CSharp3:
+                // Transition to clones
+                break;
+            case Pitch.D3:
+                // Transition back to rain
+                // Maybe colours of desmond
+                break;
+        }
+    }
+
+
+    private void RouteDesmondMidi(Pitch pitch)
+    {
+        switch (pitch)
+        {
+            // Track control
+            case Pitch.D2:
+                // pause track
+                break;
+            case Pitch.DSharp2:
+                // unpause track
+                break;
+            case Pitch.E2:
+                // glitch out
+                break;
+
+            // Desmond control
+            case Pitch.F2:
+                // start desmond minimal shape
+                break;
+            case Pitch.FSharp2:
+                // intense desmond shape
+                break;
+            case Pitch.GSharp3:
+                // desmond lose shape
+            case Pitch.A3:
+                // end breakdown / back to form
+                break;
+            case Pitch.ASharp3:
+                // drum/guitar outro setting
+                break;
+            case Pitch.B3:
+                // guitar solo shape
+                break;
+            case Pitch.C4:
+                // ending transition
+                break;
+            
+            // Paint control
+            case Pitch.G2:
+                // piano 1 on
+                // only left hand
+                break;
+            case Pitch.GSharp2:
+                // piano 1 off
+                break;
+            case Pitch.A2:
+                // bass on
+                break;
+            case Pitch.ASharp2:
+                // bass off
+                break;
+            case Pitch.B2:
+                // vibes on
+                // only right hand
+                // 1 Minute long trail
+                break;
+            case Pitch.C3:
+                // vibes off
+                break;
+            case Pitch.CSharp3:
+                // drums on
+                break;
+            case Pitch.D3:
+                // drums off
+                break;
+            case Pitch.DSharp3:
+                // vibes off quickly
+            case Pitch.E3:
+                // piano 2 on
+                // 37 second long trail
+                break;
+            case Pitch.F3:
+                // piano 2 off
+                break;
+            case Pitch.FSharp3:
+                // drums 2 on
+                // 1:15 trail length
+                break;
+            case Pitch.G3:
+                // drums 2 off
+                break;
+        }
+    }
     private void RouteDriftMidi(Pitch pitch)
     {
         Debug.Log(pitch.ToString());
@@ -583,6 +674,9 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.enabled = true;
         TrackerOutputEffector.CloningActive = false;
 
+        // Set material
+        UserMeshVisualizer.Instance.gameObject.GetComponent<Renderer>().material = Resources.Load<UnityEngine.Material>("CloneMaterial");
+
         //MeshTools.EnableExplode = false;
 
         // add some clones to the scene
@@ -592,7 +686,7 @@ public class MidiManager : MonoBehaviour
             TrackerOutputEffector.InstantiateClone(AirSticks.Hand.Right);
         }
 
-        // and set the base output layer as occlusion with black tint
+        // and set the base output layer as occlusion by tinting it black
         TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(0, 0, 0, 1));
         TrackerSceneController.Instance.ActivateClones = true;
 

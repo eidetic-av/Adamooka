@@ -7,10 +7,9 @@ using Midi;
 using Utility;
 using static UnityEngine.ParticleSystem;
 
-public class RipParticleController : MonoBehaviour
+public class RodParticleController : MonoBehaviour
 {
-
-    public static RipParticleController Instance;
+    public static RodParticleController Instance;
 
     public GameObject ParticlesObject;
     public ParticleSystem ParticleSystem;
@@ -27,7 +26,7 @@ public class RipParticleController : MonoBehaviour
     public Vector3 LeftMultiplier = new Vector3(0, 0, 0);
     public Vector3 RightMultiplier = new Vector3(0, 0, 0);
 
-    public AirSticks.Hand TrackingHand = AirSticks.Hand.Left;
+    private AirSticks.Hand TrackingHand = AirSticks.Hand.Left;
     public int ParticleEmissionCount = 3;
 
     public Vector3 BaseHandScale = new Vector3(0.1f, 0.1f, 0.1f);
@@ -41,6 +40,9 @@ public class RipParticleController : MonoBehaviour
 
     public Color NewParticleColor = Color.white;
     public bool SetColor = false;
+
+    public bool ContainWithinCircle = false;
+    public float CircleDistanceMultiplier = 1f;
 
     void Start()
     {
@@ -74,13 +76,15 @@ public class RipParticleController : MonoBehaviour
         {
             Vector3 modulatedScale = BaseHandScale;
 
+            Vector3 pos = Vector3.zero;
+
             switch (TrackingHand)
             {
                 case AirSticks.Hand.Left:
                     {
                         // move to hand position
-                        ParticlesObject.transform.position = new Vector3(
-                            (-AirSticks.Left.Position.x * LeftMultiplier.x) + LeftHandOffset.x, 
+                        pos = ParticlesObject.transform.position = new Vector3(
+                            (-AirSticks.Left.Position.x * LeftMultiplier.x) + LeftHandOffset.x,
                             (AirSticks.Left.Position.y * LeftMultiplier.y) + LeftHandOffset.y,
                             (AirSticks.Left.Position.z * LeftMultiplier.z) + LeftHandOffset.z);
                         // set shape scale
@@ -94,8 +98,8 @@ public class RipParticleController : MonoBehaviour
                     }
                 case AirSticks.Hand.Right:
                     {
-                        ParticlesObject.transform.position = new Vector3(
-                            (-AirSticks.Right.Position.x * RightMultiplier.x) + RightHandOffset.x, 
+                        pos = ParticlesObject.transform.position = new Vector3(
+                            (-AirSticks.Right.Position.x * RightMultiplier.x) + RightHandOffset.x,
                             (AirSticks.Right.Position.y * RightMultiplier.y) + RightHandOffset.y,
                             (AirSticks.Right.Position.z * RightMultiplier.z) + RightHandOffset.z);
                         // set shape scale
@@ -108,12 +112,28 @@ public class RipParticleController : MonoBehaviour
                     }
             }
 
+            if (ContainWithinCircle)
+            {
+                var scaledPos = new Vector2(pos.x * CircleDistanceMultiplier, pos.y * CircleDistanceMultiplier);
+                var distance = Mathf.Sqrt(Mathf.Pow(scaledPos.x, 2) + Mathf.Pow(scaledPos.y, 2));
+                var radius = MembraneController.Instance.Radius.x;
+
+                if (distance > radius)
+                {
+                    var positionAlongLine = radius / distance;
+                    pos.x = positionAlongLine * (pos.x); 
+                    pos.y = positionAlongLine * (pos.y);
+                    ParticlesObject.transform.position = pos;
+                }
+            }
+
             // Set the scale of the emission shape
             var shapeModule = ParticleSystem.shape;
             if (AirsticksScalingEnabled)
             {
                 shapeModule.scale = modulatedScale;
-            } else
+            }
+            else
             {
                 shapeModule.scale = BaseHandScale;
             }

@@ -27,8 +27,8 @@ public class ParticleSceneController : MonoBehaviour
     {
         if (IntroVisuals)
         {
-            RipParticleController.Instance.ConstantEmission = false;
-            RipParticleController.Instance.TrackAirsticks = false;
+            RodParticleController.Instance.ConstantEmission = false;
+            RodParticleController.Instance.TrackAirsticks = false;
             CircleParticleController.Instance.Visible = true;
             CircleParticleController.Instance.ControlSphereSize = true;
             CircleParticleController.Instance.Expanded = false;
@@ -47,26 +47,26 @@ public class ParticleSceneController : MonoBehaviour
         }
         else if (EnableRods)
         {
-            RipParticleController.Instance.TrackAirsticks = true;
-            RipParticleController.Instance.ConstantEmission = false;
+            RodParticleController.Instance.TrackAirsticks = true;
+            RodParticleController.Instance.ConstantEmission = false;
             EnableRods = false;
         } else if (DisableRods)
         {
-            RipParticleController.Instance.TrackAirsticks = false;
-            RipParticleController.Instance.ConstantEmission = false;
+            RodParticleController.Instance.TrackAirsticks = false;
+            RodParticleController.Instance.ConstantEmission = false;
             DisableRods = false;
         }
         else if (KickAndSnareWithRing)
         {
             OneFiveNineCircleController.Instance.ActivateScene = true;
             CircleParticleController.Instance.Visible = true;
-            RipParticleController.Instance.TrackAirsticks = false;
+            RodParticleController.Instance.TrackAirsticks = false;
             KickAndSnareWithRing = false;
         }
         else if (Breakdown)
         {
-            RipParticleController.Instance.TrackAirsticks = true;
-            RipParticleController.Instance.ConstantEmission = true;
+            RodParticleController.Instance.TrackAirsticks = true;
+            RodParticleController.Instance.ConstantEmission = true;
             OneFiveNineCircleController.Instance.ResetSceneLight = true;
             OneFiveNineCircleController.Instance.SendTrackingToSceneLight = false;
             OneFiveNineCircleController.Instance.SendSnareToParticles = false;
@@ -86,7 +86,7 @@ public class ParticleSceneController : MonoBehaviour
         else if (StartOneFiveNineOut)
         {
             CircleParticleController.Instance.Increasing = true;
-            RipParticleController.Instance.ConstantEmission = false;
+            RodParticleController.Instance.ConstantEmission = false;
             StartOneFiveNineOut = false;
         }
         else if (OneFiveNineOut)
@@ -95,7 +95,7 @@ public class ParticleSceneController : MonoBehaviour
             OneFiveNineCircleController.Instance.ResetSceneLight = true;
             OneFiveNineCircleController.Instance.SendTrackingToSceneLight = false;
             OneFiveNineCircleController.Instance.SendSnareToParticles = false;
-            RipParticleController.Instance.TrackAirsticks = false;
+            RodParticleController.Instance.TrackAirsticks = false;
             CircleParticleController.Instance.Visible = false;
             if (GameObject.Find("Nonagon") != null)
                 GameObject.Find("Nonagon").SetActive(false);

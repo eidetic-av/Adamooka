@@ -51,8 +51,6 @@ public class TrackerSceneController : MonoBehaviour
             MidiManager.Instance.ShowClones();
             if (GameObject.Find("LightPlane") != null)
                 GameObject.Find("LightPlane").SetActive(false);
-            if (GameObject.Find("Nonagon") != null)
-                GameObject.Find("Nonagon").SetActive(false);
             ActivateClones = false;
         } else if (CycleCloneColours)
         {

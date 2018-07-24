@@ -59,6 +59,11 @@ public class MeshTools : MonoBehaviour
 
     public bool EnableExplode;
     public bool EnableDesmondAirsticksControl;
+    public Vector2 DesmondInstensityMinMax = new Vector2(-0.3f, 0.5f);
+    public Vector2Int DesmondSmoothingMinMax = new Vector2Int(0, 5);
+    public bool DampNoiseIntensity = false;
+    public float NoiseIntensityDamping = 1f;
+
 
     public BlockoutController WhiteBlockoutController;
     public bool FadeInWhiteBlockout = false;
@@ -433,16 +438,23 @@ public class MeshTools : MonoBehaviour
 
         if (EnableDesmondAirsticksControl)
         {
-            Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, -.3f, .5f);
-            Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, 0f, 5f));
-
-            // WireframeAlpha = AirSticks.Right.EulerAngles.z.Map(0f, 1f, 0.7f, 1f);
+            Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, DesmondInstensityMinMax.x, DesmondInstensityMinMax.y);
+            
+            Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, DesmondSmoothingMinMax.x, DesmondSmoothingMinMax.y));
+        
             WireframeAlpha = 1f;
             WireframeColor.a = WireframeAlpha;
             SetMaterialColor("_Color", WireframeColor);
         }
 
-            NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
+        NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
+
+        if (Mathf.Abs(Noise.NoiseIntensity - Noise.NewNoiseIntensity) > 0)
+        {
+            Noise.NoiseIntensity = Noise.NoiseIntensity + (Noise.NewNoiseIntensity - Noise.NoiseIntensity) / Noise.NoiseChangeDamping;
+        }
+
+
         
 
         // if (Input.GetMouseButtonDown(0))
@@ -452,11 +464,6 @@ public class MeshTools : MonoBehaviour
         //     var mouse = Input.mousePosition.x.Map(0f, Screen.width, 0f, 1f);
         // }
 
-
-        if (Mathf.Abs(Noise.NoiseIntensity - Noise.NewNoiseIntensity) > 0)
-        {
-            Noise.NoiseIntensity = Noise.NoiseIntensity + (Noise.NewNoiseIntensity - Noise.NoiseIntensity) / Noise.NoiseChangeDamping;
-        }
         if (AnimateWireframeAlpha)
         {
             if (Mathf.Abs(WireframeAlpha - NewWireframeAlpha) > 0)
