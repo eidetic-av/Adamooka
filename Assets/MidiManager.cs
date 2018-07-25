@@ -243,6 +243,7 @@ public class MidiManager : MonoBehaviour
             case Pitch.B2:
                 // start rain
                 RainController.Instance.EnableEmission = true;
+                GameObject.Find("OneFiveNine").SetActive(false);
                 break;
             case Pitch.C3:
                 // Suck in particles

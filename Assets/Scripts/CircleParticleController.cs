@@ -52,6 +52,11 @@ public class CircleParticleController : MonoBehaviour
     public float ScaleMultiplier = 1f;
 
     public bool StartSystem = false;
+    public bool StopSystem = false;
+    public float StopLength = 5f;
+    private float StopTime;
+    private bool Stopping = false;
+    private int StopMaxParticles;
 
     public bool StartInvasion = false;
     public float InvasionLength = 75;
@@ -93,6 +98,27 @@ void Start()
             var mainModule = ParticleSystem.main;
             mainModule.maxParticles = 150;
             StartSystem = false;
+        }
+
+        if (StopSystem) {
+            Stopping = true;
+            StopTime = Time.time;
+            var mainModule = ParticleSystem.main;
+            StopMaxParticles = mainModule.maxParticles;
+            StopSystem = false;
+        }
+
+        if (Stopping) {
+            var position = (Time.time - StopTime) / StopLength;
+            Debug.Log("position:" + position);
+            if (position >= 1) {
+                position = 1;
+                Stopping = false;
+            }
+            var mainModule = ParticleSystem.main;
+            var newMax = Mathf.RoundToInt((1 - position) * (float)StopMaxParticles);
+            Debug.Log("newMax:" + newMax);
+            mainModule.maxParticles = newMax;
         }
 
         if (StartInvasion) {

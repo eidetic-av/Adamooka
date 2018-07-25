@@ -11,6 +11,10 @@ public class NoiseCircleController : MonoBehaviour
     private float StartSystemTime;
     private bool StartingSystem = false;
     private int StartingSystemParticleCount = 0;
+    public bool StopSystem = false;
+    public float StopSystemLength = 8f;
+    private float StopSystemTime;
+    private bool StoppingSystem = false;
 
     public float InitialRadius = 1.5f;
     public float CurrentMaxRadius = 1.5f;
@@ -64,6 +68,21 @@ public class NoiseCircleController : MonoBehaviour
             }
             var renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
             renderer.trailMaterial.SetColor("_Color", new Color(position, position, position, 1));
+        }
+        
+        if (StopSystem) {
+            StoppingSystem = true;
+            StopSystemTime = Time.time;
+            StopSystem = false;
+        }
+        if (StoppingSystem) {
+            var position = (Time.time - StopSystemTime) / StopSystemLength;
+            if (position >= 1) {
+                position = 1;
+                StoppingSystem = false;
+            }
+            var renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
+            renderer.trailMaterial.SetColor("_Color", new Color(1 - position, 1 - position, 1 - position, 1));
         }
 
         CheckVariables();

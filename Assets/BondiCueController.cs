@@ -14,6 +14,8 @@ public class BondiCueController : MonoBehaviour
     public bool DisableRodsWithGrowl = false;
     public bool EnableRodAndRingNoteOns = false;
     public bool DisableRodsAfterMelody = false;
+    public bool DisableVortex = false;
+    public bool FadeOutNoiseCircle = false;
     void Start()
     {
 
@@ -71,6 +73,14 @@ public class BondiCueController : MonoBehaviour
             RodParticleController.Instance.TrackAirsticks = false;
             RodParticleController.Instance.TrackAirsticks = false;
             DisableRodsAfterMelody = false;
+        }
+        if (DisableVortex) {
+            CircleParticleController.Instance.StopSystem = true;
+            DisableVortex = false;
+        }
+        if (FadeOutNoiseCircle) {
+            NoiseCircleController.Instance.StopSystem = true;
+            FadeOutNoiseCircle = false;
         }
     }
 }
