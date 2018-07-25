@@ -148,7 +148,7 @@ public class MidiManager : MonoBehaviour
     }
     private void RouteOneFiveNine(Pitch pitch)
     {
-        var instance = NoiseCircleController.Instance;
+        var noise = NoiseCircleController.Instance;
 
         switch (pitch)
         {
@@ -163,59 +163,59 @@ public class MidiManager : MonoBehaviour
 
             case Pitch.DSharp2:
                 // Growl Rec
-                instance.Triggers[0] = true;
+                noise.Triggers[0] = true;
                 break;
             case Pitch.D2:
                 // Growl Loop
-                instance.Triggers[0] = true;
+                noise.Triggers[0] = true;
                 break;
             case Pitch.F2:
                 // Kick Rec
-                instance.Triggers[1] = true;
+                noise.Triggers[1] = true;
                 break;
             case Pitch.E2:
-                instance.Triggers[1] = true;
+                noise.Triggers[1] = true;
                 // Kick Loop
                 break;
             case Pitch.G2:
-                instance.Triggers[2] = true;
+                noise.Triggers[2] = true;
                 // Snare1 Rec
                 break;
             case Pitch.FSharp2:
-                instance.Triggers[2] = true;
+                noise.Triggers[2] = true;
                 // Snare1 Loop
                 break;
             case Pitch.A2:
                 // Open HH Rec
-                instance.Triggers[3] = true;
+                noise.Triggers[3] = true;
                 break;
             case Pitch.GSharp2:
                 // Open HH Loop
-                instance.Triggers[3] = true;
+                noise.Triggers[3] = true;
                 break;
             case Pitch.ASharp2:
                 // Kick2 Rec
-                instance.Triggers[4] = true;
+                noise.Triggers[4] = true;
                 break;
             case Pitch.B2:
                 // Kick2 Loop
-                instance.Triggers[4] = true;
+                noise.Triggers[4] = true;
                 break;
             case Pitch.CSharp3:
-                instance.Triggers[5] = true;
+                noise.Triggers[5] = true;
                 // Snare2 Rec
                 break;
             case Pitch.C3:
-                instance.Triggers[5] = true;
+                noise.Triggers[5] = true;
                 // Snare2 Loop
                 break;
             case Pitch.DSharp3:
                 // Snare3 Rec
-                instance.Triggers[6] = true;
+                noise.Triggers[6] = true;
                 break;
             case Pitch.D3:
                 // Snare3 Loop
-                instance.Triggers[6] = true;
+                noise.Triggers[6] = true;
                 break;
             case Pitch.B1:
                 // Sub kick
@@ -223,18 +223,17 @@ public class MidiManager : MonoBehaviour
 
             case Pitch.F3:
                 // Invasion start
-                // Takes 1 min 15 seconds to get to centre
+                CircleParticleController.Instance.StartInvasion = true;
                 break;
             case Pitch.FSharp3:
                 // Invasion explode / beat in
-                // Eighteen seconds until full fade out
-
+                CircleParticleController.Instance.StartInvasionRevert = true;
                 // Noisier high hat? Different texture, colour?
                 break;
 
             case Pitch.G3:
                 // Go back to Airsticks Note On/Off with the
-                // reverb kick/snare
+                OneFiveNineCircleController.Instance.ActivateAirSticksKickSnare = true;
                 break;
         }
     }

@@ -51,6 +51,22 @@ public class CircleParticleController : MonoBehaviour
     public bool ControlScaleFromMembrane = false;
     public float ScaleMultiplier = 1f;
 
+    public bool StartSystem = false;
+
+    public bool StartInvasion = false;
+    public float InvasionLength = 75;
+    public float InvasionMaxParticles = 500;
+    private bool Invading = false;
+    private float InvasionStartTime;
+    private int InvasionStartMaxParticles;
+    private float InvasionStartRadiusThickness;
+    public bool StartInvasionRevert = false;
+    public float InvasionRevertDamp = 5f;
+    public float InvasionSimmerLength = 18;
+    private bool InvasionReverting = false;
+    private float InvasionRevertStartTime;
+    public Vector2 ScaleBangOnInvasionRevert = new Vector2(0.25f, 0.128f);
+
 void Start()
     {
         Instance = this;
@@ -72,6 +88,60 @@ void Start()
     void Update()
     {
         ParticleSystem.gameObject.SetActive(Visible);
+
+        if (StartSystem) {
+            var mainModule = ParticleSystem.main;
+            mainModule.maxParticles = 150;
+            StartSystem = false;
+        }
+
+        if (StartInvasion) {
+            Invading = true;
+            InvasionStartTime = Time.time;
+            InvasionStartMaxParticles = ParticleSystem.main.maxParticles;
+            var shapeModule = ParticleSystem.shape;
+            InvasionStartRadiusThickness = shapeModule.radiusThickness;
+            StartInvasion = false;
+        }
+        if (Invading) {
+            var invadedAmount = (Time.time - InvasionStartTime) / InvasionLength;
+            if (invadedAmount >= 1) {
+                invadedAmount = 1;
+                Invading = false;
+            }
+            var shapeModule = ParticleSystem.shape;
+            // fill radius thickness to 1 over specified time
+            shapeModule.radiusThickness = InvasionStartRadiusThickness + ((1 - InvasionStartRadiusThickness) * invadedAmount);
+            // and increase to the desired max particles
+            var main = ParticleSystem.main;
+            main.maxParticles = Mathf.RoundToInt(InvasionStartMaxParticles + ((InvasionMaxParticles - InvasionStartMaxParticles) * invadedAmount));
+        }
+        if (StartInvasionRevert) {
+            Invading = false;
+            InvasionRevertStartTime = Time.time;
+            var scale = ParticleSystem.transform.localScale;
+            scale.x = ScaleBangOnInvasionRevert.x;
+            scale.y = ScaleBangOnInvasionRevert.x;
+            ParticleSystem.transform.localScale = scale;
+            InvasionReverting = true;
+            StartInvasionRevert = false;
+        }
+        if (InvasionReverting) {
+            var shapeModule = ParticleSystem.shape;
+            shapeModule.radiusThickness = shapeModule.radiusThickness + (InvasionStartRadiusThickness - shapeModule.radiusThickness) / InvasionRevertDamp;
+            var scaleValue = ParticleSystem.transform.localScale.x;
+            scaleValue = scaleValue + (ScaleBangOnInvasionRevert.y - scaleValue) / InvasionRevertDamp;
+            var scale = ParticleSystem.transform.localScale;
+            scale.x = scale.y = scaleValue;
+            ParticleSystem.transform.localScale = scale;
+            var simmerAmount = (Time.time - InvasionRevertStartTime) / InvasionSimmerLength;
+            if (simmerAmount >= 1) {
+                simmerAmount = 1;
+                InvasionReverting = false;
+            }
+            var main = ParticleSystem.main;
+            main.maxParticles = Mathf.RoundToInt(InvasionMaxParticles - ((InvasionMaxParticles - InvasionStartMaxParticles) * simmerAmount));
+        }
 
         if (Expanded)
         {

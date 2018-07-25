@@ -56,6 +56,8 @@ public class OneFiveNineCircleController : MonoBehaviour {
     public float RotationDamping = 5f;
     private Vector2 Rotation = Vector2.zero;
         
+    public bool ActivateAirSticksKickSnare = false;
+    public bool DeactivateAirSticksKickSnare = false;
 
     void Start () {
         Instance = this;
@@ -83,6 +85,18 @@ public class OneFiveNineCircleController : MonoBehaviour {
             CircleParticleController.Instance.Visible = false;
             CircleParticleController.Instance.Expanded = true;
             CircleParticleController.Instance.ParticleEmissionCount = 500;
+        }
+
+        if (ActivateAirSticksKickSnare) {
+            AirSticks.Right.NoteOn += DoAirSticksKick;
+            AirSticks.Left.NoteOn += DoAirSticksSnare;
+            ActivateAirSticksKickSnare = false;
+        }
+
+        if (DeactivateAirSticksKickSnare) {
+            AirSticks.Right.NoteOn -= DoAirSticksKick;
+            AirSticks.Left.NoteOn -= DoAirSticksSnare;
+            DeactivateAirSticksKickSnare = false;
         }
 
         if (SphereScaleBang)
@@ -189,6 +203,13 @@ public class OneFiveNineCircleController : MonoBehaviour {
             Rotation.x = Rotation.x + (Rotation.y - Rotation.x) / RotationDamping;
             transform.eulerAngles = new Vector3(0, 0, Rotation.x);
         }
+    }
+
+    void DoAirSticksKick() {
+        NoiseCircleController.Instance.Triggers[7] = true;
+    }
+    void DoAirSticksSnare() {
+        NoiseCircleController.Instance.Triggers[8] = true;
     }
 
     void DoRotate(float angle, float damping)
