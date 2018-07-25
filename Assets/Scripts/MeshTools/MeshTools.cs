@@ -10,6 +10,8 @@ using Eidetic.Unity.Utility;
 public class MeshTools : MonoBehaviour
 {
 
+    public MeshTools Instance;
+
     public enum FilterType
     {
         Laplacian, HC
@@ -134,6 +136,7 @@ public class MeshTools : MonoBehaviour
 
     void Start()
     {
+        Instance = this;
         Renderer = gameObject.GetComponent<Renderer>();
         Light = GameObject.Find("SceneLight").GetComponent<Light>();
         Prototyping = GameObject.Find("Prototyping").GetComponent<Prototyping>();

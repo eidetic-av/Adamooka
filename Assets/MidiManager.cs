@@ -99,7 +99,7 @@ public class MidiManager : MonoBehaviour
 
     private void RouteNoteOn(NoteOnMessage noteOnMessage)
     {
-        if (LogNoteOns) Debug.Log(noteOnMessage.Pitch);
+        if (LogNoteOns) Debug.Log(noteOnMessage.Channel + "." + noteOnMessage.Pitch);
 
         Threading.RunOnMain((Action)(() =>
         {
@@ -115,6 +115,11 @@ public class MidiManager : MonoBehaviour
                         RouteComputerRain(noteOnMessage.Pitch);
                         break;
                     }
+                case Channel.Channel3:
+                    {
+                        RouteDesmondMidi(noteOnMessage.Pitch);
+                        break;
+                    }
                 case Channel.Channel14:
                     {
                         if (noteOnMessage.Pitch == Pitch.C0)
@@ -126,11 +131,6 @@ public class MidiManager : MonoBehaviour
                 case Channel.Channel4:
                     {
                         RouteHyphenMidi(noteOnMessage.Pitch);
-                        break;
-                    }
-                case Channel.Channel13:
-                    {
-                        RouteDesmondMidi(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel15:
@@ -240,15 +240,46 @@ public class MidiManager : MonoBehaviour
 
     private void RouteComputerRain(Pitch pitch) {
         switch(pitch) {
+            case Pitch.B2:
+                // start rain
+                RainController.Instance.EnableEmission = true;
+                break;
             case Pitch.C3:
-                // Start computer rain / end one five nine
+                // Suck in particles
+                RainController.Instance.StartCloneTransition = true;
                 break;
             case Pitch.CSharp3:
-                // Transition to clones
+                // Disperse particles
+                RainController.Instance.StartCloneDispersion = true;
+                RainController.Instance.StopParticleLength = 3;
+                RainController.Instance.SlowlyStopParticles = true;
+                // Switch on white clones
+                TrackerSceneController.Instance.ActivateClones = true;
+                TrackerSceneController.Instance.ActivateCloneIntroState = true;
+                break;
+            case Pitch.ASharp2:
+                // Activate airsticks clone colour cycle
+                TrackerSceneController.Instance.AirSticksNoteOnCyclesColours = true;
                 break;
             case Pitch.D3:
-                // Transition back to rain
-                // Maybe colours of desmond
+                // Go to desmond colours
+                TrackerSceneController.Instance.ActivateRainOutroState = true;
+                break;
+            case Pitch.DSharp3:
+                // TrackerSceneController.Instance.SillhouetteOff = true;
+                break;
+            case Pitch.E3:
+                // Step two, introduce particles with desmond colours
+                // Explode particles, remove clones
+                RainController.Instance.ActivateOutroState = true;
+                break;
+            case Pitch.F3:
+                RainController.Instance.TransitioningToOutro = true;
+                TrackerSceneController.Instance.RemoveAllClones = true;
+                break;
+            case Pitch.FSharp3:
+                RainController.Instance.StopParticleLength = 10;
+                RainController.Instance.SlowlyStopParticles = true;
                 break;
         }
     }
@@ -258,28 +289,35 @@ public class MidiManager : MonoBehaviour
     {
         switch (pitch)
         {
-            // Track control
-            case Pitch.D2:
-                // pause track
-                break;
-            case Pitch.DSharp2:
-                // unpause track
-                break;
-            case Pitch.E2:
-                // glitch out
-                break;
-
             // Desmond control
             case Pitch.F2:
-                // start desmond minimal shape
+                // start desmond
+                var renderer = GameObject.Find("OutputQuad").GetComponent<Renderer>();
+                renderer.material.SetColor("_TintColor", new Color(1, 1, 1, 1));
+                var userMesh = GameObject.Find("UserMesh").GetComponent<Renderer>();
+                userMesh.enabled = true;
+                userMesh.material = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
+                MeshTools.Instance.EnableDesmondAirsticksControl = true;
+                MeshTools.Instance.DesmondInstensityMinMax = new Vector2(-0.3f, 0.5f);
+                MeshTools.Instance.DesmondSmoothingMinMax = new Vector2Int(0, 5);
+                break;
+            case Pitch.E2:
+                // minimal shape
+                MeshTools.Instance.DesmondInstensityMinMax = new Vector2(0f, 0.25f);
+                MeshTools.Instance.DesmondSmoothingMinMax = new Vector2Int(1, 5);
                 break;
             case Pitch.FSharp2:
                 // intense desmond shape
+                MeshTools.Instance.DesmondInstensityMinMax = new Vector2(-0.3f, 0.5f);
+                MeshTools.Instance.DesmondSmoothingMinMax = new Vector2Int(0, 5);
                 break;
             case Pitch.GSharp3:
                 // desmond lose shape
+                UserMeshVisualizer.Instance.BlockKinectUpdate = true;
+                break;
             case Pitch.A3:
                 // end breakdown / back to form
+                UserMeshVisualizer.Instance.BlockKinectUpdate = false;
                 break;
             case Pitch.ASharp3:
                 // drum/guitar outro setting
@@ -288,8 +326,20 @@ public class MidiManager : MonoBehaviour
                 // guitar solo shape
                 break;
             case Pitch.C4:
+                UserMeshVisualizer.Instance.BlockKinectUpdate = true;
                 // ending transition
                 break;
+
+            // Track control
+            case Pitch.D2:
+                // pause track
+                break;
+            case Pitch.DSharp2:
+                // unpause track
+                break;
+            // case Pitch.E2:
+                // glitch out
+                // break;
             
             // Paint control
             case Pitch.G2:

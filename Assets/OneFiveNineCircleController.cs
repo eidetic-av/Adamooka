@@ -4,7 +4,8 @@ using UnityEngine;
 using Eidetic.Unity.Utility;
 using Utility;
 
-public class OneFiveNineCircleController : MonoBehaviour {
+public class OneFiveNineCircleController : MonoBehaviour
+{
 
     public static OneFiveNineCircleController Instance;
 
@@ -55,11 +56,12 @@ public class OneFiveNineCircleController : MonoBehaviour {
     public float RotationAngle = 10f;
     public float RotationDamping = 5f;
     private Vector2 Rotation = Vector2.zero;
-        
+
     public bool ActivateAirSticksKickSnare = false;
     public bool DeactivateAirSticksKickSnare = false;
 
-    void Start () {
+    void Start()
+    {
         Instance = this;
 
         AirSticks.Right.NoteOn += KickOn;
@@ -70,8 +72,9 @@ public class OneFiveNineCircleController : MonoBehaviour {
 
         SphereScaleFromTo = SphereScale;
     }
-	
-	void Update () {
+
+    void Update()
+    {
 
         if (ActivateScene)
         {
@@ -87,13 +90,15 @@ public class OneFiveNineCircleController : MonoBehaviour {
             CircleParticleController.Instance.ParticleEmissionCount = 500;
         }
 
-        if (ActivateAirSticksKickSnare) {
+        if (ActivateAirSticksKickSnare)
+        {
             AirSticks.Right.NoteOn += DoAirSticksKick;
             AirSticks.Left.NoteOn += DoAirSticksSnare;
             ActivateAirSticksKickSnare = false;
         }
 
-        if (DeactivateAirSticksKickSnare) {
+        if (DeactivateAirSticksKickSnare)
+        {
             AirSticks.Right.NoteOn -= DoAirSticksKick;
             AirSticks.Left.NoteOn -= DoAirSticksSnare;
             DeactivateAirSticksKickSnare = false;
@@ -112,13 +117,14 @@ public class OneFiveNineCircleController : MonoBehaviour {
             Sphere.transform.localScale = new Vector3(SphereScale.x, SphereScale.x, 0.1f);
         }
 
-		if (Beep)
+        if (Beep)
         {
             Alpha.x = AlphaAnimation.x;
             if (!SnareAffectOn)
             {
                 Alpha.y = AlphaAnimation.y;
-            } else
+            }
+            else
             {
                 Alpha.y = SnareOnBeepMinimum;
             }
@@ -147,7 +153,7 @@ public class OneFiveNineCircleController : MonoBehaviour {
 
             ParticleSystem.Particle[] particles = new ParticleSystem.Particle[ParticleSystem.particleCount];
             ParticleSystem.GetParticles(particles);
-            for (int i= 0; i < particles.Length; i++)
+            for (int i = 0; i < particles.Length; i++)
             {
                 particles[i].startColor = newColor;
             }
@@ -163,7 +169,7 @@ public class OneFiveNineCircleController : MonoBehaviour {
             NonagonRenderer.material.SetColor("_TintColor", Color.HSVToRGB(1, 0, NonagonAlpha.x));
         }
 
-        
+
         if (SendTrackingToSceneLight)
         {
             var hue = AirSticks.Right.Position.x.Map(-1, 1, HueMapping.x, HueMapping.y);
@@ -176,20 +182,23 @@ public class OneFiveNineCircleController : MonoBehaviour {
 
         if (ResetSceneLight)
         {
-            SceneLightController.Instance.SetValue(1f, 0f, 1f);
-            SceneLightController.Instance.Hue = 0;
-            SceneLightController.Instance.Saturation = 0;
+            if (SceneLightController.Instance != null)
+            {
+                SceneLightController.Instance.SetValue(1f, 0f, 1f);
+                SceneLightController.Instance.Hue = 0;
+                SceneLightController.Instance.Saturation = 0;
+            }
         }
 
         if (SendSnareToParticles)
         {
-            if (Mathf.Abs(SnareRadius.x - SnareRadius.y) > 0)
-            {
-                SnareRadius.x = SnareRadius.x + (SnareRadius.y - SnareRadius.x) / SnareRadiusDamping;
+            // if (Mathf.Abs(SnareRadius.x - SnareRadius.y) > 0)
+            // {
+            //     SnareRadius.x = SnareRadius.x + (SnareRadius.y - SnareRadius.x) / SnareRadiusDamping;
 
-                var mainModule = ParticleSystem.main;
-                mainModule.startSizeY = SnareRadius.x;
-            }
+            //     var mainModule = ParticleSystem.main;
+            //     mainModule.startSizeY = SnareRadius.x;
+            // }
         }
 
         if (Rotate)
@@ -205,10 +214,12 @@ public class OneFiveNineCircleController : MonoBehaviour {
         }
     }
 
-    void DoAirSticksKick() {
+    void DoAirSticksKick()
+    {
         NoiseCircleController.Instance.Triggers[7] = true;
     }
-    void DoAirSticksSnare() {
+    void DoAirSticksSnare()
+    {
         NoiseCircleController.Instance.Triggers[8] = true;
     }
 
@@ -222,7 +233,7 @@ public class OneFiveNineCircleController : MonoBehaviour {
     void KickOn()
     {
         if (SendTrackingToSceneLight)
-        SceneLightController.Instance.SetValue(MaxLight, MinLight, KickLightDamping);
+            SceneLightController.Instance.SetValue(MaxLight, MinLight, KickLightDamping);
     }
 
     void KickOff()

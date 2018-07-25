@@ -6,6 +6,11 @@ public class NoiseCircleController : MonoBehaviour
 {
     public static NoiseCircleController Instance;
     public ParticleSystem ParticleSystem;
+    public bool StartSystem = false;
+    public float StartSystemLength = 5f;
+    private float StartSystemTime;
+    private bool StartingSystem = false;
+    private int StartingSystemParticleCount = 0;
 
     public float InitialRadius = 1.5f;
     public float CurrentMaxRadius = 1.5f;
@@ -41,12 +46,26 @@ public class NoiseCircleController : MonoBehaviour
         }
 
         BaseNoiseValues = new Vector2[ParticleCount];
-
-        ParticleSystem.Emit(ParticleCount);
     }
 
     void Update()
     {
+        if (StartSystem) {
+            StartingSystem = true;
+            StartSystemTime = Time.time;
+            ParticleSystem.Emit(ParticleCount);
+            StartSystem = false;
+        }
+        if (StartingSystem) {
+            var position = (Time.time - StartSystemTime) / StartSystemLength;
+            if (position >= 1) {
+                position = 1;
+                StartingSystem = false;
+            }
+            var renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
+            renderer.trailMaterial.SetColor("_Color", new Color(position, position, position, 1));
+        }
+
         CheckVariables();
 
         UpdateHitPointVaraibles();

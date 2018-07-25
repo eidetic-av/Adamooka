@@ -15,9 +15,28 @@ public class TrackerSceneController : MonoBehaviour
     public TrackerOutputEffector TrackerOutputEffector;
     public bool CycleCloneColours = false;
 
+    public bool AirSticksNoteOnCyclesColours = true;
+
+    public bool ActivateCloneIntroState = false;
+    public bool ActivateRainOutroState = false;
+    public bool SillhouetteOff = false;
+    public bool RemoveAllClones = false;
+
     void Start()
     {
         Instance = this;
+        // AirSticks.Left.NoteOn += NoteOnCycleColours;
+        AirSticks.Right.NoteOn += NoteOnCycleColours;
+    }
+
+    void NoteOnCycleColours() {
+        if (AirSticksNoteOnCyclesColours)
+            CycleCloneColours = true;
+    }
+
+    void CycleColours() {
+        TrackerOutputEffector.CycleCloneColours();
+        CycleCloneColours = false;
     }
 
     void Update()
@@ -54,11 +73,46 @@ public class TrackerSceneController : MonoBehaviour
             ActivateClones = false;
         } else if (CycleCloneColours)
         {
-            if (TrackerOutputEffector != null)
-            {
-                TrackerOutputEffector.CycleCloneColours();
+            CycleColours();
+        }
+
+        if (ActivateRainOutroState) {
+            var baseOutputQuad = GameObject.Find("OutputQuad");
+            var effector = baseOutputQuad.GetComponent<TrackerOutputEffector>();
+            effector.CloneColourPosition = 3;
+            effector.RefreshCloneColours();
+        }
+        if (SillhouetteOff) {
+            var baseOutputQuad = GameObject.Find("OutputQuad");
+            var renderer = baseOutputQuad.GetComponent<Renderer>();
+            renderer.material.SetColor("_TintColor", new Color(0, 0, 0, 0));
+            var effector = baseOutputQuad.GetComponent<TrackerOutputEffector>();
+            effector.CloneDistance = 0.005f;
+            ActivateRainOutroState = false;
+            SillhouetteOff = false;
+        }
+
+        if (ActivateCloneIntroState) {
+            var baseOutputQuad = GameObject.Find("OutputQuad");
+            var effector = baseOutputQuad.GetComponent<TrackerOutputEffector>();
+            effector.CloneColourPosition = 1;
+            effector.RefreshCloneColours();
+            AirSticksNoteOnCyclesColours = false;
+            ActivateCloneIntroState = false;
+        }
+
+        if (RemoveAllClones) {
+            var baseOutputQuad = GameObject.Find("OutputQuad");
+            var children = baseOutputQuad.GetComponentsInChildren<Transform>();
+            foreach(var child in children) {
+                if (child.gameObject != baseOutputQuad)
+                    Destroy(child.gameObject);
             }
-            CycleCloneColours = false;
+            var effector = baseOutputQuad.GetComponent<TrackerOutputEffector>();
+            effector.LeftHandClones.Clear();
+            effector.RightHandClones.Clear();
+            RemoveAllClones = false;
+            effector.UpdateParametersEveryFrame = false;
         }
     }
 }

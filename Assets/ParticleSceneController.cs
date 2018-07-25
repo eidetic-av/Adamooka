@@ -91,10 +91,12 @@ public class ParticleSceneController : MonoBehaviour
         }
         else if (OneFiveNineOut)
         {
-            OneFiveNineCircleController.Instance.HideRings = true;
-            OneFiveNineCircleController.Instance.ResetSceneLight = true;
-            OneFiveNineCircleController.Instance.SendTrackingToSceneLight = false;
-            OneFiveNineCircleController.Instance.SendSnareToParticles = false;
+            if (OneFiveNineCircleController.Instance != null) {
+                OneFiveNineCircleController.Instance.HideRings = true;
+                OneFiveNineCircleController.Instance.ResetSceneLight = true;
+                OneFiveNineCircleController.Instance.SendTrackingToSceneLight = false;
+                OneFiveNineCircleController.Instance.SendSnareToParticles = false;
+            }
             RodParticleController.Instance.TrackAirsticks = false;
             CircleParticleController.Instance.Visible = false;
             if (GameObject.Find("Nonagon") != null)
