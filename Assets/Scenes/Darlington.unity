@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311992, g: 0.38074034, b: 0.35872713, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -20662,7 +20662,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1031702107
 Transform:
   m_ObjectHideFlags: 0
@@ -20695,9 +20695,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6711e40ccf76a774ea6ccaa5b1a4fc69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DisableKinectUpdate: 0
+  DisableKinectUpdate: 1
   EnableKinectUpdate: 0
-  DisableUserRender: 0
+  DisableUserRender: 1
   EnableUserRender: 0
   ActivateClones: 0
   TrackerOutputEffector: {fileID: 1852235747}
@@ -27034,8 +27034,8 @@ MonoBehaviour:
   - {x: 100, y: 500}
   - {x: 100, y: 500}
   - {x: 100, y: 500}
-  - {x: 60, y: 1500}
-  - {x: 30, y: 1500}
+  - {x: 60, y: 1800}
+  - {x: 30, y: 1800}
   AttackResponses:
   - serializedVersion: 2
     m_Curve:

@@ -244,6 +244,7 @@ public class MidiManager : MonoBehaviour
                 // start rain
                 RainController.Instance.EnableEmission = true;
                 GameObject.Find("OneFiveNine").SetActive(false);
+                TrackerSceneController.Instance.EnableKinectUpdate = true;
                 break;
             case Pitch.C3:
                 // Suck in particles
