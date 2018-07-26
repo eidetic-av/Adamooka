@@ -51300,7 +51300,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AnimateAlpha: 0
   EnableAirsticksAlphaControl: 0
-  UpdateParametersEveryFrame: 1
+  UpdateParametersEveryFrame: 0
   NoteOnCloning: 0
   LogLeftNoteEvents: 0
   LogRightNoteEvents: 0
