@@ -70,6 +70,9 @@ public class TrackerSceneController : MonoBehaviour
             MidiManager.Instance.ShowClones();
             if (GameObject.Find("LightPlane") != null)
                 GameObject.Find("LightPlane").SetActive(false);
+            var baseOutputQuad = GameObject.Find("OutputQuad");
+            var effector = baseOutputQuad.GetComponent<TrackerOutputEffector>();
+            effector.UpdateParametersEveryFrame = true;
             ActivateClones = false;
         } else if (CycleCloneColours)
         {

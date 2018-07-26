@@ -20644,6 +20644,10 @@ Prefab:
       propertyPath: m_Name
       value: FramerateCounter
       objectReference: {fileID: 0}
+    - target: {fileID: 1468538277317568, guid: f159b159dd444774a96055a5d26994e8, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f159b159dd444774a96055a5d26994e8, type: 2}
   m_IsPrefabAsset: 0
