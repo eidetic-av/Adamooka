@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 87750f07c2a9141489bc6bd66fbbe4f8
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Pitch
+  fontNames:
+  - Pitch
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 3369e4ee5333c18468b61dc84d032e6d, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
