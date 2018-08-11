@@ -12,6 +12,8 @@ public class MeshTools : MonoBehaviour
 
     public MeshTools Instance;
 
+    public bool BypassKinect = true;
+
     public enum FilterType
     {
         Laplacian, HC
@@ -140,7 +142,7 @@ public class MeshTools : MonoBehaviour
         Renderer = gameObject.GetComponent<Renderer>();
         Light = GameObject.Find("SceneLight").GetComponent<Light>();
         Prototyping = GameObject.Find("Prototyping").GetComponent<Prototyping>();
-        UserMeshVisualizer = GameObject.Find("UserMesh").GetComponent<UserMeshVisualizer>();
+        UserMeshVisualizer = GameObject.Find("UserMesh")?.GetComponent<UserMeshVisualizer>();
         ApplySmoothing();
         if (gameObject.GetComponent<LimitMesh>() != null)
         {
@@ -269,7 +271,7 @@ public class MeshTools : MonoBehaviour
 
     void ApplySmoothing()
     {
-        if (UserMeshVisualizer.DisableMeshUpdate)
+        if (UserMeshVisualizer != null &&UserMeshVisualizer.DisableMeshUpdate)
             return;
         var mesh = filter.mesh;
         JobHandle normalNoiseJobHandler;
