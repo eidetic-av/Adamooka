@@ -201,12 +201,15 @@ public class ScreenRecorder : MonoBehaviour
 	{
 		print ("SCREENRECORDER IO THREAD STARTED");
 
+		var framePaths = new List<String>();
+
 		while (threadIsProcessing) 
 		{
 			if(frameQueue.Count > 0)
 			{
 				// Generate file path
 				string path = DataPath + "/frame" + savingFrameNumber + ".bmp";
+				framePaths.Add(path);
 
 				// Dequeue the frame, encode it as a bitmap, and write it to the file
 				using(FileStream fileStream = new FileStream(path, FileMode.Create))
@@ -229,6 +232,13 @@ public class ScreenRecorder : MonoBehaviour
 				Thread.Sleep(1);
 			}
 		}
+
+		// load it into the imageplayback
+		UnityMainThreadDispatcher.Instance().Enqueue(() => {
+			foreach (var path in framePaths) {
+				ImagePlayback.Instance.LoadImage(path);
+			}
+		});
 
 		terminateThreadWhenDone = false;
 		threadIsProcessing = false;
