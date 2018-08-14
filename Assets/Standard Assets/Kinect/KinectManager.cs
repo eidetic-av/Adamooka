@@ -252,7 +252,7 @@ public class KinectManager : MonoBehaviour
 	/// Gets the sensor data structure (this structure should not be modified and must be used only internally).
 	/// </summary>
 	/// <returns>The sensor data.</returns>
-	internal KinectInterop.SensorData GetSensorData()
+	public KinectInterop.SensorData GetSensorData()
 	{
 		return sensorData;
 	}

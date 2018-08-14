@@ -10,6 +10,10 @@ using Eidetic.Unity.Utility;
 public class MeshTools : MonoBehaviour
 {
 
+    public MeshTools Instance;
+
+    public bool BypassKinect = true;
+
     public enum FilterType
     {
         Laplacian, HC
@@ -47,7 +51,7 @@ public class MeshTools : MonoBehaviour
         public bool ContinuousUpdate = true;
         public float LastUpdateTime;
         public FilterType Type = FilterType.Laplacian;
-        public int SmoothingTimes = 3;
+        public int SmoothingTimes = 6;
         public float HCAlpha = 0.5f;
         public float HCBeta = 0.5f;
 
@@ -58,7 +62,60 @@ public class MeshTools : MonoBehaviour
     public NoiseAndSmoothing Noise = new NoiseAndSmoothing();
 
     public bool EnableExplode;
-    public bool EnableAirsticksControl;
+    public bool EnableDesmondAirsticksControl;
+    public Vector2 DesmondInstensityMinMax = new Vector2(-0.3f, 0.5f);
+    public Vector2Int DesmondSmoothingMinMax = new Vector2Int(0, 5);
+    public bool DampNoiseIntensity = false;
+    public float NoiseIntensityDamping = 1f;
+
+
+    public BlockoutController WhiteBlockoutController;
+    public bool FadeInWhiteBlockout = false;
+    public bool FadeOutWhiteBlockout = false;
+    public int WhiteBlockoutFadeInTime = 10000;
+    public int WhiteBlockoutFadeOutTime = 250;
+
+    public bool EnableGranRelatedTransition;
+
+    public float GranRelatedTransitionBaseNoiseIntensity = 0f;
+    public float GranRelatedTransitionExplodeIntensity = 0f;
+    public float GranRelatedTransitionExplodeDamping = 1f;
+
+    public float GranRelatedTransitionReversionNoiseIntensity = 0f;
+    public float GranRelatedTransitionReversionDamping = 0f;
+
+    public bool EnableMainGranRelatedScene = false;
+
+    public bool EnableGranRelatedAirsticksControl;
+    public bool EnableGranRelatedControlIntensity;
+    public bool EnableGranRelatedControlSmoothing;
+    private bool GranControl;
+    public bool EnableGranRelatedExplode = false;
+
+    public float GranRelatedExplodeReversionDamping = 5f;
+    public Vector2 GranRelatedNoiseIntensity = new Vector2(-.3f, 5f);
+    public Vector2 GranRelatedSmoothing = new Vector2(0f, 5f);
+
+    public float GranRelatedLeftExplodeIntensity = 1f;
+    public float GranRelatedLeftExplodeDamping = 3f;
+    public float GranRelatedRightExplodeIntensity = 1f;
+    public float GranRelatedRightExplodeDamping = 3f;
+
+    public IridescenceController Iridescence;
+    public bool ActivateGranRelatedIridescence = false;
+    public float IridescenceFilmStrength = 50;
+    public float IridescenceFilmFrequency = 1;
+    public float IridescenceFilmAnimationRate = 2;
+    public float IridescenceColourAnimationRate = 2;
+
+    public bool ActivateGranRelatedColourCycle = false;
+    public GameObject OutputQuadToTint;
+    public float TintSaturation = 0.6f;
+    public bool ControlSaturationWithAirsticks = false;
+    public Vector2 AirsticksSaturation = new Vector2(0, 1);
+    public bool OnlyControlSaturationWhileNoteOn = false;
+    public Vector2 TintCycleDistance = new Vector2(20, 40);
+    public bool ResetTint = false;
 
     public Prototyping Prototyping;
 
@@ -81,10 +138,11 @@ public class MeshTools : MonoBehaviour
 
     void Start()
     {
+        Instance = this;
         Renderer = gameObject.GetComponent<Renderer>();
         Light = GameObject.Find("SceneLight").GetComponent<Light>();
         Prototyping = GameObject.Find("Prototyping").GetComponent<Prototyping>();
-        UserMeshVisualizer = GameObject.Find("UserMesh").GetComponent<UserMeshVisualizer>();
+        UserMeshVisualizer = GameObject.Find("UserMesh")?.GetComponent<UserMeshVisualizer>();
         ApplySmoothing();
         if (gameObject.GetComponent<LimitMesh>() != null)
         {
@@ -92,9 +150,22 @@ public class MeshTools : MonoBehaviour
             LimitingMesh = true;
         }
 
+        
+        //Desmond
 
         AirSticks.Right.NoteOn += ExplodeA;
         AirSticks.Left.NoteOn += ExplodeB;
+
+        //Gran Related cuts
+
+        AirSticks.Right.NoteOn += () => GranRelatedOn(AirSticks.Hand.Right);
+        AirSticks.Left.NoteOn += () => GranRelatedOn(AirSticks.Hand.Left);
+
+        AirSticks.Right.NoteOff += GranRelatedOff;
+        AirSticks.Left.NoteOff += GranRelatedOff;
+
+        Iridescence = gameObject.GetComponent<IridescenceController>();
+
 
         MidiManager.OneFiveNine.Beep += BangOutline;
 
@@ -135,9 +206,72 @@ public class MeshTools : MonoBehaviour
         }
     }
 
+    void GranRelatedExplode(AirSticks.Hand hand)
+    {
+        if (!EnableGranRelatedExplode) return;
+        if (!EnableGranRelatedTransition)
+        {
+            if (hand == AirSticks.Hand.Left)
+            {
+                Noise.NewNoiseIntensity = 0.01f;
+                Noise.NoiseIntensity = GranRelatedLeftExplodeIntensity;
+                Noise.NoiseChangeDamping = GranRelatedLeftExplodeDamping;
+            }
+            else if (hand == AirSticks.Hand.Right)
+            {
+                Noise.NewNoiseIntensity = 0.01f;
+                Noise.NoiseIntensity = GranRelatedRightExplodeIntensity;
+                Noise.NoiseChangeDamping = GranRelatedRightExplodeDamping;
+            }
+            if (ActivateGranRelatedColourCycle)
+            {
+                var material = OutputQuadToTint.GetComponent<Renderer>().material;
+                var currentColor = material.GetColor("_TintColor");
+                float h, s, v;
+                Color.RGBToHSV(currentColor, out h, out s, out v);
+                s = TintSaturation;
+                h = (h + Random.value.Map(0, 1, TintCycleDistance.x, TintCycleDistance.y)) % 1;
+                material.SetColor("_TintColor", Color.HSVToRGB(h, s, 1));
+            }
+        } else
+        {
+            if (WhiteBlockoutController.Full || WhiteBlockoutController.FadingIn)
+            {
+                WhiteBlockoutController.FadeOut(WhiteBlockoutFadeOutTime);
+            }
+            UserMeshVisualizer.BlockKinectUpdate = false;
+            UserMeshVisualizer.ControlRotationSliderByAirsticks = true;
+            UserMeshVisualizer.StartRotateAnimation = true;
+            Noise.NewNoiseIntensity = GranRelatedTransitionBaseNoiseIntensity;
+            Noise.NoiseIntensity = GranRelatedTransitionExplodeIntensity;
+            Noise.SmoothingTimes = 6;
+            Noise.NoiseChangeDamping = GranRelatedTransitionExplodeDamping;
+        }
+    }
+
+    void ResetOutputQuadTint()
+    {
+        var material = OutputQuadToTint.GetComponent<Renderer>().material;
+        material.SetColor("_TintColor", new Color(1, 1, 1, 1));
+    }
+
+    void GranRelatedExplodeReversion()
+    {
+        if (!EnableGranRelatedTransition)
+        {
+            Noise.NewNoiseIntensity = 0.01f;
+            Noise.NoiseChangeDamping = GranRelatedExplodeReversionDamping;
+        } else
+        {
+            UserMeshVisualizer.BlockKinectUpdate = true;
+            Noise.NewNoiseIntensity = GranRelatedTransitionReversionNoiseIntensity;
+            Noise.NoiseChangeDamping = GranRelatedTransitionReversionDamping;
+        }
+    }
+
     void ApplySmoothing()
     {
-        if (UserMeshVisualizer.DisableMeshUpdate)
+        if (UserMeshVisualizer != null &&UserMeshVisualizer.DisableMeshUpdate)
             return;
         var mesh = filter.mesh;
         JobHandle normalNoiseJobHandler;
@@ -172,16 +306,68 @@ public class MeshTools : MonoBehaviour
 
     private void Update()
     {
-        //if (AnimateOutline)
-        //{
-        //    if (Mathf.Abs(Outline - NewOutline) > 0)
-        //    {
-        //        Outline = Outline + (NewOutline - Outline) / OutlineAnimationDamp;
-        //    }
-        //    var color = Renderer.material.GetColor("_OutlineColor");
-        //    color.a = Outline;
-        //    Renderer.material.SetColor("_OutlineColor", color);
-        //}
+        if (EnableMainGranRelatedScene)
+        {
+            EnableGranRelatedTransition = false;
+            EnableGranRelatedAirsticksControl = true;
+            EnableGranRelatedControlIntensity = true;
+            EnableGranRelatedControlSmoothing = true;
+            UserMeshVisualizer.ControlRotationSliderByAirsticks = true;
+            UserMeshVisualizer.StartRotateAnimation = true;
+            UserMeshVisualizer.BlockKinectUpdate = false;
+            UserMeshVisualizer.DisableMeshUpdate = false;
+            EnableMainGranRelatedScene = false;
+        }
+
+
+        if (ActivateGranRelatedColourCycle)
+        {
+            if (ControlSaturationWithAirsticks)
+            {
+                var updateSaturation = true;
+                if (OnlyControlSaturationWhileNoteOn && (!AirSticks.Left.NoteIsOn && !AirSticks.Right.NoteIsOn))
+                {
+                    updateSaturation = false;
+                }
+                if (updateSaturation)
+                {
+                    var material = OutputQuadToTint.GetComponent<Renderer>().material;
+                    var currentColor = material.GetColor("_TintColor");
+                    float h, s, v;
+                    Color.RGBToHSV(currentColor, out h, out s, out v);
+                    s = AirSticks.Right.Position.y.Map(-1, 1, AirsticksSaturation.x, AirsticksSaturation.y);
+                    material.SetColor("_TintColor", Color.HSVToRGB(h, s, v));
+                }
+            }
+        }
+
+        if (ResetTint)
+        {
+            ResetOutputQuadTint();
+            ResetTint = false;
+        }
+
+        if (FadeInWhiteBlockout)
+        {
+            WhiteBlockoutController.FadeIn(WhiteBlockoutFadeInTime);
+            FadeInWhiteBlockout = false;
+        } else if (FadeOutWhiteBlockout)
+        {
+            WhiteBlockoutController.FadeOut(WhiteBlockoutFadeOutTime);
+            FadeOutWhiteBlockout = false;
+        }
+
+        if (ActivateGranRelatedIridescence)
+        {
+            Iridescence.Activate = true;
+            Iridescence.FilmStrength = IridescenceFilmStrength;
+            Iridescence.FilmFrequency = IridescenceFilmFrequency;
+            Iridescence.AnimateColorOffset = true;
+            Iridescence.ColorOffsetAnimationRate = IridescenceColourAnimationRate;
+            Iridescence.AnimateNoiseOffset = true;
+            Iridescence.NoiseOffsetAnimationRate = IridescenceFilmAnimationRate;
+            ActivateGranRelatedIridescence = false;
+        }
 
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -190,6 +376,22 @@ public class MeshTools : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.R))
         {
             ExplodeB();
+        }
+
+        if (EnableGranRelatedAirsticksControl || EnableGranRelatedTransition)
+        {
+            if (GranControl)
+            {
+                if (EnableGranRelatedControlIntensity || EnableGranRelatedTransition)
+                {
+                    Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, GranRelatedNoiseIntensity.x, GranRelatedNoiseIntensity.y);
+                }
+
+                if (EnableGranRelatedControlSmoothing)
+                {
+                    Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, GranRelatedSmoothing.x, GranRelatedSmoothing.y));
+                }
+            }
         }
 
         //if (Input.GetKeyDown(KeyCode.Alpha0))
@@ -239,18 +441,25 @@ public class MeshTools : MonoBehaviour
         //}
         //IridescenceUpdate();
 
-        if (EnableAirsticksControl)
+        if (EnableDesmondAirsticksControl)
         {
-            Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, -.3f, .5f);
-            Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, 0f, 5f));
-
-            // WireframeAlpha = AirSticks.Right.EulerAngles.z.Map(0f, 1f, 0.7f, 1f);
+            Noise.NoiseIntensity = AirSticks.Left.EulerAngles.x.Map(0f, 1f, DesmondInstensityMinMax.x, DesmondInstensityMinMax.y);
+            
+            Noise.SmoothingTimes = Mathf.RoundToInt(AirSticks.Right.EulerAngles.x.Map(1f, 0f, DesmondSmoothingMinMax.x, DesmondSmoothingMinMax.y));
+        
             WireframeAlpha = 1f;
             WireframeColor.a = WireframeAlpha;
             SetMaterialColor("_Color", WireframeColor);
         }
 
-            NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
+        NoiseAndSmoothing.CurrentNoiseIntensity = Noise.NoiseIntensity;
+
+        if (Mathf.Abs(Noise.NoiseIntensity - Noise.NewNoiseIntensity) > 0)
+        {
+            Noise.NoiseIntensity = Noise.NoiseIntensity + (Noise.NewNoiseIntensity - Noise.NoiseIntensity) / Noise.NoiseChangeDamping;
+        }
+
+
         
 
         // if (Input.GetMouseButtonDown(0))
@@ -260,11 +469,6 @@ public class MeshTools : MonoBehaviour
         //     var mouse = Input.mousePosition.x.Map(0f, Screen.width, 0f, 1f);
         // }
 
-
-        if (Mathf.Abs(Noise.NoiseIntensity - Noise.NewNoiseIntensity) > 0)
-        {
-            Noise.NoiseIntensity = Noise.NoiseIntensity + (Noise.NewNoiseIntensity - Noise.NoiseIntensity) / Noise.NoiseChangeDamping;
-        }
         if (AnimateWireframeAlpha)
         {
             if (Mathf.Abs(WireframeAlpha - NewWireframeAlpha) > 0)
@@ -291,6 +495,18 @@ public class MeshTools : MonoBehaviour
 
         // }
 
+    }
+
+    void GranRelatedOn(AirSticks.Hand hand)
+    {
+        GranRelatedExplode(hand);
+        if (!EnableGranRelatedTransition) GranControl = true;
+    }
+
+    void GranRelatedOff()
+    {
+        GranRelatedExplodeReversion();
+        if (!EnableGranRelatedTransition) GranControl = false;
     }
 
     bool NoteOn = false;

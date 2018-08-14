@@ -11,6 +11,7 @@ public class TrackerOutputEffector : MonoBehaviour
 
     public bool AnimateAlpha = true;
     public bool EnableAirsticksAlphaControl = false;
+    public bool UpdateParametersEveryFrame = true;
 
     public bool NoteOnCloning = false;
 
@@ -20,12 +21,16 @@ public class TrackerOutputEffector : MonoBehaviour
     public bool CloningActive = false;
 
     float cloneDistance = 0.5f;
-    [Range(0.005f, 0.8f)]
-    public float CloneDistance = 0.5f;
+
+    public float CloneDistance = 0.8f;
     public float CloneThreshold = 0.05f;
 
     public List<Color> CloneColors;
-    int CloneColourPosition = 0;
+    public int CloneColourPosition = 0;
+
+    public bool ControlCloneDistanceWithAirSticks = true;
+    public Vector2 AirSticksCloneDistanceMinMax = new Vector2(0, 1);
+    public Vector4 AirSticksPositionMap = new Vector4(0, 1, 0, 1);
 
     bool leftOn = false;
     bool LeftOn
@@ -77,8 +82,8 @@ public class TrackerOutputEffector : MonoBehaviour
     Vector3 LeftNoteOnPosition;
     Vector3 RightNoteOnPosition;
 
-    List<GameObject> LeftHandClones = new List<GameObject>();
-    List<GameObject> RightHandClones = new List<GameObject>();
+    public List<GameObject> LeftHandClones = new List<GameObject>();
+    public List<GameObject> RightHandClones = new List<GameObject>();
 
     bool OccludeBase = true;
 
@@ -116,26 +121,8 @@ public class TrackerOutputEffector : MonoBehaviour
         HideClones(AirSticks.Hand.Right);
     }
 
-    // Update is called once per frame
     void Update()
     {
-
-        //if (RightOn)
-        //{
-        //    var distanceFromOrigin = AirSticks.Right.Position - RightNoteOnPosition;
-        //    if (distanceFromOrigin.x <= -(CloneThreshold * (RightHandClones.Count + 1)))
-        //    {
-        //        InstantiateClone(AirSticks.Hand.Right);
-        //    }
-        //}
-        //if (LeftOn)
-        //{
-        //    var distanceFromOrigin = AirSticks.Left.Position - LeftNoteOnPosition;
-        //    if (distanceFromOrigin.x >= (CloneThreshold * (LeftHandClones.Count + 1)))
-        //    {
-        //        InstantiateClone(AirSticks.Hand.Left);
-        //    }
-        //}
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -204,7 +191,8 @@ public class TrackerOutputEffector : MonoBehaviour
         }
 
         // refresh on clone change distance
-        if (cloneDistance != CloneDistance)
+        if (cloneDistance != CloneDistance
+            || UpdateParametersEveryFrame)
         {
             RefreshClones();
         }
@@ -233,7 +221,7 @@ public class TrackerOutputEffector : MonoBehaviour
         RefreshClones();
     }
 
-    void RefreshCloneColours()
+    public void RefreshCloneColours()
     {
         switch (CloneColourPosition)
         {
@@ -419,8 +407,23 @@ public class TrackerOutputEffector : MonoBehaviour
         // make sure to remove this script from the clone so it's not recursive
         Destroy(clone.GetComponent<TrackerOutputEffector>());
 
-        // set the x axis offset based on what number clone it is
-        var xOffset = cloneDistance * clones.Count;
+        var distance = cloneDistance;
+
+        if (ControlCloneDistanceWithAirSticks)
+        {
+            switch (hand)
+            {
+                case AirSticks.Hand.Left:
+                    distance = cloneDistance * AirSticks.Right.Position.z.Map(AirSticksPositionMap.x, AirSticksPositionMap.y, AirSticksPositionMap.z, AirSticksPositionMap.w);
+                    break;
+                case AirSticks.Hand.Right:
+                    distance = cloneDistance * AirSticks.Left.Position.z.Map(AirSticksPositionMap.x, AirSticksPositionMap.y, AirSticksPositionMap.z, AirSticksPositionMap.w);
+                    break;
+            }
+        }
+
+        // multiply the x axis offset based on what number clone it is
+        var xOffset = distance * clones.Count;
         if (hand == AirSticks.Hand.Right) xOffset = -xOffset;
 
         // an a slight z offset to ensure the new clones are rendered behind

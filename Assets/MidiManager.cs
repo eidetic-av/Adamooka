@@ -1,13 +1,18 @@
 ﻿using Eidetic.Unity.Utility;
 using Midi;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MidiManager : MonoBehaviour
 {
 
+    public static MidiManager Instance;
+
     public string DeviceName = "rtpMIDI";
     InputDevice InputDevice;
+
+    public bool LogNoteOns = false;
 
     public int AbletonState = -1;
 
@@ -25,6 +30,7 @@ public class MidiManager : MonoBehaviour
     public WindZone RainParticlesWind;
     public GameObject UserParticles;
     public GameObject ParticleCamera;
+    public ParticleController HitParticlesController;
     public GameObject UserMesh;
     public MeshTools MeshTools;
     public Renderer UserMeshRenderer;
@@ -55,9 +61,13 @@ public class MidiManager : MonoBehaviour
     bool ExitTrackerQuad = false;
     float ExitTime = 0f;
 
+    public Dictionary<String, ParticleSystem> RingKitSystems;
+
     // Use this for initialization
     void Start()
     {
+        Instance = this;
+
         ToonLit = Resources.Load<UnityEngine.Material>("ToonLit");
         BlackOcclusion = Resources.Load<UnityEngine.Material>("BlackOcclusion");
         Wireframe = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
@@ -83,28 +93,44 @@ public class MidiManager : MonoBehaviour
             InputDevice.Open();
             InputDevice.StartReceiving(null);
             InputDevice.NoteOn += RouteNoteOn;
+            Debug.Log("Opened MIDI Device");
         }
     }
 
     private void RouteNoteOn(NoteOnMessage noteOnMessage)
     {
-        Threading.RunOnMain(() =>
+        if (LogNoteOns) Debug.Log(noteOnMessage.Channel + "." + noteOnMessage.Pitch);
+
+        Threading.RunOnMain((Action)(() =>
         {
             switch (noteOnMessage.Channel)
             {
                 case Channel.Channel1:
                     {
-                        OneFiveNine.Beep.Invoke();
+                        RouteOneFiveNine(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel2:
                     {
-                        OneFiveNine.Bass.Invoke(noteOnMessage.Pitch);
+                        RouteComputerRain(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel3:
+                    {
+                        RouteDesmondMidi(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel14:
                     {
-                        RouteElectricMidi(noteOnMessage.Pitch);
+                        if (noteOnMessage.Pitch == Pitch.C0)
+                        {
+                            CircleParticleController.Instance.BangRotation = true;
+                        }
+                        break;
+                    }
+                case Channel.Channel4:
+                    {
+                        RouteHyphenMidi(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel15:
@@ -118,9 +144,251 @@ public class MidiManager : MonoBehaviour
                         break;
                     }
             }
-        });
+        }));
+    }
+    private void RouteOneFiveNine(Pitch pitch)
+    {
+        var noise = NoiseCircleController.Instance;
+
+        switch (pitch)
+        {
+            case Pitch.CSharp2:
+                // Beep Rec
+                MembraneController.Instance.FlashColor = true;
+                break;
+            case Pitch.C2:
+                MembraneController.Instance.FlashColor = true;
+                // Beep Loop
+                break;
+
+            case Pitch.DSharp2:
+                // Growl Rec
+                noise.Triggers[0] = true;
+                break;
+            case Pitch.D2:
+                // Growl Loop
+                noise.Triggers[0] = true;
+                break;
+            case Pitch.F2:
+                // Kick Rec
+                noise.Triggers[1] = true;
+                break;
+            case Pitch.E2:
+                noise.Triggers[1] = true;
+                // Kick Loop
+                break;
+            case Pitch.G2:
+                noise.Triggers[2] = true;
+                // Snare1 Rec
+                break;
+            case Pitch.FSharp2:
+                noise.Triggers[2] = true;
+                // Snare1 Loop
+                break;
+            case Pitch.A2:
+                // Open HH Rec
+                noise.Triggers[3] = true;
+                break;
+            case Pitch.GSharp2:
+                // Open HH Loop
+                noise.Triggers[3] = true;
+                break;
+            case Pitch.ASharp2:
+                // Kick2 Rec
+                noise.Triggers[4] = true;
+                break;
+            case Pitch.B2:
+                // Kick2 Loop
+                noise.Triggers[4] = true;
+                break;
+            case Pitch.CSharp3:
+                noise.Triggers[5] = true;
+                // Snare2 Rec
+                break;
+            case Pitch.C3:
+                noise.Triggers[5] = true;
+                // Snare2 Loop
+                break;
+            case Pitch.DSharp3:
+                // Snare3 Rec
+                noise.Triggers[6] = true;
+                break;
+            case Pitch.D3:
+                // Snare3 Loop
+                noise.Triggers[6] = true;
+                break;
+            case Pitch.B1:
+                // Sub kick
+                break;
+
+            case Pitch.F3:
+                // Invasion start
+                CircleParticleController.Instance.StartInvasion = true;
+                break;
+            case Pitch.FSharp3:
+                // Invasion explode / beat in
+                CircleParticleController.Instance.StartInvasionRevert = true;
+                // Noisier high hat? Different texture, colour?
+                break;
+
+            case Pitch.G3:
+                // Go back to Airsticks Note On/Off with the
+                OneFiveNineCircleController.Instance.ActivateAirSticksKickSnare = true;
+                break;
+        }
     }
 
+    private void RouteComputerRain(Pitch pitch) {
+        switch(pitch) {
+            case Pitch.B2:
+                // start rain
+                RainController.Instance.EnableEmission = true;
+                GameObject.Find("OneFiveNine").SetActive(false);
+                TrackerSceneController.Instance.EnableKinectUpdate = true;
+                break;
+            case Pitch.C3:
+                // Suck in particles
+                RainController.Instance.StartCloneTransition = true;
+                break;
+            case Pitch.CSharp3:
+                // Disperse particles
+                RainController.Instance.StartCloneDispersion = true;
+                RainController.Instance.StopParticleLength = 3;
+                RainController.Instance.SlowlyStopParticles = true;
+                // Switch on white clones
+                TrackerSceneController.Instance.ActivateClones = true;
+                TrackerSceneController.Instance.ActivateCloneIntroState = true;
+                break;
+            case Pitch.ASharp2:
+                // Activate airsticks clone colour cycle
+                TrackerSceneController.Instance.AirSticksNoteOnCyclesColours = true;
+                break;
+            case Pitch.D3:
+                // Go to desmond colours
+                TrackerSceneController.Instance.ActivateRainOutroState = true;
+                break;
+            case Pitch.DSharp3:
+                // TrackerSceneController.Instance.SillhouetteOff = true;
+                break;
+            case Pitch.E3:
+                // Step two, introduce particles with desmond colours
+                // Explode particles, remove clones
+                RainController.Instance.ActivateOutroState = true;
+                break;
+            case Pitch.F3:
+                RainController.Instance.TransitioningToOutro = true;
+                TrackerSceneController.Instance.RemoveAllClones = true;
+                break;
+            case Pitch.FSharp3:
+                RainController.Instance.StopParticleLength = 10;
+                RainController.Instance.SlowlyStopParticles = true;
+                break;
+        }
+    }
+
+
+    private void RouteDesmondMidi(Pitch pitch)
+    {
+        switch (pitch)
+        {
+            // Desmond control
+            case Pitch.F2:
+                // start desmond
+                var renderer = GameObject.Find("OutputQuad").GetComponent<Renderer>();
+                renderer.material.SetColor("_TintColor", new Color(1, 1, 1, 1));
+                var userMesh = GameObject.Find("UserMesh").GetComponent<Renderer>();
+                userMesh.enabled = true;
+                userMesh.material = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
+                MeshTools.Instance.EnableDesmondAirsticksControl = true;
+                MeshTools.Instance.DesmondInstensityMinMax = new Vector2(-0.3f, 0.5f);
+                MeshTools.Instance.DesmondSmoothingMinMax = new Vector2Int(0, 5);
+                break;
+            case Pitch.E2:
+                // minimal shape
+                MeshTools.Instance.DesmondInstensityMinMax = new Vector2(0f, 0.25f);
+                MeshTools.Instance.DesmondSmoothingMinMax = new Vector2Int(1, 5);
+                break;
+            case Pitch.FSharp2:
+                // intense desmond shape
+                MeshTools.Instance.DesmondInstensityMinMax = new Vector2(-0.3f, 0.5f);
+                MeshTools.Instance.DesmondSmoothingMinMax = new Vector2Int(0, 5);
+                break;
+            case Pitch.GSharp3:
+                // desmond lose shape
+                UserMeshVisualizer.Instance.BlockKinectUpdate = true;
+                break;
+            case Pitch.A3:
+                // end breakdown / back to form
+                UserMeshVisualizer.Instance.BlockKinectUpdate = false;
+                break;
+            case Pitch.ASharp3:
+                // drum/guitar outro setting
+                break;
+            case Pitch.B3:
+                // guitar solo shape
+                break;
+            case Pitch.C4:
+                UserMeshVisualizer.Instance.BlockKinectUpdate = true;
+                // ending transition
+                break;
+
+            // Track control
+            case Pitch.D2:
+                // pause track
+                break;
+            case Pitch.DSharp2:
+                // unpause track
+                break;
+            // case Pitch.E2:
+                // glitch out
+                // break;
+            
+            // Paint control
+            case Pitch.G2:
+                // piano 1 on
+                // only left hand
+                break;
+            case Pitch.GSharp2:
+                // piano 1 off
+                break;
+            case Pitch.A2:
+                // bass on
+                break;
+            case Pitch.ASharp2:
+                // bass off
+                break;
+            case Pitch.B2:
+                // vibes on
+                // only right hand
+                // 1 Minute long trail
+                break;
+            case Pitch.C3:
+                // vibes off
+                break;
+            case Pitch.CSharp3:
+                // drums on
+                break;
+            case Pitch.D3:
+                // drums off
+                break;
+            case Pitch.DSharp3:
+                // vibes off quickly
+            case Pitch.E3:
+                // piano 2 on
+                // 37 second long trail
+                break;
+            case Pitch.F3:
+                // piano 2 off
+                break;
+            case Pitch.FSharp3:
+                // drums 2 on
+                // 1:15 trail length
+                break;
+            case Pitch.G3:
+                // drums 2 off
+                break;
+        }
+    }
     private void RouteDriftMidi(Pitch pitch)
     {
         Debug.Log(pitch.ToString());
@@ -161,7 +429,6 @@ public class MidiManager : MonoBehaviour
 
     private void RouteElectricMidi(Pitch pitch)
     {
-        Debug.Log("pitch: " + pitch);
         switch (pitch)
         {
             case Pitch.CNeg1:
@@ -194,6 +461,12 @@ public class MidiManager : MonoBehaviour
                 LinesOut();
                 break;
         }
+    }
+
+    private void RouteHyphenMidi(Pitch pitch)
+    {
+        //Debug.Log(pitch.NoteNumber());
+        HitParticlesController.MidiHit(pitch);
     }
 
     private void RandomiseKaleidoscope()
@@ -319,6 +592,7 @@ public class MidiManager : MonoBehaviour
             case Pitch.E2:
                 // Rain
                 ActivateRainState();
+                ParticleSceneController.Instance.OneFiveNineOut = true;
                 break;
             case Pitch.E1:
                 // SuckRain
@@ -326,12 +600,12 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.D2:
                 // Clone transition
-                ExplodeMeshBeforeClones();
+                PreClones();
                 break;
             case Pitch.DSharp2:
                 if (AbletonState != 3)
                     // Activate clone scene
-                    ShowClones();
+                    TrackerSceneController.Instance.ActivateClones = true;
                 else
                     // Cycle colours
                     TrackerOutputEffector.CycleCloneColours();
@@ -342,11 +616,10 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.F2:
                 if (AbletonState != 5 && AbletonState < 6)
-                    // stop producing rain particles
-                    StopRain();
+                    PreDesmond();
                 else if (AbletonState == 5)
                     // activate wireframe scene
-                    ShowWireframe();
+                    ShowDesmond();
                 else if (AbletonState == 6)
                     WireframeExplodeEnable();
                 else if (AbletonState == 7)
@@ -399,7 +672,7 @@ public class MidiManager : MonoBehaviour
         DriftParticles.SetActive(false);
     }
 
-    void ActivateRainState()
+    public void ActivateRainState()
     {
         ClearAllStates();
         RainParticles.SetActive(true);
@@ -410,31 +683,33 @@ public class MidiManager : MonoBehaviour
         AbletonState = 0;
     }
 
-    void SuckRain()
+    public void SuckRain()
     {
         if (AbletonState == 0)
         {
             var rainController = RainParticles.GetComponent<RainController>();
+            rainController.HoneDampingSpeed = new Vector2(5, 5);
+            rainController.HoneDampingSpeedDamp = 5f;
             rainController.Hone = true;
         }
 
         AbletonState = 1;
     }
 
-    void ExplodeMeshBeforeClones()
+    public void PreClones()
     {
         if (AbletonState == 1)
         {
-            MeshTools.EnableAirsticksControl = false;
+            MeshTools.EnableDesmondAirsticksControl = false;
             // enable mesh renderer
             UserMeshRenderer.enabled = true;
-            UserMeshRenderer.material = new UnityEngine.Material(ToonLit);
-            // set it to red
-            TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 0, 0, 1));
+            //UserMeshRenderer.material = new UnityEngine.Material(ToonLit);
+            //// set it to red
+            //TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 0, 0, 1));
 
-            // and explode it
-            MeshTools.EnableExplode = true;
-            MeshTools.ExplodeA();
+            //// and explode it
+            //MeshTools.EnableExplode = true;
+            //MeshTools.ExplodeA();
 
             // disable rain
             RainParticles.GetComponent<RainController>().Control = false;
@@ -444,23 +719,36 @@ public class MidiManager : MonoBehaviour
         AbletonState = 2;
     }
 
-    void ShowClones()
+    public void ShowClones()
     {
         // enable mesh renderer
         UserMeshRenderer.enabled = true;
-        // and set the base output layer as occlusion with black tint
-        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(0, 0, 0, 1));
+        TrackerOutputEffector.CloningActive = false;
+
+        // Set material
+        UserMeshVisualizer.Instance.gameObject.GetComponent<Renderer>().material = Resources.Load<UnityEngine.Material>("CloneMaterial");
+
+        //MeshTools.EnableExplode = false;
 
         // add some clones to the scene
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             TrackerOutputEffector.InstantiateClone(AirSticks.Hand.Left);
             TrackerOutputEffector.InstantiateClone(AirSticks.Hand.Right);
         }
 
-        TrackerOutputEffector.CloningActive = true;
+        // and set the base output layer as occlusion by tinting it black
+        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(0, 0, 0, 1));
+        TrackerSceneController.Instance.ActivateClones = true;
 
-        MeshTools.EnableExplode = false;
+        // set the mesh deformation levels
+        var meshTools = GameObject.Find("UserMesh").GetComponent<MeshTools>();
+        meshTools.Noise.NewNoiseIntensity = 0;
+        meshTools.Noise.NoiseIntensity = 0;
+        meshTools.Noise.SmoothingTimes = 1;
+
+        // activate the UserLight
+        GameObject.Find("UserLight").GetComponent<Light>().enabled = true;
 
         AbletonState = 3;
     }
@@ -470,25 +758,26 @@ public class MidiManager : MonoBehaviour
         TrackerOutputEffector.HideClones(AirSticks.Hand.Left);
         TrackerOutputEffector.HideClones(AirSticks.Hand.Right);
         TrackerOutputEffector.CloningActive = false;
-        UserMeshVisualizer.BlockKinectUpdate = true;
-        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 0, 0, 1));
+        //UserMeshVisualizer.Instance.BlockKinectUpdate = true;
 
-        RainParticles.SetActive(true);
-        var RainController = RainParticles.GetComponent<RainController>();
-        RainController.Control = true;
-        RainController.Revert = true;
-        RainController.RevertDamping = 10f;
+        TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(0, 0, 0, 1));
+
+        //RainParticles.SetActive(true);
+        //var RainController = RainParticles.GetComponent<RainController>();
+        //RainController.Control = true;
+        //RainController.Revert = true;
+        //RainController.RevertDamping = 10f;
 
         ParticleCamera.SetActive(true);
 
         AbletonState = 4;
     }
 
-    void StopRain()
+    void PreDesmond()
     {
-        Debug.Log("StopRain");
-        var emissionModule = RainParticles.GetComponentInChildren<ParticleSystem>().emission;
-        emissionModule.rateOverTime = 0;
+        Debug.Log("PreDesmond");
+        //var emissionModule = RainParticles.GetComponentInChildren<ParticleSystem>().emission;
+        //emissionModule.rateOverTime = 0;
         AbletonState = 5;
     }
 
@@ -497,15 +786,15 @@ public class MidiManager : MonoBehaviour
         RainParticles.SetActive(false);
     }
 
-    void ShowWireframe()
+    void ShowDesmond()
     {
-        Debug.Log("ShowWireframe");
+        Debug.Log("ShowDesmond");
         UserMeshRenderer.enabled = true;
-        UserMeshVisualizer.BlockKinectUpdate = false;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = false;
         TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
         UserMeshRenderer.material = Wireframe;
         MeshTools.EnableExplode = false;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
         AbletonState = 6;
     }
 
@@ -514,7 +803,8 @@ public class MidiManager : MonoBehaviour
         Debug.Log("ExplodeEnable");
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = true;
         AbletonState = 7;
     }
 
@@ -523,7 +813,8 @@ public class MidiManager : MonoBehaviour
         Debug.Log("ExplodeDisable");
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = false;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = false;
         AbletonState = 8;
     }
 
@@ -532,7 +823,8 @@ public class MidiManager : MonoBehaviour
         Debug.Log("ExplodeRena");
         UserMeshRenderer.enabled = true;
         MeshTools.EnableExplode = true;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
+        UserMeshVisualizer.Instance.BlockKinectUpdate = true;
         AbletonState = 9;
     }
 
@@ -540,7 +832,7 @@ public class MidiManager : MonoBehaviour
     {
         Debug.Log("DesmondBreak");
         MeshTools.EnableExplode = false;
-        MeshTools.EnableAirsticksControl = true;
+        MeshTools.EnableDesmondAirsticksControl = true;
         UserMeshVisualizer.BlockKinectUpdate = true;
         AbletonState = 10;
     }
@@ -563,7 +855,7 @@ public class MidiManager : MonoBehaviour
         MeshTools.Noise.SmoothingTimes = 2;
         MeshTools.Noise.NoiseIntensity = 0.05f;
         MeshTools.Noise.NewNoiseIntensity = 0.05f;
-        
+
         TrackerSceneOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
         TrackerSceneFlippedOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
 
@@ -589,7 +881,7 @@ public class MidiManager : MonoBehaviour
     void TransitionOutOfHeifen()
     {
         RainParticles.GetComponent<RainController>().Revert = true;
-        StopRain();
+        PreDesmond();
     }
 
 
@@ -606,7 +898,7 @@ public class MidiManager : MonoBehaviour
         TrackerSceneFlippedOutputQuad.GetComponent<Renderer>().material.SetColor("_TintColor", new Color(1, 1, 1, 1));
 
         MeshTools.EnableExplode = true;
-        MeshTools.EnableAirsticksControl = false;
+        MeshTools.EnableDesmondAirsticksControl = false;
         UserMeshVisualizer.BlockKinectUpdate = false;
 
 
@@ -621,7 +913,7 @@ public class MidiManager : MonoBehaviour
         UserMeshRenderer.material = new UnityEngine.Material(Basic);
         UserMeshRenderer.material.SetColor("_EmissionColor", Color.yellow);
 
-        MeshTools.EnableAirsticksControl = false;
+        MeshTools.EnableDesmondAirsticksControl = false;
         MeshTools.EnableExplode = false;
         MeshTools.Noise.NoiseIntensity = 0.06f;
         MeshTools.Noise.NewNoiseIntensity = 0.06f;

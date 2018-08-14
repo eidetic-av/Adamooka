@@ -3,11 +3,42 @@ using System.Collections.Generic;
 using UnityEngine;
 using Midi;
 using System;
+using System.Diagnostics;
+using Utility;
 
 public class RainController : MonoBehaviour
 {
-    GameObject UserMesh;
-    MeshFilter UserMeshFilter;
+    public static RainController Instance;
+
+    public bool EnableEmission = false;
+    public bool DisableEmission = false;
+    public int EmissionCount = 2000;
+
+    public Gradient DesmondParticleColor;
+    public bool ActivateDesmondParticleColor = false;
+    public bool ActivateOutroState = false;
+
+    public bool TransitioningToOutro = false;
+    private float OutroTransitionPosition = 0;
+    public float OutroTransitionDamping = 5f;
+    public bool StartCloneTransition = false;
+    public float CloneTransitionLength = 5f;
+    public AnimationCurve CloneTransitionCurve = AnimationCurve.EaseInOut(0, 1, 0, 1);
+    private bool TransitioningToClone = false;
+    private float CloneTransitionStartTime;
+
+    public bool StartCloneDispersion = false;
+    public float CloneDispersionLength = 3f;
+    public AnimationCurve CloneDispersionCurve = AnimationCurve.EaseInOut(0, 1, 0, 1);
+    private bool DispersingToClone = false;
+    private float CloneDispersionStartTime;
+
+    public bool SlowlyStopParticles = false;
+    public float StopParticleLength = 3f;
+    public AnimationCurve StopParticleCurve = AnimationCurve.EaseInOut(0, 1, 0, 1);
+    private bool StoppingParticles = false;
+    private float StopParticleStartTime;
+
 
     public GameObject Wind;
     public GameObject Particles;
@@ -24,8 +55,17 @@ public class RainController : MonoBehaviour
 
     bool OriginalNoiseEnabled;
 
+    public bool RadialModifier = false;
+    [Range(-2f, 2f)]
+    public float RadialModifierIntesity = 0f;
+
+    public KinectInterop.JointType RadialOriginJoint;
+    public Vector3 JointScaling;
+    public Vector3 JointOffset;
+
     public Vector3 Scaling = new Vector3(0, 0, 0);
     public Vector3 HonedOffset = new Vector3(0, 0, 0);
+
 
     float HoneDamping = 10f;
     public Vector2 HoneDampingSpeed = new Vector2(5f, 1f);
@@ -33,6 +73,8 @@ public class RainController : MonoBehaviour
     public float RevertDamping = 10f;
 
     public float RevertThreshold = 0.05f;
+
+    public Vector3 RotationMultiply = new Vector3(1f, 1f, 1f);
 
     float ShapeSize = 10f;
     float NewShapeSize = 10f;
@@ -43,21 +85,206 @@ public class RainController : MonoBehaviour
     public bool Revert;
     bool DoingHoneOff;
 
+    Stopwatch ReversionTimer = new Stopwatch();
+    public int ReversionMilliseconds = 750;
+
     public Action HoneCallback;
+
+    public bool HitOut = false;
+    public bool HitOutSecondStage = false;
+
+    public bool AirStickHoneOnHit = false;
+    private bool SetAirsticksHit = false;
+
 
     // Use this for initialization
     void Start()
     {
-        UserMesh = GameObject.Find("UserMesh");
-        UserMeshFilter = UserMesh.GetComponent<MeshFilter>();
+        Instance = this;
+
+        ParticleSystem = Particles.GetComponent<ParticleSystem>();
+
+        // UserMesh = GameObject.Find("UserMesh");
+        // UserMeshFilter = UserMesh.GetComponent<MeshFilter>();
 
         //AirSticks.Right.NoteOn += HoneOn;
         //AirSticks.Right.NoteOff += HoneOff;
+        AirSticks.Right.NoteOn += DoHitOut;
+    }
+
+    void DoHitOut()
+    {
+        if (AirStickHoneOnHit)
+        {
+            SetAirsticksHit = true;
+        }
+    }
+
+    void Update()
+    {
+        if (SetAirsticksHit)
+        {
+            HitOut = true;
+            SetAirsticksHit = false;
+        }
+
+        if (TransitioningToOutro)
+        {
+            OutroTransitionPosition = OutroTransitionPosition + (1 - OutroTransitionPosition) / OutroTransitionDamping;
+            if (OutroTransitionPosition >= 0.99)
+            {
+                ProceduralMeshController.Instance.Interpolation = 1;
+                ParticleSystemRenderer renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
+                renderer.maxParticleSize = 0.005f;
+                ProceduralMeshController.Instance.ControlInterpolationWithAirSticks = true;
+                var externalForces = ParticleSystem.externalForces;
+                externalForces.multiplier = 5f;
+                TransitioningToOutro = false;
+                OutroTransitionPosition = 0;
+            }
+            else
+            {
+                ProceduralMeshController.Instance.Interpolation = OutroTransitionPosition;
+                ParticleSystemRenderer renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
+                renderer.maxParticleSize = OutroTransitionPosition.Map(0f, 1f, 0.01f, 0.005f);
+            }
+        }
+
+        if (EnableEmission)
+        {
+            var particleSystem = Particles.GetComponent<ParticleSystem>();
+            var emissionModule = particleSystem.emission;
+            emissionModule.rateOverTime = EmissionCount;
+            // particleSystem.Emit(EmissionCount);
+            EnableEmission = false;
+        }
+        if (DisableEmission)
+        {
+            var emissionModule = Particles.GetComponent<ParticleSystem>().emission;
+            emissionModule.rateOverTime = 0;
+            DisableEmission = false;
+        }
+        if (ActivateDesmondParticleColor)
+        {
+            var particleSystem = Particles.GetComponent<ParticleSystem>();
+            var mainModule = particleSystem.main;
+            var desmondGradient = new ParticleSystem.MinMaxGradient(DesmondParticleColor);
+            desmondGradient.mode = ParticleSystemGradientMode.RandomColor;
+            mainModule.startColor = desmondGradient;
+            mainModule.gravityModifierMultiplier = 0.3f;
+            ActivateDesmondParticleColor = false;
+        }
+
+        if (ActivateOutroState)
+        {
+            EnableEmission = true;
+            
+            EmissionCount = 2000;
+            var emissionModule = ParticleSystem.emission;
+            emissionModule.rateOverTime = EmissionCount;
+            var mainModule = ParticleSystem.main;
+            mainModule.maxParticles = 1000;
+
+            ActivateDesmondParticleColor = true;
+            ProceduralMeshController.Instance.ControlInterpolationWithAirSticks = false;
+            ProceduralMeshController.Instance.Interpolation = 0;
+            ParticleSystemRenderer renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
+            renderer.maxParticleSize = 0.01f;
+            ActivateOutroState = false;
+        }
+
+        if (StartCloneTransition) {
+            CloneTransitionStartTime = Time.time;
+            ProceduralMeshController.Instance.ControlInterpolationWithAirSticks = false;
+            TransitioningToClone = true;
+            StartCloneTransition = false;
+        }
+
+        if (TransitioningToClone) {
+            var position = (Time.time - CloneTransitionStartTime) / CloneTransitionLength;
+            var curveValue = CloneTransitionCurve.Evaluate(position);
+            if (curveValue >= 1) {
+                curveValue = 1;
+                TransitioningToClone = false;
+            }
+            var mainModule = ParticleSystem.main;
+            mainModule.gravityModifierMultiplier = curveValue.Map(0f, 1f, 0.3f, 0f);
+            var externalForces = ParticleSystem.externalForces;
+            externalForces.multiplier = curveValue.Map(0f, 1f, 5f, 0f);
+            ProceduralMeshController.Instance.Interpolation = curveValue.Map(0f, 1f, 1f, 0f);
+        }
+
+        if (StartCloneDispersion) {
+            CloneDispersionStartTime = Time.time;
+            ProceduralMeshController.Instance.ControlInterpolationWithAirSticks = false;
+            DispersingToClone = true;
+            StartCloneDispersion = false;
+        }
+
+        if (DispersingToClone) {
+            var position = (Time.time - CloneDispersionStartTime) / CloneDispersionLength;
+            var curveValue = CloneDispersionCurve.Evaluate(position);
+            if (curveValue >= 1) {
+                curveValue = 1;
+                DispersingToClone = false;
+            }
+            var mainModule = ParticleSystem.main;
+            mainModule.gravityModifierMultiplier = curveValue.Map(0f, 1f, 0, 0.3f);
+            ProceduralMeshController.Instance.Interpolation = curveValue.Map(0f, 1f, 0f, 1f);
+        }
+
+        if (SlowlyStopParticles) {
+            StopParticleStartTime = Time.time;
+            ProceduralMeshController.Instance.ControlInterpolationWithAirSticks = false;
+            StoppingParticles = true;
+            SlowlyStopParticles = false;
+        }
+
+        if (StoppingParticles) {
+            var position = (Time.time - StopParticleStartTime) / StopParticleLength;
+            var curveValue = StopParticleCurve.Evaluate(position);
+            if (curveValue >= 1) {
+                curveValue = 1;
+                StoppingParticles = false;
+            }
+            EmissionCount = Mathf.RoundToInt(curveValue.Map(0f, 1f, 2000f, 0f));
+            var emissionModule = ParticleSystem.emission;
+            emissionModule.rateOverTime = EmissionCount;
+            var mainModule = ParticleSystem.main;
+            mainModule.maxParticles = Mathf.RoundToInt(curveValue.Map(0f, 1f, 1000f, 0f));
+        }
+
     }
 
     // Update is called once per frame
     void LateUpdate()
     {
+
+        if (RadialModifier)
+        {
+            var manager = KinectManager.Instance;
+            var origin = manager.GetJointPosition(manager.GetUserIdByIndex(0), (int)RadialOriginJoint);
+            var velocityModule = ParticleSystem.velocityOverLifetime;
+
+            velocityModule.orbitalOffsetX = (origin.x * JointScaling.x) + JointOffset.x;
+            velocityModule.orbitalOffsetY = (origin.y * JointScaling.y) + JointOffset.y;
+            velocityModule.orbitalOffsetZ = (origin.z * JointScaling.z) + JointOffset.z;
+
+            velocityModule.radialMultiplier = RadialModifierIntesity;
+
+        }
+        if (HitOut)
+        {
+            Hone = true;
+            HitOutSecondStage = true;
+            HitOut = false;
+        }
+        else if (HitOutSecondStage)
+        {
+            Revert = true;
+            HitOutSecondStage = false;
+        }
+
         if (Input.GetKeyDown(KeyCode.N))
         {
             HoneOn();
@@ -75,9 +302,9 @@ public class RainController : MonoBehaviour
         if (Control)
         {
             Wind.transform.localRotation = Quaternion.Euler(
-                AirSticks.Right.EulerAngles.x * 200,
-                AirSticks.Right.EulerAngles.y * 200,
-                AirSticks.Right.EulerAngles.z * 200
+                (AirSticks.Right.EulerAngles.x * 200) * RotationMultiply.x,
+                (AirSticks.Right.EulerAngles.y * 200) * RotationMultiply.y,
+                (AirSticks.Right.EulerAngles.z * 200) * RotationMultiply.z
             );
         }
         if (Hone)
@@ -89,7 +316,6 @@ public class RainController : MonoBehaviour
 
                 if (ParticleArray == null)
                 {
-                    ParticleSystem = Particles.GetComponent<ParticleSystem>();
                     ParticleArray = new ParticleSystem.Particle[ParticleSystem.main.maxParticles];
 
                     // and stop emission and forces
@@ -121,36 +347,6 @@ public class RainController : MonoBehaviour
                         NewParticlePositions[i] = ParticleArray[i].position;
                     }
                 }
-
-                ParticleSystem.GetParticles(ParticleArray);
-                var userMeshVertices = UserMeshFilter.mesh.vertices;
-                // calculate the positions to flock to
-                int positionsDamped = 0;
-                for (int i = 0; i < ParticleArray.Length; i++)
-                {
-                    int vertex = (i * (userMeshVertices.Length / ParticleArray.Length) * 2) % userMeshVertices.Length;
-                    var vertexPosition = new Vector3(
-                        (userMeshVertices[vertex].x * Scaling.x) + HonedOffset.x,
-                        (userMeshVertices[vertex].y * Scaling.y) + HonedOffset.y,
-                        (userMeshVertices[vertex].z * Scaling.z) + HonedOffset.z
-                    );
-                    bool damped;
-                    ParticleArray[i].position = DampPosition(ParticleArray[i].position, vertexPosition, HoneDamping, 0.01f, out damped);
-                    if (damped) positionsDamped++;
-                }
-                ParticleSystem.SetParticles(ParticleArray, ParticleArray.Length);
-                if (Mathf.Abs(HoneDamping - HoneDampingSpeed.y) > 0)
-                {
-                    HoneDamping = HoneDamping + (HoneDampingSpeed.y - HoneDamping) / HoneDampingSpeedDamp;
-                }
-                if (positionsDamped == 0)
-                {
-                    if (HoneCallback != null)
-                    {
-                        HoneCallback.Invoke();
-                        HoneCallback = null;
-                    }
-                }
             }
         }
         else if (DoingHoneOff)
@@ -167,9 +363,15 @@ public class RainController : MonoBehaviour
             }
             ParticleSystem.SetParticles(ParticleArray, ParticleArray.Length);
             // if we are not damping any more particles, revert all the default settings
-            if (positionsDamped == 0)
+            //if (positionsDamped == 0)
+            //{
+            //    RevertToDefault(ParticleArray);
+            //}
+            // Timer based instead of position based
+            if (ReversionTimer.ElapsedMilliseconds >= ReversionMilliseconds)
             {
                 RevertToDefault(ParticleArray);
+                ReversionTimer.Stop();
             }
         }
     }
@@ -190,6 +392,8 @@ public class RainController : MonoBehaviour
         forcesModule.multiplier = OriginalParticleForceMultiplier;
         var mainModule = ParticleSystem.main;
         mainModule.startLifetime = OriginalLifetime;
+
+        ReversionTimer.Restart();
     }
 
     void RevertToDefault(ParticleSystem.Particle[] currentParticles)

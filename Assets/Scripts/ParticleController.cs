@@ -29,15 +29,30 @@ public class ParticleController : MonoBehaviour
     public bool Visible = false;
 
     public bool TrackAirsticks = true;
-    
+
     public Vector3 LeftParticlesPositionOffset = new Vector3(0, 0, 4);
     public Vector3 RightParticlesPositionOffset = new Vector3(0, 0, 4);
-    
+
     public Vector3 LeftParticlesKinectOffset = new Vector3(0, 0, 4);
     public Vector3 RightParticlesKinectOffset = new Vector3(0, 0, 4);
 
     public Vector3 LeftMultiplier = new Vector3(0, 0, 0);
     public Vector3 RightMultiplier = new Vector3(0, 0, 0);
+
+    public ParticleSystem HitSystemA;
+    public ParticleSystem HitSystemB;
+    public ParticleSystem HitSystemC;
+
+    public bool ControlHitParticlesWithKinectHands = true;
+    public UserForceController UserForceController;
+    public Vector2 HitSystemBTrackXInput;
+    public Vector2 HitSystemBTrackXOutput;
+    public Vector2 HitSystemBTrackYInput;
+    public Vector2 HitSystemBTrackYOutput;
+    private Vector3 HitSystemBOrigin;
+    private Vector2 HitSystemBXOffset;
+    private Vector2 HitSystemBYOffset;
+    public float HitSystemBTrackDamping = 3f;
 
     void Start()
     {
@@ -49,6 +64,29 @@ public class ParticleController : MonoBehaviour
         BaseMesh = GameObject.Find("UserMesh").GetComponent<MeshFilter>();
         ParticleOutputQuad = GameObject.Find("ParticleOutputQuad");
 
+        HitSystemBOrigin = HitSystemB.transform.position;
+    }
+
+    public void MidiHit(Pitch pitch)
+    {
+        switch (pitch.NoteNumber())
+        {
+            case 36:
+                if (HitSystemA == null) return;
+                HitSystemA.Stop();
+                HitSystemA.Play();
+                break;
+            case 38:
+                if (HitSystemB == null) return;
+                HitSystemB.Stop();
+                HitSystemB.Play();
+                break;
+            case 42:
+                if (HitSystemC == null) return;
+                HitSystemC.Stop();
+                HitSystemC.Play();
+                break;
+        }
     }
 
     Vector3 DampPosition(Vector3 value, Vector3 goal, float dampRate)
@@ -105,6 +143,52 @@ public class ParticleController : MonoBehaviour
 
     void Update()
     {
+
+        if (ControlHitParticlesWithKinectHands)
+        {
+            var manager = KinectManager.Instance;
+            if (manager.GetUsersCount() != 0)
+            {
+                var userId = KinectManager.Instance.GetUserIdByIndex(0);
+
+                // leftHandPosition uses the Kinect HandRight because we are talking "stage left"
+                var leftHandPosition = UserForceController.GetJointPosition(manager, userId,
+                    (int)KinectInterop.JointType.HandRight);
+                var rightHandPosition = UserForceController.GetJointPosition(manager, userId,
+                    (int)KinectInterop.JointType.HandLeft);
+
+                var mappedLeftHandX = leftHandPosition.x.Map(
+                    HitSystemBTrackXInput.x, HitSystemBTrackXInput.y,
+                    HitSystemBTrackXOutput.x, HitSystemBTrackXOutput.y);
+
+                HitSystemBXOffset.y = mappedLeftHandX;
+
+                var mappedLeftHandY = leftHandPosition.y.Map(
+                    HitSystemBTrackYInput.x, HitSystemBTrackYInput.y,
+                    HitSystemBTrackYOutput.x, HitSystemBTrackYOutput.y);
+
+                HitSystemBYOffset.y = mappedLeftHandY;
+            }
+            var updated = false;
+            if (Mathf.Abs(HitSystemBXOffset.x - HitSystemBXOffset.y) > 0)
+            {
+                HitSystemBXOffset.x =
+                    HitSystemBXOffset.x + (HitSystemBXOffset.y - HitSystemBXOffset.x) / HitSystemBTrackDamping;
+                updated = true;
+            }
+            if (Mathf.Abs(HitSystemBYOffset.x - HitSystemBYOffset.y) > 0)
+            {
+                HitSystemBYOffset.x =
+                    HitSystemBYOffset.x + (HitSystemBYOffset.y - HitSystemBYOffset.x) / HitSystemBTrackDamping;
+                updated = true;
+            }
+            if (updated)
+            {
+                HitSystemB.transform.SetPositionAndRotation(new Vector3(
+                    HitSystemBOrigin.x + HitSystemBXOffset.x, HitSystemBOrigin.y + HitSystemBYOffset.x, HitSystemBOrigin.z),
+                    Quaternion.Euler(Vector3.zero));
+            }
+        }
 
         if (TrackAirsticks)
         {

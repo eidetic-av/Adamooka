@@ -13,7 +13,8 @@ public partial class OSCReceive : MonoBehaviour
 
     public static Dictionary<string, ServerLog> Servers = new Dictionary<string, ServerLog>();
 
-
+    public bool LogRecievedAddresses = false;
+    public bool LogHandPosition = false;
 
     void Start()
     {
@@ -53,6 +54,20 @@ public partial class OSCReceive : MonoBehaviour
 
     private void RouteOSC(string[] address, List<object> data)
     {
+        if (LogRecievedAddresses)
+        {
+            var logString = "";
+            for (int i = 0; i < address.Length; i++)
+            {
+                logString += address[i] + "/";
+            }
+            logString += "\n";
+            for (int i = 0; i < data.Count; i++)
+            {
+                logString += data.ToString() + ", ";
+            }
+            Debug.Log(logString);
+        }
         if (address[1] == "airsticks")
         {
             AirSticks.Stick targetStick = AirSticks.Left;
@@ -63,6 +78,8 @@ public partial class OSCReceive : MonoBehaviour
             if (address[3] == "pos")
             {
                 targetStick.Position = new Vector3((float)data[0], (float)data[1], (float)data[2]);
+                if (LogHandPosition)
+                    Debug.Log(targetStick.Hand.ToString() + "\n:" + targetStick.Position.x + ", " + targetStick.Position.y + ", " + targetStick.Position.z);
             }
             else if (address[3] == "angles")
             {
@@ -93,6 +110,10 @@ public partial class OSCReceive : MonoBehaviour
             {
                 var value = Convert.ToSingle(data[1].ToString());
                 targetStick.JoystickY = value;
+            }
+            if (address[3] == "buttons")
+            {
+                // Debug.Log("buttons: " + data);
             }
         }
     }
