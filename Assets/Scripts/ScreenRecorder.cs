@@ -85,6 +85,9 @@ public class ScreenRecorder : MonoBehaviour
 	private bool threadIsProcessing;
 	private bool terminateThreadWhenDone;
 
+	// Place an ImagePlayback object here to automatically load textures into it after capture
+	public ImagePlayback ImagePlayback;
+
 	void Start() {
 		// Set target frame rate (optional)
 		// Application.targetFrameRate = frameRate;
@@ -234,11 +237,13 @@ public class ScreenRecorder : MonoBehaviour
 		}
 
 		// load it into the imageplayback
-		UnityMainThreadDispatcher.Instance().Enqueue(() => {
-			foreach (var path in framePaths) {
-				ImagePlayback.Instance.LoadImage(path);
-			}
-		});
+		if (ImagePlayback != null) {
+			UnityMainThreadDispatcher.Instance().Enqueue(() => {
+				foreach (var path in framePaths) {
+					ImagePlayback.LoadImage(path);
+				}
+			});
+		}
 
 		terminateThreadWhenDone = false;
 		threadIsProcessing = false;

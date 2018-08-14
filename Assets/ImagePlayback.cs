@@ -8,12 +8,11 @@ using B83.Image.BMP;
 
 public class ImagePlayback : MonoBehaviour
 {
-
-    public static ImagePlayback Instance;
-
 	public int FramesPerSecond = 30;
 
     public bool Play = false;
+	public string StartupLoadFolder;
+
 	private bool Playing = false;
 
 	private int LastFrame = -1;
@@ -30,9 +29,10 @@ public class ImagePlayback : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        Instance = this;
         // gameObject.InstanceMaterial();
 		Material = GetComponent<Renderer>().material;
+		if (StartupLoadFolder != null && StartupLoadFolder != "") 
+			LoadFromFolder(StartupLoadFolder);
     }
 
 	public void ClearImages() {
@@ -43,6 +43,16 @@ public class ImagePlayback : MonoBehaviour
 		var img = loader.LoadBMP(filePath);
 		var texture = img.ToTexture2D();
 		Textures.Add(texture);
+	}
+
+	public void LoadFromFolder(string folderPath) {
+		int fileNumber = 0;
+		string filePath = folderPath + "/frame" + fileNumber + ".bmp";
+		while(File.Exists(filePath)) {
+			LoadImage(filePath);
+			fileNumber++;
+			filePath = folderPath + "/frame" + fileNumber + ".bmp";
+		}
 	}
 
     // Update is called once per frame
