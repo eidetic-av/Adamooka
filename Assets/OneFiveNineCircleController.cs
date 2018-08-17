@@ -92,15 +92,15 @@ public class OneFiveNineCircleController : MonoBehaviour
 
         if (ActivateAirSticksKickSnare)
         {
-            AirSticks.Right.NoteOn += DoAirSticksKick;
-            AirSticks.Left.NoteOn += DoAirSticksSnare;
+            // AirSticks.Right.NoteOn += DoAirSticksKick;
+            // AirSticks.Left.NoteOn += DoAirSticksSnare;
             ActivateAirSticksKickSnare = false;
         }
 
         if (DeactivateAirSticksKickSnare)
         {
-            AirSticks.Right.NoteOn -= DoAirSticksKick;
-            AirSticks.Left.NoteOn -= DoAirSticksSnare;
+            // AirSticks.Right.NoteOn -= DoAirSticksKick;
+            // AirSticks.Left.NoteOn -= DoAirSticksSnare;
             DeactivateAirSticksKickSnare = false;
         }
 
@@ -212,7 +212,7 @@ public class OneFiveNineCircleController : MonoBehaviour
         }
     }
 
-    void DoAirSticksKick()
+    public void DoSubKick()
     {
         NoiseCircleController.Instance.Triggers[7] = true;
     }

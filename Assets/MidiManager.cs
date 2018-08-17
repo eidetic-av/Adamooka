@@ -110,6 +110,11 @@ public class MidiManager : MonoBehaviour
                         RouteOneFiveNine(noteOnMessage.Pitch);
                         break;
                     }
+                case Channel.Channel14:
+                    {
+                        CircleParticleController.Instance.BangRotation = true;
+                        break;
+                    }
                 case Channel.Channel2:
                     {
                         RouteComputerRain(noteOnMessage.Pitch);
@@ -130,14 +135,6 @@ public class MidiManager : MonoBehaviour
                         RouteJordanMidi(noteOnMessage.Pitch);
                         break;
                     }
-                case Channel.Channel14:
-                    {
-                        if (noteOnMessage.Pitch == Pitch.C0)
-                        {
-                            CircleParticleController.Instance.BangRotation = true;
-                        }
-                        break;
-                    }
                 case Channel.Channel15:
                     {
                         RouteDriftMidi(noteOnMessage.Pitch);
@@ -154,6 +151,15 @@ public class MidiManager : MonoBehaviour
 
     private void RouteJordanMidi(Pitch pitch) {
         switch(pitch) {
+
+            case Pitch.ASharp0:
+                // Toggle auto-rotation
+                break;
+
+            case Pitch.B0:
+                UserFreezeFrameController.Instance.FadeLength = 3f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
             case Pitch.C1:
                 UserFreezeFrameController.Instance.FadeLength = 1.8f;
                 UserFreezeFrameController.Instance.Generate = true;
@@ -249,6 +255,7 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.B1:
                 // Sub kick
+                OneFiveNineCircleController.Instance.DoSubKick();
                 break;
 
             case Pitch.F3:

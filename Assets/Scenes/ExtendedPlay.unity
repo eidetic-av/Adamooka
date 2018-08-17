@@ -44181,10 +44181,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6711e40ccf76a774ea6ccaa5b1a4fc69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DisableKinectUpdate: 1
-  EnableKinectUpdate: 0
-  DisableUserRender: 1
-  EnableUserRender: 0
+  DisableKinectUpdate: 0
+  EnableKinectUpdate: 1
+  DisableUserRender: 0
+  EnableUserRender: 1
   ActivateClones: 0
   TrackerOutputEffector: {fileID: 1852235747}
   CycleCloneColours: 0
