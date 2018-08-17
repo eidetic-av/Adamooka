@@ -139,8 +139,6 @@ public class OneFiveNineCircleController : MonoBehaviour
 
         if (HideRings)
         {
-            var mainModule = ParticleSystem.main;
-            mainModule.startColor = new Color(1, 1, 1, 0);
             Alpha.y = 0;
             NonagonAlpha.y = 0f;
         }

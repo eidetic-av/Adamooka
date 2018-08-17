@@ -180,6 +180,11 @@ public class MeshTools : MonoBehaviour
     float WireframeAlphaAnimationDamp = 8f;
     Color WireframeColor = new Color(1, 1, 1, 0.49f);
 
+    
+
+    public bool GoToBass = false;
+    public bool GoToFree = false;
+
     void BangOutline()
     {
         Outline = 1f;
@@ -306,6 +311,25 @@ public class MeshTools : MonoBehaviour
 
     private void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.K)) {
+            GoToBass = true;
+        } else if (Input.GetKeyDown(KeyCode.L)) {
+            GoToFree = true;
+        }
+
+        if (GoToBass) {
+            DesmondInstensityMinMax = new Vector2(0, 0.2f);
+            UserMeshVisualizer.BlockKinectUpdate = false;
+            GoToBass = false;
+        }
+        
+        if (GoToFree) {
+            DesmondInstensityMinMax = new Vector2(0, 0.03f);
+            UserMeshVisualizer.BlockKinectUpdate = true;
+            GoToFree = false;
+        }
+
         if (EnableMainGranRelatedScene)
         {
             EnableGranRelatedTransition = false;

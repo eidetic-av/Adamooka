@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class UserFreezeFrameController : MonoBehaviour {
 
+	public static UserFreezeFrameController Instance;
+
 	public FreezeFramer TargetCameraFreezeFramer;
 	public GameObject BaseOutputQuad;
 	public bool HideBaseOuput = false;
@@ -21,7 +23,7 @@ public class UserFreezeFrameController : MonoBehaviour {
 	List<float> FadeTimes = new List<float>();
 
 	void Start () {
-		
+		Instance = this;
 	}
 	
 	void Update () {

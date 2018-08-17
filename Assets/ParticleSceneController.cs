@@ -99,8 +99,8 @@ public class ParticleSceneController : MonoBehaviour
             }
             RodParticleController.Instance.TrackAirsticks = false;
             CircleParticleController.Instance.Visible = false;
-            if (GameObject.Find("Nonagon") != null)
-                GameObject.Find("Nonagon").SetActive(false);
+            if (GameObject.Find("MembraneCircle") != null)
+                GameObject.Find("MembraneCircle").SetActive(false);
             if (GameObject.Find("LightPlane") != null)
                 GameObject.Find("LightPlane").SetActive(false);
             OneFiveNineOut = false;

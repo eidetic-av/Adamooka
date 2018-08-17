@@ -280,7 +280,7 @@ public class TrackerOutputEffector : MonoBehaviour
         return new Color(rVal, gVal, bVal);
     }
 
-    void RefreshClones()
+    public void RefreshClones()
     {
         RefreshCloneColours();
         List<GameObject> ActiveLeftClones = new List<GameObject>();

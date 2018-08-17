@@ -75,6 +75,12 @@ public class RainController : MonoBehaviour
     public float RevertThreshold = 0.05f;
 
     public Vector3 RotationMultiply = new Vector3(1f, 1f, 1f);
+    public Vector3 RotationOffset = Vector3.zero;
+    public Vector4 AirSticksXMap = new Vector4(0, 1, 0, 1);
+    public Vector2 AirSticksXClamp = new Vector2(0, 1);
+
+    public bool AirSticksGravityControl = true;    
+    public Vector4 AirSticksGravityMap = new Vector4(-1, 1, -0.5f, 0.3f);
 
     float ShapeSize = 10f;
     float NewShapeSize = 10f;
@@ -301,11 +307,20 @@ public class RainController : MonoBehaviour
 
         if (Control)
         {
+            // wind control
+            var mapPosition = Mathf.Clamp(AirSticks.Left.Position.x.Map(AirSticksXMap.x, AirSticksXMap.y, AirSticksXMap.z, AirSticksXMap.w), AirSticksXClamp.x, AirSticksXClamp.y);
+            var yRotation = (mapPosition * RotationMultiply.x) + RotationOffset.x;
             Wind.transform.localRotation = Quaternion.Euler(
-                (AirSticks.Right.EulerAngles.x * 200) * RotationMultiply.x,
-                (AirSticks.Right.EulerAngles.y * 200) * RotationMultiply.y,
-                (AirSticks.Right.EulerAngles.z * 200) * RotationMultiply.z
+                0f,
+                (AirSticks.Left.Position.x) * RotationMultiply.x + (RotationOffset.x),
+                0.0f
             );
+            // gravity control
+            if (AirSticksGravityControl) {
+                var gravity = AirSticks.Left.EulerAngles.z.Map(AirSticksGravityMap.x, AirSticksGravityMap.y, AirSticksGravityMap.z, AirSticksGravityMap.w);
+                var mainModule = ParticleSystem.main;
+                mainModule.gravityModifierMultiplier = gravity;
+            }
         }
         if (Hone)
         {

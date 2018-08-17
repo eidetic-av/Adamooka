@@ -1,6 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Text.RegularExpressions;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Eidetic.Unity.Utility;
 
 public class TrackerSceneController : MonoBehaviour
 {
@@ -22,6 +25,9 @@ public class TrackerSceneController : MonoBehaviour
     public bool SillhouetteOff = false;
     public bool RemoveAllClones = false;
 
+    public int CloneCount = 1;
+    public bool UpdateCloneAmount = false;
+
     void Start()
     {
         Instance = this;
@@ -39,8 +45,115 @@ public class TrackerSceneController : MonoBehaviour
         CycleCloneColours = false;
     }
 
+    public void SetCloneState(int state) {
+        switch(state) {
+            case 0:
+                SetCloneAmount(2);
+                TrackerOutputEffector.CloneColourPosition = 1;
+                TrackerOutputEffector.RefreshCloneColours();
+                TrackerOutputEffector.RefreshClones();
+                AirSticksNoteOnCyclesColours = false;
+                TrackerOutputEffector.CloneDistance = 0.08f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = false;
+                break;
+            case 1:
+                SetCloneAmount(4);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 2:
+                SetCloneAmount(6);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 3:
+                SetCloneAmount(8);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 4:
+                SetCloneAmount(10);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 5:
+                SetCloneAmount(12);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 6:
+                SetCloneAmount(14);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 7:
+                SetCloneAmount(16);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 8:
+                SetCloneAmount(18);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 9:
+                SetCloneAmount(20);
+                TrackerOutputEffector.CloneDistance = 0.95f;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                break;
+            case 10:
+                SetCloneAmount(22);
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                TrackerOutputEffector.CloneDistance = 1.5f;
+                break;
+            case 11:
+                SetCloneAmount(24);
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                TrackerOutputEffector.CloneDistance = 1.5f;
+                break;
+            case 12:
+                SetCloneAmount(24);
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                TrackerOutputEffector.CloneDistance = 1.5f;
+                break;
+            case 13:
+                SetCloneAmount(24);
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                TrackerOutputEffector.CloneDistance = 1.5f;
+                break;
+            case 14:
+                SetCloneAmount(24);
+                AirSticksNoteOnCyclesColours = true;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
+                TrackerOutputEffector.CloneDistance = 1.5f;
+                break;
+        }
+    }
+
+    Component[] CloneTransforms = null;
+
+    void SetCloneAmount(int numberOfClones) {
+        if (CloneTransforms == null)  CloneTransforms = TrackerOutputEffector.gameObject.GetComponentsInChildren(typeof(Transform));
+        for (int i = 1; i < CloneTransforms.Length; i+=2) {
+            if (i + 2 >= CloneTransforms.Length) break;
+            var cloneObjectLeft = CloneTransforms[i].gameObject;
+            var cloneObjectRight = CloneTransforms[i+1].gameObject;
+            if ((i + 1) > numberOfClones) {
+                cloneObjectLeft.SetActive(false);
+                cloneObjectRight.SetActive(false);
+            } else {
+                cloneObjectLeft.SetActive(true);
+                cloneObjectRight.SetActive(true);
+            }
+        }
+    }
+
     void Update()
     {
+        if (UpdateCloneAmount) {
+            SetCloneAmount(CloneCount);
+            UpdateCloneAmount = false;
+        }
         if (DisableKinectUpdate)
         {
             UserMeshVisualizer.Instance.BlockKinectUpdate = true;
@@ -84,6 +197,7 @@ public class TrackerSceneController : MonoBehaviour
             var effector = baseOutputQuad.GetComponent<TrackerOutputEffector>();
             effector.CloneColourPosition = 3;
             effector.RefreshCloneColours();
+            AirSticksNoteOnCyclesColours = false;
         }
         if (SillhouetteOff) {
             var baseOutputQuad = GameObject.Find("OutputQuad");

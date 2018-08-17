@@ -120,17 +120,22 @@ public class MidiManager : MonoBehaviour
                         RouteDesmondMidi(noteOnMessage.Pitch);
                         break;
                     }
+                case Channel.Channel4:
+                    {
+                        RouteHyphenMidi(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel6:
+                    {
+                        RouteJordanMidi(noteOnMessage.Pitch);
+                        break;
+                    }
                 case Channel.Channel14:
                     {
                         if (noteOnMessage.Pitch == Pitch.C0)
                         {
                             CircleParticleController.Instance.BangRotation = true;
                         }
-                        break;
-                    }
-                case Channel.Channel4:
-                    {
-                        RouteHyphenMidi(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel15:
@@ -145,6 +150,31 @@ public class MidiManager : MonoBehaviour
                     }
             }
         }));
+    }
+
+    private void RouteJordanMidi(Pitch pitch) {
+        switch(pitch) {
+            case Pitch.C1:
+                UserFreezeFrameController.Instance.FadeLength = 1.8f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.CSharp1:
+                UserFreezeFrameController.Instance.FadeLength = 0.8f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.D1:
+                UserFreezeFrameController.Instance.FadeLength = 0.5f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.DSharp1:
+                UserFreezeFrameController.Instance.FadeLength = 0.35f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.E1:
+                UserFreezeFrameController.Instance.FadeLength = 0.15f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+        }
     }
     private void RouteOneFiveNine(Pitch pitch)
     {
@@ -238,8 +268,10 @@ public class MidiManager : MonoBehaviour
         }
     }
 
-    private void RouteComputerRain(Pitch pitch) {
-        switch(pitch) {
+    private void RouteComputerRain(Pitch pitch)
+    {
+        switch (pitch)
+        {
             case Pitch.B2:
                 // start rain
                 RainController.Instance.EnableEmission = true;
@@ -282,6 +314,52 @@ public class MidiManager : MonoBehaviour
             case Pitch.FSharp3:
                 RainController.Instance.StopParticleLength = 10;
                 RainController.Instance.SlowlyStopParticles = true;
+                break;
+            // clone states
+            case Pitch.C1:
+                TrackerSceneController.Instance.SetCloneState(0);
+                break;
+            case Pitch.CSharp1:
+                TrackerSceneController.Instance.SetCloneState(1);
+                break;
+            case Pitch.D1:
+                TrackerSceneController.Instance.SetCloneState(2);
+                break;
+            case Pitch.DSharp1:
+                TrackerSceneController.Instance.SetCloneState(3);
+                break;
+            case Pitch.E1:
+                TrackerSceneController.Instance.SetCloneState(4);
+                break;
+            case Pitch.F1:
+                TrackerSceneController.Instance.SetCloneState(5);
+                break;
+            case Pitch.FSharp1:
+                TrackerSceneController.Instance.SetCloneState(6);
+                break;
+            case Pitch.G1:
+                TrackerSceneController.Instance.SetCloneState(7);
+                break;
+            case Pitch.GSharp1:
+                TrackerSceneController.Instance.SetCloneState(8);
+                break;
+            case Pitch.A1:
+                TrackerSceneController.Instance.SetCloneState(9);
+                break;
+            case Pitch.ASharp1:
+                TrackerSceneController.Instance.SetCloneState(10);
+                break;
+            case Pitch.B1:
+                TrackerSceneController.Instance.SetCloneState(11);
+                break;
+            case Pitch.C2:
+                TrackerSceneController.Instance.SetCloneState(12);
+                break;
+            case Pitch.CSharp2:
+                TrackerSceneController.Instance.SetCloneState(13);
+                break;
+            case Pitch.D2:
+                TrackerSceneController.Instance.SetCloneState(13);
                 break;
         }
     }
@@ -340,9 +418,9 @@ public class MidiManager : MonoBehaviour
                 // unpause track
                 break;
             // case Pitch.E2:
-                // glitch out
-                // break;
-            
+            // glitch out
+            // break;
+
             // Paint control
             case Pitch.G2:
                 // piano 1 on
@@ -372,7 +450,7 @@ public class MidiManager : MonoBehaviour
                 // drums off
                 break;
             case Pitch.DSharp3:
-                // vibes off quickly
+            // vibes off quickly
             case Pitch.E3:
                 // piano 2 on
                 // 37 second long trail
@@ -465,8 +543,48 @@ public class MidiManager : MonoBehaviour
 
     private void RouteHyphenMidi(Pitch pitch)
     {
-        //Debug.Log(pitch.NoteNumber());
-        HitParticlesController.MidiHit(pitch);
+        switch (pitch)
+        {
+            case Pitch.C1:
+                // intro 1 pulse, right
+                HitParticleController.Instance.IntroPulse1();
+                break;
+            case Pitch.CSharp1:
+                // intro 2 left
+                HitParticleController.Instance.IntroPulse2();
+                break;
+            case Pitch.D1:
+                HitParticleController.Instance.IntroPulse3();
+                // intro 2 right
+                break;
+            case Pitch.F1:
+                HitParticleController.Instance.Melody1();
+                // melody note 1
+                break;
+            case Pitch.DSharp1:
+                HitParticleController.Instance.Melody2();
+                break;
+            case Pitch.E1:
+                HitParticleController.Instance.Melody3();
+                break;
+            case Pitch.FSharp1:
+                // snap strike before beat
+                HitParticleController.Instance.Snap();
+                break;
+            case Pitch.A1:
+                HitParticleController.Instance.Kick();
+                break;
+            case Pitch.DSharp2:
+                HitParticleController.Instance.Snare();
+                break;
+            case Pitch.D2:
+                HitParticleController.Instance.RightHand();
+                break;
+            case Pitch.F2:
+                HitParticleController.Instance.LeftHand();
+                break;
+
+        }
     }
 
     private void RandomiseKaleidoscope()
@@ -730,8 +848,8 @@ public class MidiManager : MonoBehaviour
 
         //MeshTools.EnableExplode = false;
 
-        // add some clones to the scene
-        for (int i = 0; i < 4; i++)
+        // enable the clones
+        for (int i = 0; i < 12; i++)
         {
             TrackerOutputEffector.InstantiateClone(AirSticks.Hand.Left);
             TrackerOutputEffector.InstantiateClone(AirSticks.Hand.Right);

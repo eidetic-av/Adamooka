@@ -143,6 +143,7 @@ public class UserMeshVisualizer : MonoBehaviour
     {
         if (manager == null || !manager.IsInitialized())
             return;
+        
 
         if (StartRotateAnimation)
         {
