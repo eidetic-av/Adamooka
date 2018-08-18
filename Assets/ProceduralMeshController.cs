@@ -8,6 +8,7 @@ public class ProceduralMeshController : MonoBehaviour
     public static ProceduralMeshController Instance;
 
     public MeshFilter BaseMeshFilter;
+    public SkinnedMeshRenderer BaseSkinnedMeshRenderer;
     public Vector3 BaseMeshScale = Vector3.one;
     public Vector3 BaseMeshOffset = Vector3.zero;
 
@@ -39,7 +40,7 @@ public class ProceduralMeshController : MonoBehaviour
     void Update()
     {
 
-        if (BaseMeshFilter == null || BaseMeshFilter.mesh.vertices.Length <= 0) return;
+        if (BaseMeshFilter == null && BaseSkinnedMeshRenderer == null) return;
 
         if (ControlInterpolationWithAirSticks)
             Interpolation = Mathf.Clamp(AirSticks.Right.Position.y.Map(AirsticksControlMinMax.x, AirsticksControlMinMax.y, 0, 1), 0, 1);
@@ -48,7 +49,13 @@ public class ProceduralMeshController : MonoBehaviour
         Mesh mesh = new Mesh();
         meshFilter.mesh = mesh;
 
-        var meshVertices = BaseMeshFilter.mesh.vertices;
+        Vector3[] meshVertices;
+        if (BaseMeshFilter != null) {
+            meshVertices = BaseMeshFilter.mesh.vertices;
+        } else {
+           BaseSkinnedMeshRenderer.BakeMesh(mesh);
+           meshVertices = mesh.vertices;
+        }
 
         var vertices = new Vector3[meshVertices.Length];
         for (int i = 0; i < vertices.Length; i++)
