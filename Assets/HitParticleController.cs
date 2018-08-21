@@ -31,7 +31,7 @@ public class HitParticleController : MonoBehaviour
 
     void Update() 
     {
-        if (TrackKinectHands) {
+        if (TrackKinectHands && KinectManager.Instance != null) {
             var manager = KinectManager.Instance;
             if (manager.GetUsersCount() != 0)
             {
@@ -64,36 +64,42 @@ public class HitParticleController : MonoBehaviour
 
     public void IntroPulse1()
     {
+        if (IntroPulse1System == null) return;
         IntroPulse1System.Stop();
         IntroPulse1System.Play();
     }
 
     public void IntroPulse2()
     {
+        if (IntroPulse2System == null) return;
         IntroPulse2System.Stop();
         IntroPulse2System.Play();
     }
 
     public void IntroPulse3()
     {
+        if (IntroPulse3System == null) return;
         IntroPulse3System.Stop();
         IntroPulse3System.Play();
     }
 
     public void Melody1()
     {
+        if (Melody1System == null) return;
         Melody1System.Stop();
         Melody1System.Play();
     }
 
     public void Melody2()
     {
+        if (Melody2System == null) return;
         Melody2System.Stop();
         Melody2System.Play();
     }
 
     public void Melody3()
     {
+        if (Melody3System == null) return;
         Melody3System.Stop();
         Melody3System.Play();
     }
@@ -105,24 +111,28 @@ public class HitParticleController : MonoBehaviour
 
     public void Kick()
     {
+        if (KickSystem == null) return;
         KickSystem.Stop();
         KickSystem.Play();
     }
 
     public void Snare()
     {
+        if (SnareSystem == null) return;
         SnareSystem.Stop();
         SnareSystem.Play();
     }
 
     public void RightHand()
     {
+        if (RightHandSystem == null) return;
 		RightHandSystem.Stop();
 		RightHandSystem.Play();
     }
 
     public void LeftHand()
     {
+        if (LeftHandSystem == null) return;
 		LeftHandSystem.Stop();
 		LeftHandSystem.Play();
     }

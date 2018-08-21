@@ -15,6 +15,9 @@ public class MidiManager : MonoBehaviour
 
     public bool LogNoteOns = false;
 
+    public bool FilterSingleChannel = false;
+    public Channel FilterChannel;
+
     public int AbletonState = -1;
 
     public static class OneFiveNine
@@ -101,6 +104,8 @@ public class MidiManager : MonoBehaviour
 
     private void RouteNoteOn(NoteOnMessage noteOnMessage)
     {
+        if (FilterSingleChannel && noteOnMessage.Channel != FilterChannel) return;
+
         if (LogNoteOns) Debug.Log(noteOnMessage.Channel + "." + noteOnMessage.Pitch);
 
         Threading.RunOnMain((Action)(() =>
@@ -839,9 +844,12 @@ public class MidiManager : MonoBehaviour
                 HitParticleController.Instance.Kick();
                 HeadController.Instance.Kick();
                 break;
+            case Pitch.ASharp1:
+                HeadController.Instance.Hats();
+                break;
             case Pitch.DSharp2:
                 // HitParticleController.Instance.Snare();
-                // HeadController.Instance.Snare();
+                HeadController.Instance.Snare();
                 HitParticleController.Instance.LeftHand();
                 break;
             case Pitch.D2:
