@@ -16,9 +16,50 @@ public class HitParticleController : MonoBehaviour
     public ParticleSystem SnareSystem;
     public ParticleSystem RightHandSystem;
     public ParticleSystem LeftHandSystem;
+
+    public bool TrackKinectHands = true;
+    public UserForceController UserForceController;
+    public Vector2 LeftHandScaling = Vector2.one;
+    public Vector2 LeftHandOffset = Vector2.zero;
+    public Vector2 RightHandScaling = Vector2.one;
+    public Vector2 RightHandOffset = Vector2.zero;
+
     void Start()
     {
         Instance = this;
+    }
+
+    void Update() 
+    {
+        if (TrackKinectHands) {
+            var manager = KinectManager.Instance;
+            if (manager.GetUsersCount() != 0)
+            {
+                var userId = KinectManager.Instance.GetUserIdByIndex(0);
+
+                var leftHandPosition = UserForceController.GetJointPosition(manager, userId,
+                    (int)KinectInterop.JointType.HandLeft);
+                var rightHandPosition = UserForceController.GetJointPosition(manager, userId,
+                    (int)KinectInterop.JointType.HandRight);
+
+                var mappedLeftHandX = (leftHandPosition.x * LeftHandScaling.x) + LeftHandOffset.x;
+                var mappedLeftHandY = (leftHandPosition.y * LeftHandScaling.y) + LeftHandOffset.y;
+
+                LeftHandSystem.transform.SetPositionAndRotation(
+                    new Vector3(mappedLeftHandX, mappedLeftHandY, 0),
+                    Quaternion.Euler(0, 0, 0)
+                );
+                
+                var mappedRightHandX = (rightHandPosition.x * RightHandScaling.x) + RightHandOffset.x;
+                var mappedRightHandY = (rightHandPosition.y * RightHandScaling.y) + RightHandOffset.y;
+
+                RightHandSystem.transform.SetPositionAndRotation(
+                    new Vector3(mappedRightHandX, mappedRightHandY, 0),
+                    Quaternion.Euler(0, 0, 0)
+                );
+
+            }
+        }
     }
 
     public void IntroPulse1()

@@ -113,7 +113,8 @@ public partial class OSCReceive : MonoBehaviour
             }
             if (address[3] == "buttons")
             {
-                // var buttonArray = 
+                var value = Convert.ToString(data);
+                // Debug.Log(value);
             }
         }
     }

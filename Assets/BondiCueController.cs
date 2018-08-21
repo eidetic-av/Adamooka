@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BondiCueController : MonoBehaviour
 {
+    public static BondiCueController Instance;
+
     public bool EnableRodsAfterSpeech = false;
     public bool TwoHandedRodMelody = false;
     public bool EnableVortex = false;
@@ -18,7 +20,7 @@ public class BondiCueController : MonoBehaviour
     public bool FadeOutNoiseCircle = false;
     void Start()
     {
-
+        Instance = this;
     }
 
     void Update()

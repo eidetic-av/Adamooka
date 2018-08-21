@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class HeadController : MonoBehaviour {
 
+	public static HeadController Instance;
 	public Animator Animator;
 	public bool TriggerKick = false;
 	public bool TriggerSnare = false;
 	public bool TriggerHats = false;
 
 	void Start () {
-		
+		Instance = this;
 	}
 	
 	// Update is called once per frame

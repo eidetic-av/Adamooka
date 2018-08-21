@@ -60,6 +60,8 @@ public class OneFiveNineCircleController : MonoBehaviour
     public bool ActivateAirSticksKickSnare = false;
     public bool DeactivateAirSticksKickSnare = false;
 
+    public bool AirSticksKickSnare = false;
+
     void Start()
     {
         Instance = this;
@@ -69,6 +71,18 @@ public class OneFiveNineCircleController : MonoBehaviour
 
         AirSticks.Left.NoteOn += SnareOn;
         AirSticks.Left.NoteOff += SnareOff;
+
+        AirSticks.Right.NoteOn += () => {
+            if (AirSticksKickSnare) {
+                DoSubKick();
+            }
+        };
+
+        AirSticks.Left.NoteOn += () => {
+            if (AirSticksKickSnare) {
+                DoAirSticksSnare();
+            }
+        };
 
         SphereScaleFromTo = SphereScale;
     }

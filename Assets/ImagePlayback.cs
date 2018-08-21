@@ -8,7 +8,7 @@ using B83.Image.BMP;
 
 public class ImagePlayback : MonoBehaviour
 {
-	public int FramesPerSecond = 30;
+	public float FramesPerSecond = 30;
 
     public bool Play = false;
 	public string StartupLoadFolder;
@@ -32,7 +32,7 @@ public class ImagePlayback : MonoBehaviour
         // gameObject.InstanceMaterial();
 		Material = GetComponent<Renderer>().material;
 		if (StartupLoadFolder != null && StartupLoadFolder != "") 
-			LoadFromFolder(StartupLoadFolder);
+			LoadPNGFromFolder(StartupLoadFolder);
     }
 
 	public void ClearImages() {
@@ -47,11 +47,18 @@ public class ImagePlayback : MonoBehaviour
 
 	public void LoadFromFolder(string folderPath) {
 		int fileNumber = 0;
-		string filePath = folderPath + "/frame" + fileNumber + ".bmp";
+		string filePath = folderPath + "/frame" + fileNumber.ToString("0000") + ".bmp";
 		while(File.Exists(filePath)) {
 			LoadImage(filePath);
 			fileNumber++;
-			filePath = folderPath + "/frame" + fileNumber + ".bmp";
+			filePath = folderPath + "/frame" + fileNumber.ToString("0000") + ".bmp";
+		}
+	}
+
+	public void LoadPNGFromFolder(string folderPath) {
+		Object[] textures = Resources.LoadAll(folderPath, typeof(Texture2D));
+		foreach(var tex in textures) {
+			Textures.Add(tex as Texture2D);
 		}
 	}
 
@@ -60,8 +67,7 @@ public class ImagePlayback : MonoBehaviour
     {
 		if (Play) {
 			StartTime = Time.time;
-			TotalTime = (float) Textures.Count / (float) FramesPerSecond;
-			Debug.Log("TotalTime: " + TotalTime);
+			TotalTime = (float) Textures.Count / FramesPerSecond;
 			PlaybackTime = 0;
 			Play = false;
 			Playing = true;
@@ -70,7 +76,10 @@ public class ImagePlayback : MonoBehaviour
 		if (Playing) {
 			PlaybackTime += Time.deltaTime;
 			if (PlaybackTime >= TotalTime) {
-				PlaybackTime = PlaybackTime - TotalTime;
+				Playing = false;
+				return;
+				// Loop:
+				// PlaybackTime = PlaybackTime - TotalTime;
 			}
 			var currentPosition = PlaybackTime / TotalTime;
 			var currentFrame = Mathf.FloorToInt(currentPosition.Map(0f, 1f, 0f, (float)Textures.Count));

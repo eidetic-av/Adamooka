@@ -3,6 +3,7 @@ using Midi;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 
 public class MidiManager : MonoBehaviour
 {
@@ -93,6 +94,7 @@ public class MidiManager : MonoBehaviour
             InputDevice.Open();
             InputDevice.StartReceiving(null);
             InputDevice.NoteOn += RouteNoteOn;
+            InputDevice.NoteOff += RouteNoteOff;
             Debug.Log("Opened MIDI Device");
         }
     }
@@ -106,6 +108,11 @@ public class MidiManager : MonoBehaviour
             switch (noteOnMessage.Channel)
             {
                 case Channel.Channel1:
+                    {
+                        RouteCueMidi(noteOnMessage.Pitch);
+                        break;
+                    }
+                case Channel.Channel9:
                     {
                         RouteOneFiveNine(noteOnMessage.Pitch);
                         break;
@@ -135,6 +142,11 @@ public class MidiManager : MonoBehaviour
                         RouteJordanMidi(noteOnMessage.Pitch);
                         break;
                     }
+                case Channel.Channel7:
+                    {
+                        RouteTunnelMidi(noteOnMessage.Pitch);
+                        break;
+                    }
                 case Channel.Channel15:
                     {
                         RouteDriftMidi(noteOnMessage.Pitch);
@@ -149,8 +161,190 @@ public class MidiManager : MonoBehaviour
         }));
     }
 
-    private void RouteJordanMidi(Pitch pitch) {
-        switch(pitch) {
+    private bool RodsOn = false;
+    private bool RodsTwoHands = false;
+    private bool VortexOn = false;
+
+    private void RouteCueMidi(Pitch pitch)
+    {
+        switch (pitch)
+        {
+            case Pitch.A1:
+                if (!RodsOn)
+                {
+                    BondiCueController.Instance.EnableRodsAfterSpeech = true;
+                }
+                else
+                {
+                    BondiCueController.Instance.DisableRodsForDrums = true;
+                }
+                RodsOn = !RodsOn;
+                break;
+            case Pitch.G1:
+                if (!RodsTwoHands)
+                {
+                    BondiCueController.Instance.TwoHandedRodMelody = true;
+                }
+                RodsTwoHands = !RodsTwoHands;
+                break;
+            case Pitch.CSharp1:
+                BondiCueController.Instance.EnableVortex = true;
+                VortexOn = !VortexOn;
+                break;
+            case Pitch.ASharp1:
+                BondiCueController.Instance.EnableRing = true;
+                OneFiveNineCircleController.Instance.AirSticksKickSnare = true;
+                break;
+            case Pitch.DSharp1:
+                OneFiveNineCircleController.Instance.AirSticksKickSnare = false;
+                break;
+        }
+    }
+
+    private void RouteNoteOff(NoteOffMessage noteOffMessage)
+    {
+        Threading.RunOnMain((Action)(() =>
+        {
+            switch (noteOffMessage.Channel)
+            {
+                case Channel.Channel7:
+                    RouteTunnelNoteOffs(noteOffMessage.Pitch);
+                    break;
+            }
+        }));
+    }
+
+
+    bool LeftMidiOn = false;
+    bool RightMidiOn = false;
+
+    private void RouteTunnelMidi(Pitch pitch)
+    {
+        switch (pitch)
+        {
+            case Pitch.C1:
+                GameObject.Find("TunnelPlayback").GetComponent<VideoPlaybackController>()
+                    .StartPlayback = true;
+                break;
+            // Melody notes
+            case Pitch.B0:
+                LeftMidiOn = true;
+                break;
+            case Pitch.ASharp0:
+                // comes on invisible
+                RightMidiOn = true;
+                break;
+            case Pitch.A0:
+                // fades in right hand
+                break;
+            // Left Hand
+            case Pitch.B1:
+                if (LeftMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(8);
+                break;
+            case Pitch.C2:
+                // 360Hz
+                if (LeftMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(0);
+                break;
+            case Pitch.CSharp2:
+                // 480Hz
+                if (LeftMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(1);
+                break;
+            case Pitch.D2:
+                // 450Hz
+                if (LeftMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(2);
+                break;
+            case Pitch.DSharp2:
+                // 600Hz
+                if (LeftMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(3);
+                break;
+            // Right Hand
+            case Pitch.E2:
+                // 450Hz
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(4);
+                break;
+            case Pitch.F2:
+                // 600Hz
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(5);
+                break;
+            case Pitch.FSharp2:
+                // 800Hz
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(6);
+                break;
+            case Pitch.G2:
+                // 480Hz
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(7);
+                break;
+
+            // High Beeps
+            case Pitch.C4:
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(9);
+                break;
+            case Pitch.CSharp4:
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(10);
+                break;
+        }
+    }
+
+    private void RouteTunnelNoteOffs(Pitch pitch)
+    {
+        switch (pitch)
+        {
+            // Melody notes
+            // Left Hand
+            case Pitch.B1:
+                MelodyCirclesController.Instance.NoteOff(8);
+                break;
+            case Pitch.C2:
+                // 360Hz
+                MelodyCirclesController.Instance.NoteOff(0);
+                break;
+            case Pitch.CSharp2:
+                // 480Hz
+                MelodyCirclesController.Instance.NoteOff(1);
+                break;
+            case Pitch.D2:
+                // 450Hz
+                MelodyCirclesController.Instance.NoteOff(2);
+                break;
+            case Pitch.DSharp2:
+                // 600Hz
+                MelodyCirclesController.Instance.NoteOff(3);
+                break;
+            // Right Hand
+            case Pitch.E2:
+                // 450Hz
+                MelodyCirclesController.Instance.NoteOff(4);
+                break;
+            case Pitch.F2:
+                // 600Hz
+                MelodyCirclesController.Instance.NoteOff(5);
+                break;
+            case Pitch.FSharp2:
+                // 800Hz
+                MelodyCirclesController.Instance.NoteOff(6);
+                break;
+            case Pitch.G2:
+                // 480Hz
+                MelodyCirclesController.Instance.NoteOff(7);
+                break;
+        }
+    }
+
+    private void RouteJordanMidi(Pitch pitch)
+    {
+        switch (pitch)
+        {
 
             case Pitch.ASharp0:
                 // Toggle auto-rotation
@@ -270,7 +464,19 @@ public class MidiManager : MonoBehaviour
 
             case Pitch.G3:
                 // Go back to Airsticks Note On/Off with the
-                OneFiveNineCircleController.Instance.ActivateAirSticksKickSnare = true;
+                // OneFiveNineCircleController.Instance.ActivateAirSticksKickSnare = true;
+
+                // Introduce circle hand systems?
+                break;
+
+            case Pitch.A3:
+                // Disable rods
+                BondiCueController.Instance.DisableRodsAfterMelody = true;
+                break;
+
+            case Pitch.GSharp3:
+                // Stop vortex
+                BondiCueController.Instance.DisableVortex = true;
                 break;
         }
     }
@@ -280,6 +486,10 @@ public class MidiManager : MonoBehaviour
         switch (pitch)
         {
             case Pitch.B2:
+
+                // temp transition out from one five nine
+                BondiCueController.Instance.FadeOutNoiseCircle = true;
+
                 // start rain
                 RainController.Instance.EnableEmission = true;
                 GameObject.Find("OneFiveNine").SetActive(false);
@@ -371,11 +581,109 @@ public class MidiManager : MonoBehaviour
         }
     }
 
+    VideoPlaybackController BassVideo;
+    VideoPlaybackController VibesVideo;
+
+    void InitVideos() {
+        if (BassVideo == null) BassVideo = GameObject.Find("DesmondPlaybackBass").GetComponent<VideoPlaybackController>();
+        if (VibesVideo == null) VibesVideo = GameObject.Find("DesmondPlaybackVibes").GetComponent<VideoPlaybackController>();
+    }
 
     private void RouteDesmondMidi(Pitch pitch)
     {
+        InitVideos();
         switch (pitch)
         {
+            // Start videos
+            case Pitch.C2:
+                BassVideo.StartPlayback = true;
+                break;
+            case Pitch.CSharp2:
+                VibesVideo.StartPlayback = true;
+                break;
+
+            // Video Seeking
+            case Pitch.D2:
+                // bass start
+                BassVideo.JumpToCue(0);
+                break;
+            case Pitch.DSharp2:
+                // drums start
+                BassVideo.JumpToCue(1);
+                break;
+            case Pitch.G2:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(2);
+                break;
+            case Pitch.GSharp2:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(3);
+                break;
+            case Pitch.A2:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(4);
+                break;
+            case Pitch.ASharp2:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(5);
+                break;
+            case Pitch.B2:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(6);
+                break;
+            case Pitch.C3:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(7);
+                break;
+            case Pitch.CSharp3:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(8);
+                break;
+            case Pitch.D3:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(9);
+                break;
+            case Pitch.DSharp3:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(10);
+                break;
+            case Pitch.E3:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(11);
+                break;
+            case Pitch.G3:
+                // keeping bass riff in time
+                BassVideo.JumpToCue(12);
+                break;
+            case Pitch.CSharp4:
+                // keeping no shape drums in time
+                BassVideo.JumpToCue(14);
+                break;
+            case Pitch.D4:
+                // keeping no shape drums in time
+                BassVideo.JumpToCue(15);
+                break;
+            case Pitch.DSharp4:
+                // keeping no shape drums in time
+                BassVideo.JumpToCue(16);
+                break;
+            case Pitch.E4:
+                // keeping no shape drums in time
+                BassVideo.JumpToCue(17);
+                break;
+            case Pitch.F4:
+                // keeping no shape drums in time 
+                BassVideo.JumpToCue(19);
+                break;
+            case Pitch.FSharp4:
+                // keeping no shape drums in time 
+                BassVideo.JumpToCue(20);
+                break;
+            case Pitch.G4:
+                // keeping no shape drums in time 
+                BassVideo.JumpToCue(21);
+                break;
+
             // Desmond control
             case Pitch.F2:
                 // start desmond
@@ -400,83 +708,32 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.GSharp3:
                 // desmond lose shape
-                UserMeshVisualizer.Instance.BlockKinectUpdate = true;
+                if (UserMeshVisualizer.Instance != null)
+                    UserMeshVisualizer.Instance.BlockKinectUpdate = true;
+                BassVideo.JumpToCue(13);
                 break;
             case Pitch.A3:
                 // end breakdown / back to form
-                UserMeshVisualizer.Instance.BlockKinectUpdate = false;
+                if (UserMeshVisualizer.Instance != null)
+                    UserMeshVisualizer.Instance.BlockKinectUpdate = false;
+                BassVideo.JumpToCue(18);
                 break;
             case Pitch.ASharp3:
-                // drum/guitar outro setting
+                // drum/guitar outro setting 
+                BassVideo.JumpToCue(22);
                 break;
             case Pitch.B3:
                 // guitar solo shape
                 break;
             case Pitch.C4:
-                UserMeshVisualizer.Instance.BlockKinectUpdate = true;
+                if (UserMeshVisualizer.Instance != null)
+                    UserMeshVisualizer.Instance.BlockKinectUpdate = true;
                 // ending transition
-                break;
-
-            // Track control
-            case Pitch.D2:
-                // pause track
-                break;
-            case Pitch.DSharp2:
-                // unpause track
-                break;
-            // case Pitch.E2:
-            // glitch out
-            // break;
-
-            // Paint control
-            case Pitch.G2:
-                // piano 1 on
-                // only left hand
-                break;
-            case Pitch.GSharp2:
-                // piano 1 off
-                break;
-            case Pitch.A2:
-                // bass on
-                break;
-            case Pitch.ASharp2:
-                // bass off
-                break;
-            case Pitch.B2:
-                // vibes on
-                // only right hand
-                // 1 Minute long trail
-                break;
-            case Pitch.C3:
-                // vibes off
-                break;
-            case Pitch.CSharp3:
-                // drums on
-                break;
-            case Pitch.D3:
-                // drums off
-                break;
-            case Pitch.DSharp3:
-            // vibes off quickly
-            case Pitch.E3:
-                // piano 2 on
-                // 37 second long trail
-                break;
-            case Pitch.F3:
-                // piano 2 off
-                break;
-            case Pitch.FSharp3:
-                // drums 2 on
-                // 1:15 trail length
-                break;
-            case Pitch.G3:
-                // drums 2 off
                 break;
         }
     }
     private void RouteDriftMidi(Pitch pitch)
     {
-        Debug.Log(pitch.ToString());
         switch (pitch)
         {
             case Pitch.CNeg1:
@@ -580,15 +837,18 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.A1:
                 HitParticleController.Instance.Kick();
+                HeadController.Instance.Kick();
                 break;
             case Pitch.DSharp2:
-                HitParticleController.Instance.Snare();
+                // HitParticleController.Instance.Snare();
+                // HeadController.Instance.Snare();
+                HitParticleController.Instance.LeftHand();
                 break;
             case Pitch.D2:
                 HitParticleController.Instance.RightHand();
                 break;
             case Pitch.F2:
-                HitParticleController.Instance.LeftHand();
+                // HitParticleController.Instance.LeftHand();
                 break;
 
         }
