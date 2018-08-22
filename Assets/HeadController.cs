@@ -81,4 +81,9 @@ public class HeadController : MonoBehaviour {
 		}
 	}
 
+	public void Beatbox(int animationNumber) {
+		if (animationNumber > 5) return;
+		Animator.CrossFade("Beatbox" + animationNumber, 0.1f, 0, 0f);
+	}
+
 }

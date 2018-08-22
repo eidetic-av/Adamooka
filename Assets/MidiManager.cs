@@ -858,6 +858,10 @@ public class MidiManager : MonoBehaviour
             case Pitch.F2:
                 // HitParticleController.Instance.LeftHand();
                 break;
+            default:
+                // for beatbox animations
+                HeadController.Instance.Beatbox(pitch.NoteNumber());
+                break;
 
         }
     }
