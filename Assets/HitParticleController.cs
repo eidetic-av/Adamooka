@@ -65,42 +65,42 @@ public class HitParticleController : MonoBehaviour
     public void IntroPulse1()
     {
         if (IntroPulse1System == null) return;
-        IntroPulse1System.Stop();
+        IntroPulse1System.Clear();
         IntroPulse1System.Play();
     }
 
     public void IntroPulse2()
     {
         if (IntroPulse2System == null) return;
-        IntroPulse2System.Stop();
+        IntroPulse2System.Clear();
         IntroPulse2System.Play();
     }
 
     public void IntroPulse3()
     {
         if (IntroPulse3System == null) return;
-        IntroPulse3System.Stop();
+        IntroPulse3System.Clear();
         IntroPulse3System.Play();
     }
 
     public void Melody1()
     {
         if (Melody1System == null) return;
-        Melody1System.Stop();
+        Melody1System.Clear();
         Melody1System.Play();
     }
 
     public void Melody2()
     {
         if (Melody2System == null) return;
-        Melody2System.Stop();
+        Melody2System.Clear();
         Melody2System.Play();
     }
 
     public void Melody3()
     {
         if (Melody3System == null) return;
-        Melody3System.Stop();
+        Melody3System.Clear();
         Melody3System.Play();
     }
 
@@ -112,28 +112,28 @@ public class HitParticleController : MonoBehaviour
     public void Kick()
     {
         if (KickSystem == null) return;
-        KickSystem.Stop();
+        KickSystem.Clear();
         KickSystem.Play();
     }
 
     public void Snare()
     {
         if (SnareSystem == null) return;
-        SnareSystem.Stop();
+        SnareSystem.Clear();
         SnareSystem.Play();
     }
 
     public void RightHand()
     {
         if (RightHandSystem == null) return;
-		RightHandSystem.Stop();
+		RightHandSystem.Clear();
 		RightHandSystem.Play();
     }
 
     public void LeftHand()
     {
         if (LeftHandSystem == null) return;
-		LeftHandSystem.Stop();
+		LeftHandSystem.Clear();
 		LeftHandSystem.Play();
     }
 }

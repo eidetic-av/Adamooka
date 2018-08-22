@@ -223,13 +223,26 @@ public class MidiManager : MonoBehaviour
     bool LeftMidiOn = false;
     bool RightMidiOn = false;
 
+    VideoPlaybackController TunnelVideoController;
+    MeshRenderer TunnelPlane;
+
     private void RouteTunnelMidi(Pitch pitch)
     {
+        if (TunnelVideoController == null) {
+            TunnelVideoController = GameObject.Find("TunnelPlayback").GetComponent<VideoPlaybackController>();
+            TunnelPlane = GameObject.Find("TunnelPlane").GetComponent<MeshRenderer>();
+        }
         switch (pitch)
         {
             case Pitch.C1:
-                GameObject.Find("TunnelPlayback").GetComponent<VideoPlaybackController>()
-                    .StartPlayback = true;
+                TunnelVideoController.StartPlayback = true;
+                TunnelPlane.material.SetColor("_Color", new Color(1, 1, 1, 1));
+                break;
+            case Pitch.CSharp1:
+                    TunnelVideoController.JumpToCue(0);
+                break;
+            case Pitch.D1:
+                VideoLayersController.Instance.FadeOutTunnel = true;
                 break;
             // Melody notes
             case Pitch.B0:
@@ -297,6 +310,9 @@ public class MidiManager : MonoBehaviour
             case Pitch.CSharp4:
                 if (RightMidiOn)
                     MelodyCirclesController.Instance.NoteOn(10);
+                break;
+            default:
+                TunnelController.Instance.Bang(pitch.NoteNumber());
                 break;
         }
     }
@@ -589,7 +605,8 @@ public class MidiManager : MonoBehaviour
     VideoPlaybackController BassVideo;
     VideoPlaybackController VibesVideo;
 
-    void InitVideos() {
+    void InitVideos()
+    {
         if (BassVideo == null) BassVideo = GameObject.Find("DesmondPlaybackBass").GetComponent<VideoPlaybackController>();
         if (VibesVideo == null) VibesVideo = GameObject.Find("DesmondPlaybackVibes").GetComponent<VideoPlaybackController>();
     }
@@ -605,6 +622,19 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.CSharp2:
                 VibesVideo.StartPlayback = true;
+                break;
+
+            // Videos in
+            case Pitch.C1:
+                VideoLayersController.Instance.StartBassTransition = true;
+                break;
+            case Pitch.CSharp1:
+                VideoLayersController.Instance.StartVibesTransition = true;
+                break;
+            // Videos out
+            case Pitch.D1:
+                VideoLayersController.Instance.StartVibesOutro = true;
+                VideoLayersController.Instance.StartBassOutro = true;
                 break;
 
             // Video Seeking
@@ -687,6 +717,21 @@ public class MidiManager : MonoBehaviour
             case Pitch.G4:
                 // keeping no shape drums in time 
                 BassVideo.JumpToCue(21);
+                break;
+
+            // Vibes cues
+            
+            case Pitch.GSharp4:
+                VibesVideo.JumpToCue(0);
+                break;
+            case Pitch.A4:
+                VibesVideo.JumpToCue(1);
+                break;
+            case Pitch.ASharp4:
+                VibesVideo.JumpToCue(2);
+                break;
+            case Pitch.B4:
+                VibesVideo.JumpToCue(3);
                 break;
 
             // Desmond control
@@ -814,6 +859,55 @@ public class MidiManager : MonoBehaviour
     {
         switch (pitch)
         {
+            case Pitch.C3:
+                PaintSceneController.Instance.DrawFullTrails = true;
+                break;
+            case Pitch.D3:
+                PaintSceneController.Instance.SuckTrails = true;
+                break;
+            case Pitch.CSharp3:
+                PaintSceneController.Instance.DisableTrails = true;
+                break;
+            case Pitch.DSharp3:
+                // start beatboxer head
+                var headFeedback = GameObject.Find("PaintCamera").GetComponent<Kino.Feedback>();
+                headFeedback.color = Color.HSVToRGB(1, 0, 0.98f);
+                HeadController.Instance.Transparency = 0f;
+                HeadController.Instance.FadeInLength = 7f;
+                HeadController.Instance.FadeIn = true;
+                break;
+            case Pitch.B0:
+                // start singers
+                SingersController.Instance.Play();
+                SingersController.Instance.Transparency = 1f;
+                SingersController.Instance.FlyIn = true;
+                break;
+
+            case Pitch.A2:
+                HeadController.Instance.Transparency = 1f;
+                HeadController.Instance.FadeOutLength = .5f;
+                HeadController.Instance.FadeOut = true;
+                break;
+
+            case Pitch.E4:
+                // full paint on face
+                var feedback = GameObject.Find("PaintCamera").GetComponent<Kino.Feedback>();
+                feedback.color = Color.HSVToRGB(1, 0, 1);
+                break;
+
+            case Pitch.F4:
+                // fading paint on face
+                var faceFeedback = GameObject.Find("PaintCamera").GetComponent<Kino.Feedback>();
+                faceFeedback.color = Color.HSVToRGB(1, 0, 0.98f);
+                break;
+
+            case Pitch.B2:
+                // outro stutter
+                SingersController.Instance.Transparency = 1f;
+                SingersController.Instance.FadeOutLength = .25f;
+                SingersController.Instance.FadeOut = true;
+                break;
+
             case Pitch.C1:
                 // intro 1 pulse, right
                 HitParticleController.Instance.IntroPulse1();

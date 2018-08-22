@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: FaceCameraTexture
-  m_Shader: {fileID: 4800000, guid: 1b3156b1217d40741b462f030ade3762, type: 3}
+  m_Shader: {fileID: 4800000, guid: e8ead98c69ad5af48894c74cd2414f3d, type: 3}
   m_ShaderKeywords: _ALPHABLEND_ON _EMISSION _GLOSSYREFLECTIONS_OFF _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
     _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 0
@@ -105,7 +105,7 @@ Material:
     - _CameraNearFadeDistance: 1
     - _ColorMode: 0
     - _Cull: 2
-    - _Cutoff: 1
+    - _Cutoff: 0
     - _DetailNormalMapScale: 1
     - _DistortionBlend: 0.5
     - _DistortionEnabled: 0
