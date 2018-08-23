@@ -28,11 +28,21 @@ public class TrackerSceneController : MonoBehaviour
     public int CloneCount = 1;
     public bool UpdateCloneAmount = false;
 
+
+    public GameObject OutputQuad;
+
+    UnityEngine.Material FadeOutMaterial;
+    public bool FadeOutStart = false;
+    public float FadeOutLength = 10f;
+    bool FadingOut = false;
+    float FadeOutStartTime;
+
     void Start()
     {
         Instance = this;
         // AirSticks.Left.NoteOn += NoteOnCycleColours;
         AirSticks.Right.NoteOn += NoteOnCycleColours;
+        OutputQuad = GameObject.Find("OutputQuad");
     }
 
     void NoteOnCycleColours() {
@@ -174,6 +184,7 @@ public class TrackerSceneController : MonoBehaviour
         else if (EnableUserRender)
         {
             GameObject.Find("UserMesh").GetComponent<MeshRenderer>().enabled = true;
+            // GameObject.Find("OutputQuad").GetComponent<MeshRenderer>().enabled = true;
             EnableUserRender = false;
         } else if (ActivateClones)
         {
@@ -230,6 +241,24 @@ public class TrackerSceneController : MonoBehaviour
             effector.RightHandClones.Clear();
             RemoveAllClones = false;
             effector.UpdateParametersEveryFrame = false;
+        }
+
+         if (FadeOutStart)
+        {
+            FadeOutStartTime = Time.time;
+            FadingOut = true;
+            FadeOutMaterial = OutputQuad.GetComponent<MeshRenderer>().material;
+            FadeOutStart = false;
+        }
+        if (FadingOut)
+        {
+            var position = (Time.time - FadeOutStartTime) / FadeOutLength;
+			if (position >= 1) {
+				position = 1;
+				FadingOut = false;
+			}
+            var v  = 1 - position;
+            FadeOutMaterial.SetColor("_TintColor", Color.HSVToRGB(0, 0, v));
         }
     }
 }

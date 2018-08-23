@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
+using UnityEngine.PostProcessing;
 
 public class MidiManager : MonoBehaviour
 {
@@ -142,6 +143,11 @@ public class MidiManager : MonoBehaviour
                         RouteHyphenMidi(noteOnMessage.Pitch);
                         break;
                     }
+                case Channel.Channel5:
+                    {
+                        RouteDriftMidi(noteOnMessage.Pitch);
+                        break;
+                    }
                 case Channel.Channel6:
                     {
                         RouteJordanMidi(noteOnMessage.Pitch);
@@ -150,11 +156,6 @@ public class MidiManager : MonoBehaviour
                 case Channel.Channel7:
                     {
                         RouteTunnelMidi(noteOnMessage.Pitch);
-                        break;
-                    }
-                case Channel.Channel15:
-                    {
-                        RouteDriftMidi(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel16:
@@ -225,25 +226,75 @@ public class MidiManager : MonoBehaviour
 
     VideoPlaybackController TunnelVideoController;
     MeshRenderer TunnelPlane;
+    public bool MeshIsWhite = false;
 
     private void RouteTunnelMidi(Pitch pitch)
     {
-        if (TunnelVideoController == null) {
+        if (TunnelVideoController == null)
+        {
             TunnelVideoController = GameObject.Find("TunnelPlayback").GetComponent<VideoPlaybackController>();
             TunnelPlane = GameObject.Find("TunnelPlane").GetComponent<MeshRenderer>();
         }
         switch (pitch)
         {
             case Pitch.C1:
+                // start tunnel
                 TunnelVideoController.StartPlayback = true;
                 TunnelPlane.material.SetColor("_Color", new Color(1, 1, 1, 1));
+                // preset state for Melody Circles
+                MelodyCirclesController.Instance.GoToPreset();
                 break;
             case Pitch.CSharp1:
-                    TunnelVideoController.JumpToCue(0);
+                // bring in user on finale outro
+                TrackerSceneController.Instance.EnableKinectUpdate = true;
+                TrackerSceneController.Instance.EnableUserRender = true;
+                // MeshTools.Instance.Noise.NoiseIntensity = 0.04f;
+                // MeshTools.Instance.Noise.SmoothingTimes = 1;
+                MeshTools.EnableDesmondAirsticksControl = false;
+                MeshTools.AnimateWireframeAlpha = false;
+                UserMesh.GetComponent<MeshRenderer>().enabled = true;
+                UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
+                MeshIsWhite = true;
                 break;
             case Pitch.D1:
+                // final final cueF
+                RainParticles.SetActive(true);
+                // fade out tunnel video and make user render white
                 VideoLayersController.Instance.FadeOutTunnel = true;
+                UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
+                // start user render fadeout
+                TrackerSceneController.Instance.FadeOutStart = true;
+                // Start Particle scene finale
+                ParticleSceneController.Instance.FinaleState = true;
+                // and start fading them out
+                var rainController = GameObject.Find("RainParticleController").GetComponent<RainController>();
+                rainController.StopParticleLength = 200f;
+                rainController.StopParticleAmounts = new Vector2Int(4000, 4000);
+                rainController.SlowlyStopParticles = true;
                 break;
+            case Pitch.E1:
+                var rain = GameObject.Find("RainParticleController").GetComponent<RainController>();
+                rain.StopParticleLength = 1f;
+                break;
+
+                break;
+            case Pitch.DSharp1:
+                // evaporate
+                break;
+            case Pitch.CSharp6:
+                // Crash toggles colour
+                if (MeshIsWhite)
+                {
+                    UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("Black");
+                    MeshIsWhite = false;
+                }
+                else
+                {
+                    UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
+                    MeshIsWhite = true;
+                }
+                break;
+
             // Melody notes
             case Pitch.B0:
                 LeftMidiOn = true;
@@ -251,8 +302,12 @@ public class MidiManager : MonoBehaviour
             case Pitch.ASharp0:
                 // comes on invisible
                 RightMidiOn = true;
+                var fadeInCircle = GameObject.Find("8-Circle").GetComponent<CircleController>();
+                fadeInCircle.WidthMultiplier = 0;
                 break;
             case Pitch.A0:
+                var fadeIn = GameObject.Find("8-Circle").GetComponent<CircleController>();
+                fadeIn.FadeIn = true;
                 // fades in right hand
                 break;
             // Left Hand
@@ -301,6 +356,10 @@ public class MidiManager : MonoBehaviour
                 if (RightMidiOn)
                     MelodyCirclesController.Instance.NoteOn(7);
                 break;
+            case Pitch.GSharp2:
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOn(11);
+                break;
 
             // High Beeps
             case Pitch.C4:
@@ -312,7 +371,7 @@ public class MidiManager : MonoBehaviour
                     MelodyCirclesController.Instance.NoteOn(10);
                 break;
             default:
-                TunnelController.Instance.Bang(pitch.NoteNumber());
+                // TunnelController.Instance.Bang(pitch.NoteNumber());
                 break;
         }
     }
@@ -324,40 +383,62 @@ public class MidiManager : MonoBehaviour
             // Melody notes
             // Left Hand
             case Pitch.B1:
-                MelodyCirclesController.Instance.NoteOff(8);
+                if (LeftMidiOn)
+                    MelodyCirclesController.Instance.NoteOff(8);
                 break;
             case Pitch.C2:
-                // 360Hz
-                MelodyCirclesController.Instance.NoteOff(0);
+                if (LeftMidiOn)
+                    // 360Hz
+                    MelodyCirclesController.Instance.NoteOff(0);
                 break;
             case Pitch.CSharp2:
-                // 480Hz
-                MelodyCirclesController.Instance.NoteOff(1);
+                if (LeftMidiOn)
+                    // 480Hz
+                    MelodyCirclesController.Instance.NoteOff(1);
                 break;
             case Pitch.D2:
-                // 450Hz
-                MelodyCirclesController.Instance.NoteOff(2);
+                if (LeftMidiOn)
+                    // 450Hz
+                    MelodyCirclesController.Instance.NoteOff(2);
                 break;
             case Pitch.DSharp2:
-                // 600Hz
-                MelodyCirclesController.Instance.NoteOff(3);
+                if (LeftMidiOn)
+                    // 600Hz
+                    MelodyCirclesController.Instance.NoteOff(3);
                 break;
             // Right Hand
             case Pitch.E2:
-                // 450Hz
-                MelodyCirclesController.Instance.NoteOff(4);
+                if (RightMidiOn)
+                    // 450Hz
+                    MelodyCirclesController.Instance.NoteOff(4);
                 break;
             case Pitch.F2:
-                // 600Hz
-                MelodyCirclesController.Instance.NoteOff(5);
+                if (RightMidiOn)
+                    // 600Hz
+                    MelodyCirclesController.Instance.NoteOff(5);
                 break;
             case Pitch.FSharp2:
-                // 800Hz
-                MelodyCirclesController.Instance.NoteOff(6);
+                if (RightMidiOn)
+                    // 800Hz
+                    MelodyCirclesController.Instance.NoteOff(6);
                 break;
             case Pitch.G2:
-                // 480Hz
-                MelodyCirclesController.Instance.NoteOff(7);
+                if (RightMidiOn)
+                    // 480Hz
+                    MelodyCirclesController.Instance.NoteOff(7);
+                break;
+            case Pitch.GSharp2:
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOff(11);
+                break;
+            // High Beeps
+            case Pitch.C4:
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOff(9);
+                break;
+            case Pitch.CSharp4:
+                if (RightMidiOn)
+                    MelodyCirclesController.Instance.NoteOff(10);
                 break;
         }
     }
@@ -367,8 +448,72 @@ public class MidiManager : MonoBehaviour
         switch (pitch)
         {
 
-            case Pitch.ASharp0:
-                // Toggle auto-rotation
+            case Pitch.C0:
+                // start jordan
+                TrackerSceneController.Instance.EnableUserRender = true;
+                TrackerSceneController.Instance.EnableKinectUpdate = true;
+                UserFreezeFrameController.Instance.HideBaseOuput = true;
+                MeshTools.Instance.Noise.NoiseIntensity = 0.01f;
+                MeshTools.Instance.Noise.SmoothingTimes = 0;
+                MeshTools.Instance.EnableDesmondAirsticksControl = false;
+                UserMeshRenderer.material = Resources.Load("CloneMaterial") as UnityEngine.Material;
+                // TODO: turn desmond off
+                break;
+
+            case Pitch.CSharp0:
+                UserMeshVisualizer.Instance.DoRotate = true;
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                UserMeshVisualizer.Instance.StartRotateAnimation = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 2;
+                break;
+
+            case Pitch.D0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 4;
+                break;
+
+            case Pitch.DSharp0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 6;
+                break;
+
+            case Pitch.E0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 8;
+                break;
+
+            case Pitch.F0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 10;
+                break;
+
+            case Pitch.FSharp0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 12;
+                break;
+
+            case Pitch.G0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 15;
+                break;
+
+            case Pitch.GSharp0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 20;
+                break;
+
+            case Pitch.A0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 30;
                 break;
 
             case Pitch.B0:
@@ -485,7 +630,7 @@ public class MidiManager : MonoBehaviour
 
             case Pitch.G3:
                 // Go back to Airsticks Note On/Off with the
-                // OneFiveNineCircleController.Instance.ActivateAirSticksKickSnare = true;
+                OneFiveNineCircleController.Instance.ActivateAirSticksKickSnare = true;
 
                 // Introduce circle hand systems?
                 break;
@@ -498,6 +643,22 @@ public class MidiManager : MonoBehaviour
             case Pitch.GSharp3:
                 // Stop vortex
                 BondiCueController.Instance.DisableVortex = true;
+                break;
+
+            case Pitch.E3:
+                // turn rods white
+                var rodParticles = GameObject.Find("RodParticleSystem").GetComponent<ParticleSystem>();
+                var trailsModule = rodParticles.trails;
+                trailsModule.colorOverLifetime = new ParticleSystem.MinMaxGradient(Color.white);
+                break;
+
+            case Pitch.DSharp4:
+                BondiCueController.Instance.DisableRodsAfterMelody = true;
+                break;
+
+            case Pitch.E4:
+                // (circles would come in )
+                BondiCueController.Instance.EnableRodsAfterSpeech = true;
                 break;
         }
     }
@@ -720,7 +881,7 @@ public class MidiManager : MonoBehaviour
                 break;
 
             // Vibes cues
-            
+
             case Pitch.GSharp4:
                 VibesVideo.JumpToCue(0);
                 break;
@@ -758,8 +919,8 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.GSharp3:
                 // desmond lose shape
-                if (UserMeshVisualizer.Instance != null)
-                    UserMeshVisualizer.Instance.BlockKinectUpdate = true;
+                // if (UserMeshVisualizer.Instance != null)
+                //     UserMeshVisualizer.Instance.BlockKinectUpdate = true;
                 BassVideo.JumpToCue(13);
                 break;
             case Pitch.A3:
@@ -779,6 +940,19 @@ public class MidiManager : MonoBehaviour
                 if (UserMeshVisualizer.Instance != null)
                     UserMeshVisualizer.Instance.BlockKinectUpdate = true;
                 // ending transition
+                // fade out outputquad
+                break;
+            case Pitch.C5:
+                // change this to a fade out!! and put it up there!!
+                TrackerSceneController.Instance.DisableUserRender = true;
+                // activate hyphen
+                GameObject.Find("PaintAndFaceOutputQuad").GetComponent<MeshRenderer>()
+                    .enabled = true;
+                GameObject.Find("PaintAndSingersOutputQuad").GetComponent<MeshRenderer>()
+                    .enabled = true;
+                // remove the bloom main camera
+                var pp = GameObject.Find("Main Camera").GetComponent<PostProcessingBehaviour>();
+                pp.enabled = false;
                 break;
         }
     }
@@ -786,6 +960,28 @@ public class MidiManager : MonoBehaviour
     {
         switch (pitch)
         {
+            // start umbeants
+            case Pitch.C1:
+                // turn off rain wind
+                GameObject.Find("WindZoneA").SetActive(false);
+                // start system emission (makee this a fade)
+                var driftMain = GameObject.Find("DriftParticleSystem").GetComponent<ParticleSystem>().main;
+                driftMain.maxParticles = 600;
+                // remove hyphen layers
+                GameObject.Find("FaceScene").SetActive(false);
+                GameObject.Find("PaintScene").SetActive(false);
+                // add the bloom back to main camera
+                var pp = GameObject.Find("Main Camera").GetComponent<PostProcessingBehaviour>();
+                pp.enabled = true;
+                break;
+
+            // end umbeants
+            case Pitch.CSharp1:
+                // end system emission (make this a fade over 25 seconds)
+                var drift = GameObject.Find("DriftParticleSystem").GetComponent<ParticleSystem>().main;
+                drift.maxParticles = 0;
+                break;
+
             case Pitch.CNeg1:
                 DriftController.SelectState(0);
                 break;

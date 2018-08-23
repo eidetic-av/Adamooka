@@ -38,6 +38,7 @@ public class RainController : MonoBehaviour
     public AnimationCurve StopParticleCurve = AnimationCurve.EaseInOut(0, 1, 0, 1);
     private bool StoppingParticles = false;
     private float StopParticleStartTime;
+    public Vector2Int StopParticleAmounts = new Vector2Int(2000, 1000);
 
 
     public GameObject Wind;
@@ -253,11 +254,11 @@ public class RainController : MonoBehaviour
                 curveValue = 1;
                 StoppingParticles = false;
             }
-            EmissionCount = Mathf.RoundToInt(curveValue.Map(0f, 1f, 2000f, 0f));
+            EmissionCount = Mathf.RoundToInt(curveValue.Map(0f, 1f, (float)StopParticleAmounts.x, 0f));
             var emissionModule = ParticleSystem.emission;
             emissionModule.rateOverTime = EmissionCount;
             var mainModule = ParticleSystem.main;
-            mainModule.maxParticles = Mathf.RoundToInt(curveValue.Map(0f, 1f, 1000f, 0f));
+            mainModule.maxParticles = Mathf.RoundToInt(curveValue.Map(0f, 1f, (float)StopParticleAmounts.y, 0f));
         }
 
     }

@@ -24,9 +24,13 @@ public class HitParticleController : MonoBehaviour
     public Vector2 RightHandScaling = Vector2.one;
     public Vector2 RightHandOffset = Vector2.zero;
 
+    Vector3 LeftHandStart;
+    Vector3 RightHandStart;
     void Start()
     {
         Instance = this;
+        LeftHandStart = LeftHandSystem.gameObject.transform.position;
+        RightHandStart = RightHandSystem.gameObject.transform.position;
     }
 
     void Update() 
@@ -45,18 +49,16 @@ public class HitParticleController : MonoBehaviour
                 var mappedLeftHandX = (leftHandPosition.x * LeftHandScaling.x) + LeftHandOffset.x;
                 var mappedLeftHandY = (leftHandPosition.y * LeftHandScaling.y) + LeftHandOffset.y;
 
-                LeftHandSystem.transform.SetPositionAndRotation(
-                    new Vector3(mappedLeftHandX, mappedLeftHandY, 0),
-                    Quaternion.Euler(0, 0, 0)
-                );
+                LeftHandSystem.transform.position = 
+                    new Vector3(LeftHandStart.x + mappedLeftHandX,
+                    LeftHandStart.y + mappedLeftHandY, LeftHandStart.z);
                 
                 var mappedRightHandX = (rightHandPosition.x * RightHandScaling.x) + RightHandOffset.x;
                 var mappedRightHandY = (rightHandPosition.y * RightHandScaling.y) + RightHandOffset.y;
 
-                RightHandSystem.transform.SetPositionAndRotation(
-                    new Vector3(mappedRightHandX, mappedRightHandY, 0),
-                    Quaternion.Euler(0, 0, 0)
-                );
+                RightHandSystem.transform.position = 
+                    new Vector3(RightHandStart.x + mappedRightHandX,
+                    RightHandStart.y + mappedRightHandY, RightHandStart.z);
 
             }
         }

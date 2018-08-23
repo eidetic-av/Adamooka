@@ -17,6 +17,7 @@ public class ParticleSceneController : MonoBehaviour
     public bool StartOneFiveNineOut = false;
     public bool OneFiveNineOut = false;
     public bool ActivateRain = false;
+    public bool FinaleState = false;
 
     private void Start()
     {
@@ -108,6 +109,28 @@ public class ParticleSceneController : MonoBehaviour
         {
             MidiManager.Instance.ActivateRainState();
             ActivateRain = false;
+        }
+
+        if (FinaleState) {
+            GameObject.Find("Particle Camera").GetComponent<Camera>().fieldOfView = 30.6f;
+            var rainController = GameObject.Find("RainParticleController").GetComponent<RainController>();
+            rainController.EmissionCount = 4000;
+            rainController.EnableEmission = true;
+            rainController.AirSticksGravityControl = false;
+            var proceduralController = GameObject.Find("ProceduralMesh").GetComponent<ProceduralMeshController>();
+            proceduralController.ControlInterpolationWithAirSticks = false;
+            proceduralController.Interpolation = 0;
+            var windzone = GameObject.Find("WindZoneA");
+            if (windzone != null) windzone.SetActive(false);
+            var particles = GameObject.Find("RainParticleSystem").GetComponent<ParticleSystem>();
+            var mainModule = particles.main;
+            mainModule.gravityModifier = -0.03f;
+            mainModule.startSpeed = new ParticleSystem.MinMaxCurve(2f);
+            mainModule.maxParticles = 4000;
+            mainModule.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 2.5f);
+            var emitterModule = particles.emission;
+            emitterModule.rateOverTime = new ParticleSystem.MinMaxCurve(4000);
+            FinaleState = false;
         }
     }
 }

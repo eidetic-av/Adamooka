@@ -10,6 +10,9 @@ public class VideoPlaybackController : MonoBehaviour {
 
 	public List<float> Cues = new List<float>();
 
+	public int Cue;
+	public bool Jump = false;
+
 	VideoPlayer VideoPlayer;
 
 	void Start () {
@@ -27,6 +30,10 @@ public class VideoPlaybackController : MonoBehaviour {
 			VideoPlayer.Stop();
 			StopPlayback = false;
 		}	
+		if (Jump) {
+			JumpToCue(Cue);
+			Jump = false;
+		}
 	}
 
 	public void SetTime(float timeInSeconds) {

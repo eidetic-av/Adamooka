@@ -96,7 +96,7 @@ public class UserMeshVisualizer : MonoBehaviour
     public bool DoOrigin = false;
     public bool DoSetMedianVertexPosition = false;
 
-    private bool DoRotate = false;
+    public bool DoRotate = false;
 
     public bool StartRotateAnimation = false;
     public bool StopRotateAnimation = true;

@@ -20,6 +20,13 @@ public class DriftController : MonoBehaviour {
 
     ParticleSystem.Particle[] ParticleArray;
 
+    public bool FadeIn = false;
+    public bool FadingIn = false;
+    public float FadeInLength = 5f;
+    public int MaxParticles = 600;
+    float FadeInStartTime;
+    
+
     // Use this for initialization
     void Start () {
 		
@@ -28,33 +35,9 @@ public class DriftController : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        if (KinectManager.Instance != null && KinectManager.Instance.GetUsersCount() != 0)
-        {
-            if (ParticleArray == null)
-            {
-                ParticleArray = new ParticleSystem.Particle[ParticleSystem.main.maxParticles];
-            }
-
-            ParticleSystem.GetParticles(ParticleArray);
-            var userMeshVertices = UserMeshFilter.mesh.vertices;
-
-            for (int i = 0; i < ParticleSystem.main.maxParticles; i++)
-            {
-                int vertex = (i * (userMeshVertices.Length / ParticleSystem.main.maxParticles) * 2) % userMeshVertices.Length;
-                var vertexPosition = new Vector3(
-                    (userMeshVertices[vertex].x * Scaling.x) + HonedOffset.x,
-                    (userMeshVertices[vertex].y * Scaling.y) + HonedOffset.y,
-                    (userMeshVertices[vertex].z * Scaling.z) + HonedOffset.z
-                );
-
-                var xPosition = Mathf.Lerp(ParticleArray[i].position.x, vertexPosition.x, Interpolation);
-                var yPosition = Mathf.Lerp(ParticleArray[i].position.y, vertexPosition.x, Interpolation);
-                var zPosition = Mathf.Lerp(ParticleArray[i].position.z, vertexPosition.x, Interpolation);
-
-                ParticleArray[i].position = new Vector3(xPosition, yPosition, zPosition);
-            }
-
-            ParticleSystem.SetParticles(ParticleArray, ParticleArray.Length);
+        if (FadeIn) {
+            
+            FadingIn = true;
         }
     }
 
