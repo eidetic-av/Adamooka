@@ -16,6 +16,7 @@ public class RainController : MonoBehaviour
 
     public Gradient DesmondParticleColor;
     public bool ActivateDesmondParticleColor = false;
+    public bool ActivateDefaultParticleColour = false;
     public bool ActivateOutroState = false;
 
     public bool TransitioningToOutro = false;
@@ -180,6 +181,15 @@ public class RainController : MonoBehaviour
             mainModule.startColor = desmondGradient;
             mainModule.gravityModifierMultiplier = 0.3f;
             ActivateDesmondParticleColor = false;
+        }
+        if (ActivateDefaultParticleColour)
+        {
+            var particleSystem = Particles.GetComponent<ParticleSystem>();
+            var mainModule = particleSystem.main;
+            var desmondGradient = new ParticleSystem.MinMaxGradient(Color.white);
+            desmondGradient.mode = ParticleSystemGradientMode.Color;
+            mainModule.startColor = Color.white;
+            ActivateDefaultParticleColour = false;
         }
 
         if (ActivateOutroState)

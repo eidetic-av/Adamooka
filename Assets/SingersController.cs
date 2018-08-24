@@ -30,6 +30,11 @@ public class SingersController : MonoBehaviour {
 	public bool FlyIn = false;
 	public float FlyInDamping = 200f;
 
+	public bool EnableKickParticles = false;
+	public bool TriggerKick = false;
+
+	List<ParticleSystem> KickParticles = new List<ParticleSystem>();
+
 
 	SingerController[] SingerControllers;
 	SkinnedMeshRenderer[] HeadRenderers;
@@ -39,6 +44,11 @@ public class SingersController : MonoBehaviour {
 		SingerControllers = GetComponentsInChildren<SingerController>();
 		HeadRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
 		OutputQuadMaterial = OutputQuad.material;
+
+		KickParticles.Add(GameObject.Find("SingerKickParticles0").GetComponent<ParticleSystem>());
+		KickParticles.Add(GameObject.Find("SingerKickParticles1").GetComponent<ParticleSystem>());
+		KickParticles.Add(GameObject.Find("SingerKickParticles2").GetComponent<ParticleSystem>());
+		KickParticles.Add(GameObject.Find("SingerKickParticles3").GetComponent<ParticleSystem>());
 	}
 
 	void Update() {
@@ -96,6 +106,11 @@ public class SingersController : MonoBehaviour {
 			ZPosition = ZPosition + (NewZPosition - ZPosition) / FlyInDamping;
 		}
 		transform.position = new Vector3(transform.position.x, transform.position.y, ZPosition);
+
+		if (EnableKickParticles && TriggerKick) {
+			KickParticles.ForEach(p => {p.Clear(); p.Play();});
+			TriggerKick = false;
+		}
 	}
 
 	public void Play() {

@@ -266,6 +266,7 @@ public class MidiManager : MonoBehaviour
                 TrackerSceneController.Instance.FadeOutStart = true;
                 // Start Particle scene finale
                 ParticleSceneController.Instance.FinaleState = true;
+                RainController.Instance.ActivateDefaultParticleColour = true;
                 // and start fading them out
                 var rainController = GameObject.Find("RainParticleController").GetComponent<RainController>();
                 rainController.StopParticleLength = 200f;
@@ -456,8 +457,16 @@ public class MidiManager : MonoBehaviour
                 MeshTools.Instance.Noise.NoiseIntensity = 0.01f;
                 MeshTools.Instance.Noise.SmoothingTimes = 0;
                 MeshTools.Instance.EnableDesmondAirsticksControl = false;
-                UserMeshRenderer.material = Resources.Load("CloneMaterial") as UnityEngine.Material;
-                // TODO: turn desmond off
+                MeshTools.Instance.AnimateWireframeAlpha = false;
+                UserMeshRenderer.material = Resources.Load("JordanMaterial") as UnityEngine.Material;
+                
+                // Move figure (now on drum kit)
+                var initialPosition = UserMesh.transform.position;
+                UserMesh.transform.position = new Vector3(initialPosition.x, -0.99f, initialPosition.z);
+                
+                // Activate Jordan light
+                GameObject.Find("JordanLight").GetComponent<Light>().enabled = true;
+
                 break;
 
             case Pitch.CSharp0:
@@ -670,7 +679,7 @@ public class MidiManager : MonoBehaviour
             case Pitch.B2:
 
                 // temp transition out from one five nine
-                BondiCueController.Instance.FadeOutNoiseCircle = true;
+                NoiseCircleController.Instance.ExpandToRain = true;
 
                 // start rain
                 RainController.Instance.EnableEmission = true;
@@ -964,9 +973,8 @@ public class MidiManager : MonoBehaviour
             case Pitch.C1:
                 // turn off rain wind
                 GameObject.Find("WindZoneA").SetActive(false);
-                // start system emission (makee this a fade)
-                var driftMain = GameObject.Find("DriftParticleSystem").GetComponent<ParticleSystem>().main;
-                driftMain.maxParticles = 600;
+                // start system emission 
+                DriftController.FadeIn = true;
                 // remove hyphen layers
                 GameObject.Find("FaceScene").SetActive(false);
                 GameObject.Find("PaintScene").SetActive(false);
@@ -977,9 +985,8 @@ public class MidiManager : MonoBehaviour
 
             // end umbeants
             case Pitch.CSharp1:
-                // end system emission (make this a fade over 25 seconds)
-                var drift = GameObject.Find("DriftParticleSystem").GetComponent<ParticleSystem>().main;
-                drift.maxParticles = 0;
+                // end system emission
+                DriftController.FadeOut = true;
                 break;
 
             case Pitch.CNeg1:
@@ -1011,6 +1018,12 @@ public class MidiManager : MonoBehaviour
                 break;
             case Pitch.ANeg1:
                 DriftController.SelectState(9);
+                break;
+            case Pitch.ASharpNeg1:
+                DriftController.SelectState(10);
+                break;
+            case Pitch.BNeg1:
+                DriftController.SelectState(11);
                 break;
         }
     }
@@ -1077,6 +1090,7 @@ public class MidiManager : MonoBehaviour
                 SingersController.Instance.Play();
                 SingersController.Instance.Transparency = 1f;
                 SingersController.Instance.FlyIn = true;
+                SingersController.Instance.EnableKickParticles = true;
                 break;
 
             case Pitch.A2:
@@ -1133,6 +1147,7 @@ public class MidiManager : MonoBehaviour
             case Pitch.A1:
                 HitParticleController.Instance.Kick();
                 HeadController.Instance.Kick();
+                SingersController.Instance.TriggerKick = true;
                 break;
             case Pitch.ASharp1:
                 HeadController.Instance.Hats();

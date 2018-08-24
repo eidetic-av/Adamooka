@@ -16,6 +16,8 @@ public class NoiseCircleController : MonoBehaviour
     private float StopSystemTime;
     private bool StoppingSystem = false;
 
+    public bool ExpandToRain = false;
+
     public float InitialRadius = 1.5f;
     public float CurrentMaxRadius = 1.5f;
 
@@ -161,6 +163,17 @@ public class NoiseCircleController : MonoBehaviour
         }
 
         ParticleSystem.SetParticles(particles, ParticleCount);
+
+        if (ExpandToRain) {
+            var renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
+            renderer.maxParticleSize = 0.003f;
+            var trails = ParticleSystem.trails;
+            trails.widthOverTrail = new ParticleSystem.MinMaxCurve(trails.widthOverTrail.constant - 0.01f);
+            InitialRadius = InitialRadius + 0.05f;
+            if (InitialRadius > 4) {
+                ExpandToRain = false;
+            }
+        }
     }
 
     void CheckVariables() {
