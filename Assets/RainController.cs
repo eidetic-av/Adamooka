@@ -143,7 +143,7 @@ public class RainController : MonoBehaviour
             {
                 ProceduralMeshController.Instance.Interpolation = 1;
                 ParticleSystemRenderer renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
-                renderer.maxParticleSize = 0.005f;
+                renderer.maxParticleSize = 0.003f;
                 ProceduralMeshController.Instance.ControlInterpolationWithAirSticks = true;
                 var externalForces = ParticleSystem.externalForces;
                 externalForces.multiplier = 5f;
@@ -154,7 +154,7 @@ public class RainController : MonoBehaviour
             {
                 ProceduralMeshController.Instance.Interpolation = OutroTransitionPosition;
                 ParticleSystemRenderer renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
-                renderer.maxParticleSize = OutroTransitionPosition.Map(0f, 1f, 0.01f, 0.005f);
+                renderer.maxParticleSize = OutroTransitionPosition.Map(0f, 1f, 0.01f, 0.003f);
             }
         }
 
@@ -206,7 +206,7 @@ public class RainController : MonoBehaviour
             ProceduralMeshController.Instance.ControlInterpolationWithAirSticks = false;
             ProceduralMeshController.Instance.Interpolation = 0;
             ParticleSystemRenderer renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
-            renderer.maxParticleSize = 0.01f;
+            renderer.maxParticleSize = 0.003f;
             ActivateOutroState = false;
         }
 

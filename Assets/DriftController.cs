@@ -44,6 +44,7 @@ public class DriftController : MonoBehaviour {
         if (FadeIn) {
             FadeInStartTime = Time.time;
             FadingIn = true;
+            FadeIn = false;
         }
         if (FadingIn) {
             var position = (Time.time - FadeInStartTime) / FadeInLength;
@@ -58,12 +59,14 @@ public class DriftController : MonoBehaviour {
         if (FadeOut) {
             FadeOutStartTime = Time.time;
             FadingOut = true;
+            FadeOut = false;
         }
         if (FadingOut) {
             var position = (Time.time - FadeOutStartTime) / FadeOutLength;
             if (position >= 1) {
                 position = 1;
                 FadingOut = false;
+                ParticleSystem.Stop();
             }
             var particleCount = Mathf.RoundToInt(position.Map(0, 1, 600, 0));
             var driftMain = ParticleSystem.main;

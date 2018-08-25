@@ -10,6 +10,9 @@ public class TrackerSceneController : MonoBehaviour
 
     public static TrackerSceneController Instance;
 
+    public int CloneStateToSet = 0;
+    public bool DoSetCloneState = false;
+
     public bool DisableKinectUpdate = false;
     public bool EnableKinectUpdate = false;
     public bool DisableUserRender = false;
@@ -160,6 +163,11 @@ public class TrackerSceneController : MonoBehaviour
 
     void Update()
     {
+        if (DoSetCloneState) {
+            SetCloneState(CloneStateToSet);
+            DoSetCloneState = false;
+        }
+
         if (UpdateCloneAmount) {
             SetCloneAmount(CloneCount);
             UpdateCloneAmount = false;

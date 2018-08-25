@@ -66,11 +66,11 @@ public class OneFiveNineCircleController : MonoBehaviour
     {
         Instance = this;
 
-        AirSticks.Right.NoteOn += KickOn;
-        AirSticks.Right.NoteOff += KickOff;
+        // AirSticks.Right.NoteOn += KickOn;
+        // AirSticks.Right.NoteOff += KickOff;
 
-        AirSticks.Left.NoteOn += SnareOn;
-        AirSticks.Left.NoteOff += SnareOff;
+        // AirSticks.Left.NoteOn += SnareOn;
+        // AirSticks.Left.NoteOff += SnareOff;
 
         AirSticks.Right.NoteOn += () => {
             if (AirSticksKickSnare) {
@@ -187,8 +187,8 @@ public class OneFiveNineCircleController : MonoBehaviour
             var hue = AirSticks.Right.Position.x.Map(-1, 1, HueMapping.x, HueMapping.y);
             var saturation = AirSticks.Right.Position.z.Map(-1, 1, SaturationMapping.x, SaturationMapping.y);
 
-            SceneLightController.Instance.Hue = hue;
-            SceneLightController.Instance.Saturation = saturation;
+            // SceneLightController.Instance.Hue = hue;
+            // SceneLightController.Instance.Saturation = saturation;
 
         }
 

@@ -454,9 +454,11 @@ public class MidiManager : MonoBehaviour
                 TrackerSceneController.Instance.EnableUserRender = true;
                 TrackerSceneController.Instance.EnableKinectUpdate = true;
                 UserFreezeFrameController.Instance.HideBaseOuput = true;
-                MeshTools.Instance.Noise.NoiseIntensity = 0.01f;
-                MeshTools.Instance.Noise.SmoothingTimes = 0;
+
                 MeshTools.Instance.EnableDesmondAirsticksControl = false;
+
+                MeshTools.Instance.GoToJordanState0 = true;
+
                 MeshTools.Instance.AnimateWireframeAlpha = false;
                 UserMeshRenderer.material = Resources.Load("JordanMaterial") as UnityEngine.Material;
                 
@@ -525,6 +527,26 @@ public class MidiManager : MonoBehaviour
                 JordanRotator.Instance.YAmount = 30;
                 break;
 
+            case Pitch.C2:
+                MeshTools.Instance.GoToJordanState1 = true;
+                break;
+            case Pitch.CSharp2:
+                MeshTools.Instance.GoToJordanState2 = true;
+                break;
+            case Pitch.D2:
+                MeshTools.Instance.GoToJordanState3 = true;
+                break;
+            case Pitch.DSharp2:
+                MeshTools.Instance.GoToJordanState4 = true;
+                break;
+            case Pitch.E2:
+                MeshTools.Instance.GoToJordanState5 = true;
+                break;
+            case Pitch.B1:
+                MeshTools.Instance.GoToJordanState0 = true;
+                break;
+
+            // flashes
             case Pitch.B0:
                 UserFreezeFrameController.Instance.FadeLength = 3f;
                 UserFreezeFrameController.Instance.Generate = true;
@@ -634,7 +656,7 @@ public class MidiManager : MonoBehaviour
             case Pitch.FSharp3:
                 // Invasion explode / beat in
                 CircleParticleController.Instance.StartInvasionRevert = true;
-                // Noisier high hat? Different texture, colour?
+                OneFiveNineCircleController.Instance.AirSticksKickSnare = true;
                 break;
 
             case Pitch.G3:
@@ -642,6 +664,7 @@ public class MidiManager : MonoBehaviour
                 OneFiveNineCircleController.Instance.ActivateAirSticksKickSnare = true;
 
                 // Introduce circle hand systems?
+                OneFiveNineCircleController.Instance.AirSticksKickSnare = true;
                 break;
 
             case Pitch.A3:
@@ -915,6 +938,10 @@ public class MidiManager : MonoBehaviour
                 MeshTools.Instance.EnableDesmondAirsticksControl = true;
                 MeshTools.Instance.DesmondInstensityMinMax = new Vector2(-0.3f, 0.5f);
                 MeshTools.Instance.DesmondSmoothingMinMax = new Vector2Int(0, 5);
+
+                var initialPosition = UserMesh.transform.position;
+                UserMesh.transform.position = new Vector3(initialPosition.x, -0.72f, initialPosition.z);
+
                 break;
             case Pitch.E2:
                 // minimal shape

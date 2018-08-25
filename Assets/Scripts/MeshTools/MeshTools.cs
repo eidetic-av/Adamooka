@@ -68,6 +68,13 @@ public class MeshTools : MonoBehaviour
     public bool DampNoiseIntensity = false;
     public float NoiseIntensityDamping = 1f;
 
+    public bool GoToJordanState0 = false;
+    public bool GoToJordanState1 = false;
+    public bool GoToJordanState2 = false;
+    public bool GoToJordanState3 = false;
+    public bool GoToJordanState4 = false;
+    public bool GoToJordanState5 = false;
+
 
     public BlockoutController WhiteBlockoutController;
     public bool FadeInWhiteBlockout = false;
@@ -311,6 +318,48 @@ public class MeshTools : MonoBehaviour
 
     private void Update()
     {
+
+        if (GoToJordanState0) {
+            Noise.NewNoiseIntensity = 0.01f;
+            Noise.NoiseIntensity = 0.01f;
+            Noise.SmoothingTimes = 0;
+            GoToJordanState0 = false;
+        }
+
+        if (GoToJordanState1) {
+            Noise.NewNoiseIntensity = 0.05f;
+            Noise.NoiseIntensity = 0.05f;
+            Noise.SmoothingTimes = 0;
+            GoToJordanState1 = false;
+        }
+
+        if (GoToJordanState2) {
+            Noise.NewNoiseIntensity = 0.1f;
+            Noise.NoiseIntensity = 0.1f;
+            Noise.SmoothingTimes = 0;
+            GoToJordanState2 = false;
+        }
+
+        if (GoToJordanState3) {
+            Noise.NewNoiseIntensity = 0.25f;
+            Noise.NoiseIntensity = 0.25f;
+            Noise.SmoothingTimes = 0;
+            GoToJordanState3 = false;
+        }
+
+        if (GoToJordanState4) {
+            Noise.NewNoiseIntensity = 0.35f;
+            Noise.NoiseIntensity = 0.35f;
+            Noise.SmoothingTimes = 0;
+            GoToJordanState4 = false;
+        }
+
+        if (GoToJordanState5) {
+            Noise.NewNoiseIntensity = 0.5f;
+            Noise.NoiseIntensity = 0.5f;
+            Noise.SmoothingTimes = 0;
+            GoToJordanState5 = false;
+        }
 
         if (Input.GetKeyDown(KeyCode.K)) {
             GoToBass = true;

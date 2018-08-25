@@ -107,7 +107,7 @@ public class UserMeshVisualizer : MonoBehaviour
     [Range(1, 30)]
     public float RotationSliderDamping = 2;
     public bool ControlRotationSliderByAirsticks = false;
-    public float MaxRotationAngle = 90f;
+    public float MaxRotationAngle = 60f;
 
     void Start()
     {
