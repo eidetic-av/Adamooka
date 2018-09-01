@@ -51,7 +51,7 @@ public class ProceduralMeshController : MonoBehaviour
 
         Vector3[] meshVertices;
         if (BaseMeshFilter != null) {
-            meshVertices = BaseMeshFilter.mesh.vertices;
+            meshVertices = BaseMeshFilter.sharedMesh.vertices;
         } else {
            BaseSkinnedMeshRenderer.BakeMesh(mesh);
            meshVertices = mesh.vertices;
