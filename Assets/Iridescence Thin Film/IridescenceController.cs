@@ -55,6 +55,15 @@ public class IridescenceController : MonoBehaviour
 
     private bool DebugToConsole = true;
 
+    
+	
+	public bool ColourBang = false;
+	public AnimationCurve ColourBangCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+	public float ColourBangLength = 0.25f;
+	float ColourBangStartTime;
+    float StartingColourOffset;
+	bool ChangingColour;
+
 
     void Start()
     {
@@ -72,8 +81,35 @@ public class IridescenceController : MonoBehaviour
             PreviousClearLayerAlpha = ClearLayerRenderer.sharedMaterial.GetColor("_Color").a;
         }
     }
+
+    public void TriggerColourBang() {
+        ColourBang = true;
+    }
+
     void Update()
     {
+
+		if (ColourBang) {
+			ColourBangStartTime = Time.time;
+            StartingColourOffset = ColorOffset;
+			ChangingColour = true;
+			ColourBang = false;
+		}
+		if (ChangingColour) {
+			float position = (Time.time - ColourBangStartTime) / ColourBangLength;
+			if (position > 1){
+				position = 1;
+				ChangingColour = false;
+			} 
+			float value = ColourBangCurve.Evaluate(position);
+            ColorOffset = StartingColourOffset + value;
+		}
+
+
+
+
+
+
         if (Activate)
         {
             gameObject.GetComponent<Renderer>().sharedMaterial = Instantiate(IridescenceMaterial);
