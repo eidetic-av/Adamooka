@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class OscFlags : MonoBehaviour {
+public class Osc : MonoBehaviour {
 
-	public static OscFlags Instance;
+	public static Osc Instance;
 
 	public int Breakdown = 0;
+
+	public float BarPosition = 0;
 
 	void Start () {
 		Instance = this;
@@ -19,6 +21,10 @@ public class OscFlags : MonoBehaviour {
 
 	public void SetBreakdown(int state) {
 		Breakdown = state;
+	}
+
+	public void SetBarPosition(float value) {
+		BarPosition = value;
 	}
 
 }

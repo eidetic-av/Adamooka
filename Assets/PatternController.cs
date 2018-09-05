@@ -40,7 +40,7 @@ public class PatternController : MonoBehaviour {
 	}
 
 	public void TriggerSpeedBang() {
-		if (OscFlags.Instance.Breakdown == 0)
+		if (Osc.Instance.Breakdown == 0)
 			SpeedBang = true;
 	}
 }
