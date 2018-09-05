@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8a3bdb2cd68f901469e7cc149151eb49, type: 3}
-  m_Name: PatternScene
+  m_Name: PatternCamera
   m_EditorClassIdentifier: 
   debugViews:
     m_Enabled: 1
@@ -79,9 +79,9 @@ MonoBehaviour:
   motionBlur:
     m_Enabled: 0
     m_Settings:
-      shutterAngle: 0
-      sampleCount: 25
-      frameBlending: 0.569
+      shutterAngle: 270
+      sampleCount: 10
+      frameBlending: 0
   eyeAdaptation:
     m_Enabled: 0
     m_Settings:
@@ -100,10 +100,10 @@ MonoBehaviour:
     m_Enabled: 1
     m_Settings:
       bloom:
-        intensity: 2
-        threshold: 1.1
+        intensity: 0.2
+        threshold: 0.85
         softKnee: 0.5
-        radius: 4
+        radius: 2.67
         antiFlicker: 0
       lensDirt:
         texture: {fileID: 0}
@@ -153,8 +153,8 @@ MonoBehaviour:
               outSlope: 1
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.33333334
-              outWeight: 0.33333334
+              inWeight: 0
+              outWeight: 0
             - serializedVersion: 3
               time: 1
               value: 1
@@ -162,8 +162,8 @@ MonoBehaviour:
               outSlope: 1
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.33333334
-              outWeight: 0.33333334
+              inWeight: 0
+              outWeight: 0
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
@@ -181,8 +181,8 @@ MonoBehaviour:
               outSlope: 1
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.33333334
-              outWeight: 0.33333334
+              inWeight: 0
+              outWeight: 0
             - serializedVersion: 3
               time: 1
               value: 1
@@ -190,8 +190,8 @@ MonoBehaviour:
               outSlope: 1
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.33333334
-              outWeight: 0.33333334
+              inWeight: 0
+              outWeight: 0
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
@@ -209,8 +209,8 @@ MonoBehaviour:
               outSlope: 1
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.33333334
-              outWeight: 0.33333334
+              inWeight: 0
+              outWeight: 0
             - serializedVersion: 3
               time: 1
               value: 1
@@ -218,8 +218,8 @@ MonoBehaviour:
               outSlope: 1
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.33333334
-              outWeight: 0.33333334
+              inWeight: 0
+              outWeight: 0
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
@@ -237,8 +237,8 @@ MonoBehaviour:
               outSlope: 1
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.33333334
-              outWeight: 0.33333334
+              inWeight: 0
+              outWeight: 0
             - serializedVersion: 3
               time: 1
               value: 1
@@ -246,8 +246,8 @@ MonoBehaviour:
               outSlope: 1
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.33333334
-              outWeight: 0.33333334
+              inWeight: 0
+              outWeight: 0
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
@@ -308,23 +308,23 @@ MonoBehaviour:
     m_Enabled: 0
     m_Settings:
       spectralTexture: {fileID: 0}
-      intensity: 1
+      intensity: 0.1
   grain:
     m_Enabled: 0
     m_Settings:
-      colored: 0
-      intensity: 1
-      size: 0.3
-      luminanceContribution: 1
+      colored: 1
+      intensity: 0.5
+      size: 1
+      luminanceContribution: 0.8
   vignette:
-    m_Enabled: 1
+    m_Enabled: 0
     m_Settings:
       mode: 0
       color: {r: 0, g: 0, b: 0, a: 1}
       center: {x: 0.5, y: 0.5}
-      intensity: 0.659
-      smoothness: 1
-      roundness: 0.407
+      intensity: 0.45
+      smoothness: 0.2
+      roundness: 1
       mask: {fileID: 0}
       opacity: 1
       rounded: 0
