@@ -1,16 +1,16 @@
 fileFormatVersion: 2
-guid: c41d56b4a934251459b63c13860af274
+guid: 4d5d6336d64e0574d9f08a92ec4e4e35
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: //RootNode
-    100002: mmGroup0
-    400000: //RootNode
-    400002: mmGroup0
+    100000: face
+    100002: //RootNode
+    400000: face
+    400002: //RootNode
     2100000: lambert1
-    2300000: mmGroup0
-    3300000: mmGroup0
-    4300000: mmGroup0
+    2300000: face
+    3300000: face
+    4300000: face
   externalObjects: {}
   materials:
     importMaterials: 1
