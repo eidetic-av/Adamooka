@@ -211,7 +211,7 @@ public class TrackerSceneController : MonoBehaviour
                 GameObject.Find("LightPlane").SetActive(false);
             var baseOutputQuad = GameObject.Find("OutputQuad");
             var effector = baseOutputQuad.GetComponent<TrackerOutputEffector>();
-            effector.UpdateParametersEveryFrame = true;
+            effector.RefreshEveryFrame = true;
             ActivateClones = false;
         } else if (CycleCloneColours)
         {
@@ -255,7 +255,7 @@ public class TrackerSceneController : MonoBehaviour
             effector.LeftHandClones.Clear();
             effector.RightHandClones.Clear();
             RemoveAllClones = false;
-            effector.UpdateParametersEveryFrame = false;
+            effector.RefreshEveryFrame = false;
         }
 
          if (FadeOutStart)

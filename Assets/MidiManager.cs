@@ -1656,6 +1656,17 @@ MidiManager : MonoBehaviour
             }
         }
 
+        if (SendTestNoteOn)
+        {
+            RouteNoteOn(TestChannel, TestPitch);
+            SendTestNoteOn = false;
+        }
+
         //DirectKeyCodeScenes();
     }
+
+    [Header("Midi Test")]
+    public Channel TestChannel;
+    public Pitch TestPitch;
+    public bool SendTestNoteOn;
 }

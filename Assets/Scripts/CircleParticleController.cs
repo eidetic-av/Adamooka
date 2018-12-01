@@ -110,14 +110,14 @@ void Start()
 
         if (Stopping) {
             var position = (Time.time - StopTime) / StopLength;
-            Debug.Log("position:" + position);
+            // Debug.Log("position:" + position);
             if (position >= 1) {
                 position = 1;
                 Stopping = false;
             }
             var mainModule = ParticleSystem.main;
             var newMax = Mathf.RoundToInt((1 - position) * (float)StopMaxParticles);
-            Debug.Log("newMax:" + newMax);
+            // Debug.Log("newMax:" + newMax);
             mainModule.maxParticles = newMax;
         }
 

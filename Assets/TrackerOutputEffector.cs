@@ -11,7 +11,7 @@ public class TrackerOutputEffector : MonoBehaviour
 
     public bool AnimateAlpha = true;
     public bool EnableAirsticksAlphaControl = false;
-    public bool UpdateParametersEveryFrame = true;
+    public bool RefreshEveryFrame = false;
 
     public bool NoteOnCloning = false;
 
@@ -190,11 +190,10 @@ public class TrackerOutputEffector : MonoBehaviour
 
         }
 
-        // refresh on clone change distance
-        if (cloneDistance != CloneDistance
-            || UpdateParametersEveryFrame)
+        // on clone change distance
+        if (cloneDistance != CloneDistance || ControlCloneDistanceWithAirSticks)
         {
-            RefreshClones();
+            UpdateActiveCloneDistances();
         }
 
         // AIRSTICKS TINTING
@@ -421,6 +420,11 @@ public class TrackerOutputEffector : MonoBehaviour
         // make sure to remove this script from the clone so it's not recursive
         Destroy(clone.GetComponent<TrackerOutputEffector>());
 
+        UpdateCloneDistance(hand, clone, clones.Count);
+    }
+
+    public void UpdateCloneDistance(AirSticks.Hand hand, GameObject clone, int cloneNumber)
+    {
         var distance = cloneDistance;
 
         if (ControlCloneDistanceWithAirSticks)
@@ -437,17 +441,49 @@ public class TrackerOutputEffector : MonoBehaviour
         }
 
         // multiply the x axis offset based on what number clone it is
-        var xOffset = distance * clones.Count;
+        var xOffset = distance * cloneNumber;
         if (hand == AirSticks.Hand.Right) xOffset = -xOffset;
 
         // an a slight z offset to ensure the new clones are rendered behind
         // (just using render queue isn't working)
-        var zOffset = 0.01f * clones.Count;
+        var zOffset = 0.01f * cloneNumber;
 
         clone.transform.localPosition = new Vector3(xOffset, 0, zOffset);
 
         clone.transform.localRotation = Quaternion.Euler(Vector3.zero);
 
+    }
+
+    public void UpdateActiveCloneDistances() {
+        int rightCount = 1;
+        int leftCount = 1;
+        for (int i = 0; i < 100; i++)
+        {
+            var cloneName = gameObject.name + AirSticks.Hand.Right.ToString() + "Clone (" + i + ")";
+            GameObject cloneRight = gameObject.FindChild(cloneName);
+            if (cloneRight != null)
+            {
+                if (cloneRight.activeInHierarchy)
+                {
+                    UpdateCloneDistance(AirSticks.Hand.Right, cloneRight, rightCount);
+                    rightCount++;
+                }
+            }
+            cloneName = gameObject.name + AirSticks.Hand.Left.ToString() + "Clone (" + i + ")";
+            GameObject cloneLeft = gameObject.FindChild(cloneName);
+            if (cloneLeft != null)
+            {
+                if (cloneLeft.activeInHierarchy)
+                {
+                    UpdateCloneDistance(AirSticks.Hand.Left, cloneLeft, leftCount);
+                    leftCount++;
+                }
+            }
+            if (cloneLeft == null && cloneRight == null)
+            {
+                return;
+            }
+        }
     }
 
     public void HideClones(AirSticks.Hand hand)

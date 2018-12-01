@@ -28,6 +28,9 @@ public class InformationMonitor : MonoBehaviour
     float LastMidiMonitorTime = 0f;
     RawImage KinectStatus;
 
+    DummyAirsticks DummyAirsticks;
+    Text ControlType;
+
     float Debounce = 0.125f;
 
     float PollingFrequency = 1f;
@@ -65,6 +68,9 @@ public class InformationMonitor : MonoBehaviour
         MidiStatus = GameObject.Find("MidiStatus").GetComponent<RawImage>();
         MidiMonitor = GameObject.Find("MidiMonitor").GetComponent<RawImage>();
         KinectStatus = GameObject.Find("KinectStatus").GetComponent<RawImage>();
+        ControlType = GameObject.Find("ControlType").GetComponent<Text>();
+
+        DummyAirsticks = GameObject.Find("Prototyping").GetComponent<DummyAirsticks>();
     }
 
     void Update()
@@ -143,7 +149,25 @@ public class InformationMonitor : MonoBehaviour
             else
                 KinectStatus.color = Color.black;
 
+
+            // Control type
+
+            var usingMouse = false;
+            if (DummyAirsticks != null)
+            {
+                if (DummyAirsticks.DummyEnabled)
+                    usingMouse = DummyAirsticks.ControlZPositionWithMouse;
+                else
+                    usingMouse = false;
+            }
+            if (usingMouse)
+                ControlType.text = "Mouse";
+            else
+                ControlType.text = "AirSticks";
+
             LastPollingTime = Time.time;
+
+
         }
 
         // Monitor polling
