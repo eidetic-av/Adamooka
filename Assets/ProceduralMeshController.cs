@@ -22,14 +22,21 @@ public class ProceduralMeshController : MonoBehaviour
     public Vector2 AirsticksControlMinMax = Vector2.one;
 
     private Mesh Mesh;
+    private MeshFilter MeshFilter;
+
+    private Vector3[] Vertices;
+    private int[] Triangles;
+    private Vector3[] BaseMeshVertices;
     // Use this for initialization
     void Start()
     {
         Instance = this;
 
+        MeshFilter = GetComponent<MeshFilter>();
+
         Mesh = new Mesh();
         Mesh.name = "ProceduralMesh";
-        GetComponent<MeshFilter>().mesh = Mesh;
+        MeshFilter.mesh = Mesh;
 
         // once the mesh filter is attached to the particle system in the 
         // inspector, we can just turn the renderer off
@@ -45,20 +52,15 @@ public class ProceduralMeshController : MonoBehaviour
         if (ControlInterpolationWithAirSticks)
             Interpolation = Mathf.Clamp(AirSticks.Right.Position.y.Map(AirsticksControlMinMax.x, AirsticksControlMinMax.y, 0, 1), 0, 1);
 
-        MeshFilter meshFilter = GetComponent<MeshFilter>();
-        Mesh mesh = new Mesh();
-        meshFilter.mesh = mesh;
-
-        Vector3[] meshVertices;
         if (BaseMeshFilter != null) {
-            meshVertices = BaseMeshFilter.mesh.vertices;
+            BaseMeshVertices = BaseMeshFilter.mesh.vertices;
         } else {
-           BaseSkinnedMeshRenderer.BakeMesh(mesh);
-           meshVertices = mesh.vertices;
+           BaseSkinnedMeshRenderer.BakeMesh(Mesh);
+           BaseMeshVertices = Mesh.vertices;
         }
 
-        var vertices = new Vector3[meshVertices.Length];
-        for (int i = 0; i < vertices.Length; i++)
+        Vertices = new Vector3[BaseMeshVertices.Length];
+        for (int i = 0; i < Vertices.Length; i++)
         {
             // generate a vertex position based on noise
             var noiseX = (Random.value * NoisePlaneSpan.x) + NoisePlaneOffset.x;
@@ -66,30 +68,31 @@ public class ProceduralMeshController : MonoBehaviour
             var noiseZ = (Random.value * NoisePlaneSpan.z) + NoisePlaneOffset.z;
             // interpolate between the noisy vertex and the mesh's vertex
             var lerp = Mathf.Pow(Interpolation, InterpolationPower);
-            var x = Mathf.Lerp((meshVertices[i].x * BaseMeshScale.x) + BaseMeshOffset.x, noiseX, lerp);
-            var y = Mathf.Lerp((meshVertices[i].y * BaseMeshScale.y) + BaseMeshOffset.y, noiseY, lerp);
-            var z = Mathf.Lerp((meshVertices[i].z * BaseMeshScale.z) + BaseMeshOffset.z, noiseZ, lerp);
+            var x = Mathf.Lerp((BaseMeshVertices[i].x * BaseMeshScale.x) + BaseMeshOffset.x, noiseX, lerp);
+            var y = Mathf.Lerp((BaseMeshVertices[i].y * BaseMeshScale.y) + BaseMeshOffset.y, noiseY, lerp);
+            var z = Mathf.Lerp((BaseMeshVertices[i].z * BaseMeshScale.z) + BaseMeshOffset.z, noiseZ, lerp);
             // assign it to the vertex array
-            vertices[i] = new Vector3(x, y, z);
+            Vertices[i] = new Vector3(x, y, z);
         }
 
         // triangles can be dummy since we are not rendering faces
         // so just fill up the array so unity is happy
-        var triangleLength = vertices.Length;
+        var triangleLength = Vertices.Length;
         // make sure it is a multiple of 3
         while (triangleLength % 3 != 0)
         {
             triangleLength++;
         }
-        int[] triangles = new int[triangleLength];
-        for (int i = 0; i < triangles.Length; i++)
+        Triangles = new int[triangleLength];
+        for (int i = 0; i < Triangles.Length; i++)
         {
             var t = i;
-            if (i >= vertices.Length) t = 0;
-            triangles[i] = t;
+            if (i >= Vertices.Length) t = 0;
+            Triangles[i] = t;
         }
 
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
+        Mesh.Clear();
+        Mesh.vertices = Vertices;
+        Mesh.triangles = Triangles;
     }
 }

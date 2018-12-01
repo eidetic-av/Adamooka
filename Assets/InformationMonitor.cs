@@ -12,6 +12,9 @@ using UnityEngine.UI;
 public class InformationMonitor : MonoBehaviour
 {
 
+    public static readonly string MOUSE_CONTROL_TYPE = "Mouse";
+    public static readonly string AIRSTICKS_CONTROL_TYPE = "Mouse";
+
     public GameObject MonitorParent;
 
     public bool Active = true;
@@ -50,7 +53,7 @@ public class InformationMonitor : MonoBehaviour
         {
             _frameRate = value;
             if (FrameRateMonitor != null)
-                FrameRateMonitor.text = "FPS: " + ((int)value);
+                FrameRateMonitor.text = ((int)value).ToString();
         }
     }
 
@@ -62,7 +65,9 @@ public class InformationMonitor : MonoBehaviour
     void Start()
     {
         Instance = this;
-        FrameRateMonitor = GameObject.Find("FrameRate").GetComponent<Text>();
+
+        // FrameRateMonitor = GameObject.Find("FrameRate").GetComponent<Text>();
+
         OscStatus = GameObject.Find("OscStatus").GetComponent<RawImage>();
         OscMonitor = GameObject.Find("OscMonitor").GetComponent<RawImage>();
         MidiStatus = GameObject.Find("MidiStatus").GetComponent<RawImage>();
@@ -161,9 +166,11 @@ public class InformationMonitor : MonoBehaviour
                     usingMouse = false;
             }
             if (usingMouse)
-                ControlType.text = "Mouse";
+                if (ControlType.text != MOUSE_CONTROL_TYPE)
+                    ControlType.text = MOUSE_CONTROL_TYPE;
             else
-                ControlType.text = "AirSticks";
+                if (ControlType.text != AIRSTICKS_CONTROL_TYPE)
+                    ControlType.text = AIRSTICKS_CONTROL_TYPE;
 
             LastPollingTime = Time.time;
 
