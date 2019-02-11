@@ -76,6 +76,9 @@ MidiManager : MonoBehaviour
 
     public Dictionary<String, ParticleSystem> RingKitSystems;
 
+    GameObject ParticleSceneObject, RainParticlesObject;
+    RainController RainParticleController;
+
     // Use this for initialization
     void Start()
     {
@@ -95,6 +98,10 @@ MidiManager : MonoBehaviour
         TrackerSceneOutputQuadRenderer = TrackerSceneOutputQuad.GetComponent<Renderer>();
         TrackerSceneFlippedOutputQuadRenderer = TrackerSceneFlippedOutputQuad.GetComponent<Renderer>();
 
+        ParticleSceneObject = GameObject.Find("ParticleScene");
+        RainParticlesObject = GameObject.Find("RainParticles");
+        RainParticleController = GameObject.Find("RainParticleController").GetComponent<RainController>();
+
         foreach (InputDevice inputDevice in InputDevice.InstalledDevices)
         {
             if (inputDevice.Name.ToLower().Equals(DeviceName.ToLower()))
@@ -108,7 +115,6 @@ MidiManager : MonoBehaviour
             InputDevice.Open();
             InputDevice.StartReceiving(null);
             InputDevice.NoteOn += RouteNoteOn;
-            InputDevice.NoteOff += RouteNoteOff;
 
             InputDevice.NoteOn += InformationMonitor.Instance.MidiNoteOn;
             InputDevice.NoteOff += InformationMonitor.Instance.MidiNoteOff;
@@ -181,7 +187,7 @@ MidiManager : MonoBehaviour
                     }
                 case Channel.Channel5:
                     {
-                        RouteDriftMidi(noteOnMessage.Pitch);
+                        RouteUmbeantsMidi(noteOnMessage.Pitch);
                         break;
                     }
                 case Channel.Channel6:
@@ -245,386 +251,10 @@ MidiManager : MonoBehaviour
         }
     }
 
-    private void RouteNoteOff(NoteOffMessage noteOffMessage)
-    {
-        Threading.RunOnMain((Action)(() =>
-        {
-            switch (noteOffMessage.Channel)
-            {
-                case Channel.Channel7:
-                    RouteTunnelNoteOffs(noteOffMessage.Pitch);
-                    break;
-            }
-        }));
-    }
-
-
-    bool LeftMidiOn = false;
-    bool RightMidiOn = false;
-
     VideoPlaybackController TunnelVideoController;
     MeshRenderer TunnelPlane;
     public bool MeshIsWhite = false;
 
-    private void RouteTunnelMidi(Pitch pitch)
-    {
-        if (TunnelVideoController == null)
-        {
-            TunnelVideoController = GameObject.Find("TunnelPlayback").GetComponent<VideoPlaybackController>();
-            TunnelPlane = GameObject.Find("TunnelPlane").GetComponent<MeshRenderer>();
-        }
-        switch (pitch)
-        {
-            case Pitch.C1:
-                // remove everything else
-
-                var paintScene = PaintSceneController.Instance.gameObject;
-                if (paintScene != null)
-                    paintScene.SetActive(false);
-                var faceScene = GameObject.Find("FaceScene");
-                if (faceScene != null)
-                    faceScene.SetActive(false);
-                var particleScene = GameObject.Find("ParticleScene");
-                if (particleScene != null)
-                    particleScene.SetActive(false);
-
-                // start tunnel
-                TunnelVideoController.StartPlayback = true;
-                var color = TunnelPlane.material.GetColor("_Color");
-                TunnelPlane.material.SetColor("_Color", new Color(color.r, color.g, color.b, 1));
-                // preset state for Melody Circles
-                if (MelodyCirclesController.Instance != null)
-                    MelodyCirclesController.Instance.GoToPreset();
-                break;
-            case Pitch.CSharp1:
-                // bring in user on finale outro
-                TrackerSceneController.Instance.EnableKinectUpdate = true;
-                TrackerSceneController.Instance.EnableUserRender = true;
-                // MeshTools.Instance.Noise.NoiseIntensity = 0.04f;
-                // MeshTools.Instance.Noise.SmoothingTimes = 1;
-                MeshTools.EnableDesmondAirsticksControl = false;
-                MeshTools.AnimateWireframeAlpha = false;
-                UserMesh.GetComponent<MeshRenderer>().enabled = true;
-                UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
-                MeshIsWhite = true;
-                break;
-            case Pitch.D1:
-                // final final cueF
-                RainParticles.SetActive(true);
-                // fade out tunnel video and make user render white
-                VideoLayersController.Instance.FadeOutTunnel = true;
-                UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
-                // start user render fadeout
-                TrackerSceneController.Instance.FadeOutStart = true;
-                // Start Particle scene finale
-                ParticleSceneController.Instance.FinaleState = true;
-                RainController.Instance.ActivateDefaultParticleColour = true;
-                // and start fading them out
-                var rainController = GameObject.Find("RainParticleController").GetComponent<RainController>();
-                rainController.StopParticleLength = 200f;
-                rainController.StopParticleAmounts = new Vector2Int(4000, 4000);
-                rainController.SlowlyStopParticles = true;
-                break;
-            case Pitch.E1:
-                var rain = GameObject.Find("RainParticleController").GetComponent<RainController>();
-                rain.StopParticleLength = 1f;
-                break;
-
-                break;
-            case Pitch.DSharp1:
-                // evaporate
-                break;
-            case Pitch.CSharp6:
-                // Crash toggles colour
-                if (MeshIsWhite)
-                {
-                    UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("Black");
-                    MeshIsWhite = false;
-                }
-                else
-                {
-                    UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
-                    MeshIsWhite = true;
-                }
-                break;
-
-            // Melody notes
-            case Pitch.B0:
-                LeftMidiOn = true;
-                break;
-            case Pitch.ASharp0:
-                // comes on invisible
-                RightMidiOn = true;
-                var fadeInCircle = GameObject.Find("8-Circle").GetComponent<CircleController>();
-                fadeInCircle.WidthMultiplier = 0;
-                break;
-            case Pitch.A0:
-                var fadeIn = GameObject.Find("8-Circle").GetComponent<CircleController>();
-                fadeIn.FadeIn = true;
-                // fades in right hand
-                break;
-            // Left Hand
-            case Pitch.B1:
-                if (LeftMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(8);
-                break;
-            case Pitch.C2:
-                // 360Hz
-                if (LeftMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(0);
-                break;
-            case Pitch.CSharp2:
-                // 480Hz
-                if (LeftMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(1);
-                break;
-            case Pitch.D2:
-                // 450Hz
-                if (LeftMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(2);
-                break;
-            case Pitch.DSharp2:
-                // 600Hz
-                if (LeftMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(3);
-                break;
-            // Right Hand
-            case Pitch.E2:
-                // 450Hz
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(4);
-                break;
-            case Pitch.F2:
-                // 600Hz
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(5);
-                break;
-            case Pitch.FSharp2:
-                // 800Hz
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(6);
-                break;
-            case Pitch.G2:
-                // 480Hz
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(7);
-                break;
-            case Pitch.GSharp2:
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(11);
-                break;
-
-            // High Beeps
-            case Pitch.C4:
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(9);
-                break;
-            case Pitch.CSharp4:
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOn(10);
-                break;
-            default:
-                // TunnelController.Instance.Bang(pitch.NoteNumber());
-                break;
-        }
-    }
-
-    private void RouteTunnelNoteOffs(Pitch pitch)
-    {
-        switch (pitch)
-        {
-            // Melody notes
-            // Left Hand
-            case Pitch.B1:
-                if (LeftMidiOn)
-                    MelodyCirclesController.Instance.NoteOff(8);
-                break;
-            case Pitch.C2:
-                if (LeftMidiOn)
-                    // 360Hz
-                    MelodyCirclesController.Instance.NoteOff(0);
-                break;
-            case Pitch.CSharp2:
-                if (LeftMidiOn)
-                    // 480Hz
-                    MelodyCirclesController.Instance.NoteOff(1);
-                break;
-            case Pitch.D2:
-                if (LeftMidiOn)
-                    // 450Hz
-                    MelodyCirclesController.Instance.NoteOff(2);
-                break;
-            case Pitch.DSharp2:
-                if (LeftMidiOn)
-                    // 600Hz
-                    MelodyCirclesController.Instance.NoteOff(3);
-                break;
-            // Right Hand
-            case Pitch.E2:
-                if (RightMidiOn)
-                    // 450Hz
-                    MelodyCirclesController.Instance.NoteOff(4);
-                break;
-            case Pitch.F2:
-                if (RightMidiOn)
-                    // 600Hz
-                    MelodyCirclesController.Instance.NoteOff(5);
-                break;
-            case Pitch.FSharp2:
-                if (RightMidiOn)
-                    // 800Hz
-                    MelodyCirclesController.Instance.NoteOff(6);
-                break;
-            case Pitch.G2:
-                if (RightMidiOn)
-                    // 480Hz
-                    MelodyCirclesController.Instance.NoteOff(7);
-                break;
-            case Pitch.GSharp2:
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOff(11);
-                break;
-            // High Beeps
-            case Pitch.C4:
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOff(9);
-                break;
-            case Pitch.CSharp4:
-                if (RightMidiOn)
-                    MelodyCirclesController.Instance.NoteOff(10);
-                break;
-        }
-    }
-
-    private void RouteJordanMidi(Pitch pitch)
-    {
-        switch (pitch)
-        {
-
-            case Pitch.C0:
-                // start jordan
-                TrackerSceneController.Instance.EnableUserRender = true;
-                TrackerSceneController.Instance.EnableKinectUpdate = true;
-                UserFreezeFrameController.Instance.HideBaseOuput = true;
-
-                MeshTools.Instance.EnableDesmondAirsticksControl = false;
-
-                MeshTools.Instance.GoToJordanState0 = true;
-
-                MeshTools.Instance.AnimateWireframeAlpha = false;
-                UserMeshRenderer.material = Resources.Load("JordanMaterial") as UnityEngine.Material;
-
-                // Move figure (now on drum kit)
-                var initialPosition = UserMesh.transform.position;
-                UserMesh.transform.position = new Vector3(initialPosition.x, -0.99f, initialPosition.z);
-
-                // Activate Jordan light
-                GameObject.Find("JordanLight").GetComponent<Light>().enabled = true;
-
-                break;
-
-            case Pitch.CSharp0:
-                UserMeshVisualizer.Instance.DoRotate = true;
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                UserMeshVisualizer.Instance.StartRotateAnimation = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 2;
-                break;
-
-            case Pitch.D0:
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 4;
-                break;
-
-            case Pitch.DSharp0:
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 6;
-                break;
-
-            case Pitch.E0:
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 8;
-                break;
-
-            case Pitch.F0:
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 10;
-                break;
-
-            case Pitch.FSharp0:
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 12;
-                break;
-
-            case Pitch.G0:
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 15;
-                break;
-
-            case Pitch.GSharp0:
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 20;
-                break;
-
-            case Pitch.A0:
-                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
-                JordanRotator.Instance.Enabled = true;
-                JordanRotator.Instance.YAmount = 30;
-                break;
-
-            case Pitch.C2:
-                MeshTools.Instance.GoToJordanState1 = true;
-                break;
-            case Pitch.CSharp2:
-                MeshTools.Instance.GoToJordanState2 = true;
-                break;
-            case Pitch.D2:
-                MeshTools.Instance.GoToJordanState3 = true;
-                break;
-            case Pitch.DSharp2:
-                MeshTools.Instance.GoToJordanState4 = true;
-                break;
-            case Pitch.E2:
-                MeshTools.Instance.GoToJordanState5 = true;
-                break;
-            case Pitch.B1:
-                MeshTools.Instance.GoToJordanState0 = true;
-                break;
-
-            // flashes
-            case Pitch.B0:
-                UserFreezeFrameController.Instance.FadeLength = 3f;
-                UserFreezeFrameController.Instance.Generate = true;
-                break;
-            case Pitch.C1:
-                UserFreezeFrameController.Instance.FadeLength = 1.8f;
-                UserFreezeFrameController.Instance.Generate = true;
-                break;
-            case Pitch.CSharp1:
-                UserFreezeFrameController.Instance.FadeLength = 0.8f;
-                UserFreezeFrameController.Instance.Generate = true;
-                break;
-            case Pitch.D1:
-                UserFreezeFrameController.Instance.FadeLength = 0.5f;
-                UserFreezeFrameController.Instance.Generate = true;
-                break;
-            case Pitch.DSharp1:
-                UserFreezeFrameController.Instance.FadeLength = 0.35f;
-                UserFreezeFrameController.Instance.Generate = true;
-                break;
-            case Pitch.E1:
-                UserFreezeFrameController.Instance.FadeLength = 0.15f;
-                UserFreezeFrameController.Instance.Generate = true;
-                break;
-        }
-    }
     private void RouteOneFiveNine(Pitch pitch)
     {
         var noise = NoiseCircleController.Instance;
@@ -876,12 +506,19 @@ MidiManager : MonoBehaviour
         switch (pitch)
         {
             case Pitch.F2:
+                if (TrackerSceneController.Instance != null)
+                {
+                    TrackerSceneController.Instance.EnableKinectUpdate = true;
+                    TrackerSceneController.Instance.EnableUserRender = true;
+                }
                 // start desmond
-                if (GameObject.Find("OutputQuad") != null) {
+                if (GameObject.Find("OutputQuad") != null)
+                {
                     var renderer = GameObject.Find("OutputQuad").GetComponent<Renderer>();
                     renderer.material.SetColor("_TintColor", new Color(1, 1, 1, 1));
                 }
-                if (GameObject.Find("UserMesh") != null) {
+                if (GameObject.Find("UserMesh") != null)
+                {
                     var userMesh = GameObject.Find("UserMesh").GetComponent<Renderer>();
                     userMesh.enabled = true;
                     userMesh.material = Resources.Load<UnityEngine.Material>("Rainbow Wireframe");
@@ -930,6 +567,9 @@ MidiManager : MonoBehaviour
                     UserMeshVisualizer.Instance.BlockKinectUpdate = true;
                 // ending transition, five second fade to black
                 BlackBlockout.FadeIn(5000);
+                // make sure coming scene is active
+                PaintScene.SetActive(true);
+                FaceScene.SetActive(true);
                 break;
             case Pitch.C5:
                 // clear blockout
@@ -947,104 +587,9 @@ MidiManager : MonoBehaviour
                 break;
         }
     }
-    private void RouteDriftMidi(Pitch pitch)
-    {
-        switch (pitch)
-        {
-            // start umbeants
-            case Pitch.C1:
-                // turn off rain wind
-                GameObject.Find("WindZoneA").SetActive(false);
-                // start system emission 
-                DriftController.FadeIn = true;
-                // remove hyphen layers
-                GameObject.Find("FaceScene").SetActive(false);
-                GameObject.Find("PaintScene").SetActive(false);
-                // add the bloom back to main camera
-                var pp = GameObject.Find("Main Camera").GetComponent<PostProcessingBehaviour>();
-                pp.enabled = true;
-                break;
 
-            // end umbeants
-            case Pitch.CSharp1:
-                // end system emission
-                DriftController.FadeOut = true;
-                break;
-
-            case Pitch.CNeg1:
-                DriftController.SelectState(0);
-                break;
-            case Pitch.CSharpNeg1:
-                DriftController.SelectState(1);
-                break;
-            case Pitch.DNeg1:
-                DriftController.SelectState(2);
-                break;
-            case Pitch.DSharpNeg1:
-                DriftController.SelectState(3);
-                break;
-            case Pitch.ENeg1:
-                DriftController.SelectState(4);
-                break;
-            case Pitch.FNeg1:
-                DriftController.SelectState(5);
-                break;
-            case Pitch.FSharpNeg1:
-                DriftController.SelectState(6);
-                break;
-            case Pitch.GNeg1:
-                DriftController.SelectState(7);
-                break;
-            case Pitch.GSharpNeg1:
-                DriftController.SelectState(8);
-                break;
-            case Pitch.ANeg1:
-                DriftController.SelectState(9);
-                break;
-            case Pitch.ASharpNeg1:
-                DriftController.SelectState(10);
-                break;
-            case Pitch.BNeg1:
-                DriftController.SelectState(11);
-                break;
-        }
-    }
-
-    private void RouteElectricMidi(Pitch pitch)
-    {
-        switch (pitch)
-        {
-            case Pitch.CNeg1:
-                Strobe.Flash();
-                break;
-            case Pitch.GNeg1:
-                RandomiseKaleidoscope();
-                UserMeshVisualizer.EndAnimateUserRotation();
-                break;
-            case Pitch.GSharpNeg1:
-                IncrementalKaleidoscopeA();
-                UserMeshVisualizer.StartAnimateUserRotation();
-                break;
-            case Pitch.ANeg1:
-                IncrementalKaleidoscopeB();
-                break;
-            case Pitch.ASharpNeg1:
-                IncrementalKaleidoscopeC();
-                break;
-            case Pitch.BNeg1:
-                IncrementalKaleidoscopeD();
-                break;
-            case Pitch.C0:
-                HighKaleidoscopeSqueal();
-                break;
-            case Pitch.CSharp0:
-                LowKaleidoscopeSqueal();
-                break;
-            case Pitch.C1:
-                LinesOut();
-                break;
-        }
-    }
+    public GameObject PaintScene;
+    public GameObject FaceScene;
 
     private void RouteHyphenMidi(Pitch pitch)
     {
@@ -1153,120 +698,296 @@ MidiManager : MonoBehaviour
         }
     }
 
-    private void RandomiseKaleidoscope()
+    private void RouteUmbeantsMidi(Pitch pitch)
     {
-        Kaleidoscope.enabled = true;
-        int lastRepeat = Kaleidoscope.Repeat;
-        int repeat = 1;
-        while ((repeat % 2 != 0) || (repeat == lastRepeat))
+        switch (pitch)
         {
-            repeat = Mathf.FloorToInt(UnityEngine.Random.Range(2, 7));
+            // start umbeants
+            case Pitch.C1:
+                // turn off rain wind
+                GameObject.Find("WindZoneA").SetActive(false);
+                // start system emission 
+                DriftController.FadeIn = true;
+                // remove hyphen layers
+                GameObject.Find("FaceScene").SetActive(false);
+                GameObject.Find("PaintScene").SetActive(false);
+                // add the bloom back to main camera
+                var pp = GameObject.Find("Main Camera").GetComponent<PostProcessingBehaviour>();
+                pp.enabled = true;
+                break;
+
+            // end umbeants
+            case Pitch.CSharp1:
+                // end system emission
+                DriftController.FadeOut = true;
+                break;
+
+            case Pitch.CNeg1:
+                DriftController.SelectState(0);
+                break;
+            case Pitch.CSharpNeg1:
+                DriftController.SelectState(1);
+                break;
+            case Pitch.DNeg1:
+                DriftController.SelectState(2);
+                break;
+            case Pitch.DSharpNeg1:
+                DriftController.SelectState(3);
+                break;
+            case Pitch.ENeg1:
+                DriftController.SelectState(4);
+                break;
+            case Pitch.FNeg1:
+                DriftController.SelectState(5);
+                break;
+            case Pitch.FSharpNeg1:
+                DriftController.SelectState(6);
+                break;
+            case Pitch.GNeg1:
+                DriftController.SelectState(7);
+                break;
+            case Pitch.GSharpNeg1:
+                DriftController.SelectState(8);
+                break;
+            case Pitch.ANeg1:
+                DriftController.SelectState(9);
+                break;
+            case Pitch.ASharpNeg1:
+                DriftController.SelectState(10);
+                break;
+            case Pitch.BNeg1:
+                DriftController.SelectState(11);
+                break;
         }
-        Kaleidoscope.Repeat = repeat;
-        float roll = UnityEngine.Random.Range(0, 360);
-        Kaleidoscope.Roll = repeat;
-        Kaleidoscope.Offset = 0;
-        Kaleidoscope.AnimateRoll = true;
-        Kaleidoscope.AnimateRollRate = 40;
-        Kaleidoscope.Symmetry = true;
     }
 
-    private void IncrementalKaleidoscopeA()
-    {
-        Kaleidoscope.Repeat = 5;
-        Kaleidoscope.Offset = 0;
-        Kaleidoscope.AnimateRoll = true;
-        Kaleidoscope.AnimateRollRate = 80;
-        Kaleidoscope.Symmetry = false;
-    }
 
-    private void IncrementalKaleidoscopeB()
+    private void RouteJordanMidi(Pitch pitch)
     {
-        Kaleidoscope.Repeat = 3;
-        Kaleidoscope.Offset = 0;
-        Kaleidoscope.AnimateRoll = true;
-        Kaleidoscope.AnimateRollRate = -20;
-        Kaleidoscope.Symmetry = false;
-    }
-
-    private void IncrementalKaleidoscopeC()
-    {
-        Kaleidoscope.Repeat = 6;
-        Kaleidoscope.Offset = 0;
-        Kaleidoscope.AnimateRoll = true;
-        Kaleidoscope.AnimateRollRate = 150;
-        Kaleidoscope.Symmetry = false;
-    }
-
-    private void IncrementalKaleidoscopeD()
-    {
-        Kaleidoscope.Repeat = 9;
-        Kaleidoscope.Offset = 0;
-        Kaleidoscope.AnimateRoll = true;
-        Kaleidoscope.AnimateRollRate = 270;
-        Kaleidoscope.Symmetry = false;
-    }
-
-    private void HighKaleidoscopeSqueal()
-    {
-        Kaleidoscope.enabled = true;
-        Kaleidoscope.AnimateRoll = false;
-        Kaleidoscope.Symmetry = false;
-        Kaleidoscope.Repeat = 2;
-        Kaleidoscope.Roll = -45f;
-    }
-
-    private void LowKaleidoscopeSqueal()
-    {
-        Kaleidoscope.enabled = true;
-        Kaleidoscope.AnimateRoll = false;
-        Kaleidoscope.Symmetry = false;
-        Kaleidoscope.Repeat = 2;
-        Kaleidoscope.Roll = 45f;
-    }
-
-    private void LinesOut()
-    {
-        ExitLines = true;
-        ExitTrackerQuad = true;
-        ExitTime = Time.time;
-        if (UserParticles != null)
-            UserParticles.SetActive(false);
-    }
-    private void DirectKeyCodeScenes()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            UpdateAbletonState(Pitch.E2);
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-            UpdateAbletonState(Pitch.E1);
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-            UpdateAbletonState(Pitch.D2);
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-            UpdateAbletonState(Pitch.DSharp2);
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-            UpdateAbletonState(Pitch.F1);
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-            UpdateAbletonState(Pitch.F2);
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-            UpdateAbletonState(Pitch.FSharp2);
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-            UpdateAbletonState(Pitch.G2);
-        if (Input.GetKeyDown(KeyCode.Alpha9))
-            UpdateAbletonState(Pitch.GSharp2);
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-            UpdateAbletonState(Pitch.A2);
-        if (Input.GetKeyDown(KeyCode.Minus))
-            UpdateAbletonState(Pitch.B2);
-
-        if (Input.GetKeyDown(KeyCode.H))
+        switch (pitch)
         {
-            UpdateAbletonState(Pitch.ASharp2);
+
+            case Pitch.C0:
+                // start jordan
+                TrackerSceneController.Instance.EnableUserRender = true;
+                TrackerSceneController.Instance.EnableKinectUpdate = true;
+                UserFreezeFrameController.Instance.HideBaseOuput = true;
+
+                MeshTools.Instance.EnableDesmondAirsticksControl = false;
+
+                MeshTools.Instance.GoToJordanState0 = true;
+
+                MeshTools.Instance.AnimateWireframeAlpha = false;
+                UserMeshRenderer.material = Resources.Load("JordanMaterial") as UnityEngine.Material;
+
+                // Move figure (now on drum kit)
+                var initialPosition = UserMesh.transform.position;
+                UserMesh.transform.position = new Vector3(initialPosition.x, -0.99f, initialPosition.z);
+
+                // Activate Jordan light
+                GameObject.Find("JordanLight").GetComponent<Light>().enabled = true;
+
+                break;
+
+            case Pitch.CSharp0:
+                UserMeshVisualizer.Instance.DoRotate = true;
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                UserMeshVisualizer.Instance.StartRotateAnimation = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 2;
+                break;
+
+            case Pitch.D0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 4;
+                break;
+
+            case Pitch.DSharp0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 6;
+                break;
+
+            case Pitch.E0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 8;
+                break;
+
+            case Pitch.F0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 10;
+                break;
+
+            case Pitch.FSharp0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 12;
+                break;
+
+            case Pitch.G0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 15;
+                break;
+
+            case Pitch.GSharp0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 18;
+                break;
+
+            case Pitch.A0:
+                UserMeshVisualizer.Instance.DoSetMedianVertexPosition = true;
+                JordanRotator.Instance.Enabled = true;
+                JordanRotator.Instance.YAmount = 22;
+                break;
+
+            case Pitch.B1:
+                MeshTools.Instance.GoToJordanState0 = true;
+                break;
+            case Pitch.C2:
+                MeshTools.Instance.GoToJordanState1 = true;
+                break;
+            case Pitch.CSharp2:
+                MeshTools.Instance.GoToJordanState2 = true;
+                break;
+            case Pitch.D2:
+                MeshTools.Instance.GoToJordanState3 = true;
+                break;
+            case Pitch.DSharp2:
+                MeshTools.Instance.GoToJordanState4 = true;
+                break;
+            case Pitch.E2:
+                MeshTools.Instance.GoToJordanState5 = true;
+                break;
+
+            // flashes
+            case Pitch.B0:
+                UserFreezeFrameController.Instance.FadeLength = 3f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.C1:
+                UserFreezeFrameController.Instance.FadeLength = 1.8f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.CSharp1:
+                UserFreezeFrameController.Instance.FadeLength = 0.8f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.D1:
+                UserFreezeFrameController.Instance.FadeLength = 0.5f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.DSharp1:
+                UserFreezeFrameController.Instance.FadeLength = 0.35f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
+            case Pitch.E1:
+                UserFreezeFrameController.Instance.FadeLength = 0.15f;
+                UserFreezeFrameController.Instance.Generate = true;
+                break;
         }
+    }
 
-        if (Input.GetKeyDown(KeyCode.U))
+    private void RouteTunnelMidi(Pitch pitch)
+    {
+        if (TunnelVideoController == null)
         {
-            GameObject.Find("ParticleScene").SetActive(false);
-            GameObject.Find("TrackerScene").SetActive(false);
+            TunnelVideoController = GameObject.Find("TunnelPlayback").GetComponent<VideoPlaybackController>();
+            TunnelPlane = GameObject.Find("TunnelPlane").GetComponent<MeshRenderer>();
+        }
+        switch (pitch)
+        {
+            case Pitch.C1:
+                // remove everything else
+
+                var paintScene = GameObject.Find("PaintScene");
+                if (paintScene != null)
+                    paintScene.SetActive(false);
+                var faceScene = GameObject.Find("FaceScene");
+                if (faceScene != null)
+                    faceScene.SetActive(false);
+                var particleScene = GameObject.Find("ParticleScene");
+                if (particleScene != null)
+                    particleScene.SetActive(false);
+
+                // start tunnel
+                TunnelVideoController.StartPlayback = true;
+                var color = TunnelPlane.material.GetColor("_Color");
+                TunnelPlane.material.SetColor("_Color", new Color(color.r, color.g, color.b, 1));
+                // preset state for Melody Circles
+                if (MelodyCirclesController.Instance != null)
+                    MelodyCirclesController.Instance.GoToPreset();
+                break;
+            case Pitch.CSharp1:
+                // bring in user on finale outro
+                TrackerSceneController.Instance.EnableKinectUpdate = true;
+                TrackerSceneController.Instance.EnableUserRender = true;
+
+                // make sure kinect output quad is fully opaque (white)
+                var outputQuad = TrackerSceneController.Instance.OutputQuad.GetComponent<MeshRenderer>();
+                outputQuad.material.SetColor("_TintColor", Color.white);
+
+                // and no jordan rotation states
+                if (JordanRotator.Instance != null)
+                {
+                    JordanRotator.Instance.YAmount = 0f;
+                    JordanRotator.Instance.XAmount = 0f;
+                    JordanRotator.Instance.XSpeed = 0f;
+                    JordanRotator.Instance.YSpeed = 0f;
+                    JordanRotator.Instance.PosAmount = 0f;
+                }
+
+                MeshTools.Instance.Noise.NoiseIntensity = 0.005f;
+                MeshTools.Instance.Noise.NewNoiseIntensity = 0.005f;
+                MeshTools.Instance.Noise.SmoothingTimes = 1;
+                MeshTools.EnableDesmondAirsticksControl = false;
+                MeshTools.AnimateWireframeAlpha = false;
+                
+                UserMesh.GetComponent<MeshRenderer>().enabled = true;
+                UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
+                MeshIsWhite = true;
+                break;
+            case Pitch.D1:
+                // final final cueF
+                RainParticles.SetActive(true);
+                // fade out tunnel video and make user render white
+                VideoLayersController.Instance.FadeOutTunnel = true;
+                UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
+                // start user render fadeout
+                TrackerSceneController.Instance.FadeOutStart = true;
+                // Start Particle scene finale
+                ParticleSceneController.Instance.FinaleState = true;
+                RainController.Instance.ActivateDefaultParticleColour = true;
+                // and start fading them out
+                ParticleSceneObject.SetActive(true);
+                RainParticlesObject.SetActive(true);
+                RainParticleController.StopParticleLength = 200f;
+                RainParticleController.StopParticleAmounts = new Vector2Int(4000, 4000);
+                RainParticleController.SlowlyStopParticles = true;
+                break;
+            case Pitch.E1:
+                RainParticleController.StopParticleLength = 1f;
+                break;
+            case Pitch.DSharp1:
+                // evaporate
+                break;
+            case Pitch.CSharp6:
+                // Crash toggles colour
+                if (MeshIsWhite)
+                {
+                    UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("Black");
+                    MeshIsWhite = false;
+                }
+                else
+                {
+                    UserMeshRenderer.material = Resources.Load<UnityEngine.Material>("White");
+                    MeshIsWhite = true;
+                }
+                break;
         }
     }
 

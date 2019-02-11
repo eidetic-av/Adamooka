@@ -26,7 +26,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Standalone.unity
     guid: a69c7f8086895b44d8ae42333e8778dd
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Caldera.unity
     guid: 58990402e45ab3145a4ed621492ecbbf
+  - enabled: 1
+    path: Assets/Scenes/SydneyFeb.unity
+    guid: a12d675399a3e9d47af89d3801402beb
   m_configObjects: {}

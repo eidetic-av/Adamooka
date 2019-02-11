@@ -67,7 +67,7 @@ public class TrackerSceneController : MonoBehaviour
                 TrackerOutputEffector.RefreshClones();
                 AirSticksNoteOnCyclesColours = false;
                 TrackerOutputEffector.CloneDistance = 0.08f;
-                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = false;
+                TrackerOutputEffector.ControlCloneDistanceWithAirSticks = true;
                 break;
             case 1:
                 // SetCloneAmount(4);

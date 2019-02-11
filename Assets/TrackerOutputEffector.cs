@@ -228,18 +228,18 @@ public class TrackerOutputEffector : MonoBehaviour
                 CloneColors = new List<Color>()
                 {
                     // pinks
-                    // new Color(1, 0.1882353f, 0.7098039f),
-                    // new Color(0.854902f, 0.172549f, 0.9098039f),
-                    // new Color(0.7019608f, 0.1411765f, 1),
-                    // new Color(0.454902f, 0.172549f, 0.9098039f),
-                    // new Color(0.2784314f, 0.1882353f, 1)
+                    new Color(1, 0.1882353f, 0.7098039f),
+                    new Color(0.854902f, 0.172549f, 0.9098039f),
+                    new Color(0.7019608f, 0.1411765f, 1),
+                    new Color(0.454902f, 0.172549f, 0.9098039f),
+                    new Color(0.2784314f, 0.1882353f, 1)
 
                     // fire orange/blue
-                    Rgb(255, 84, 13),
-                    Rgb(255, 0, 0),
-                    Rgb(196, 2, 44),
-                    Rgb(93, 5, 120),
-                    Rgb(39, 13, 255)
+                    // Rgb(255, 84, 13),
+                    // Rgb(255, 0, 0),
+                    // Rgb(196, 2, 44),
+                    // Rgb(93, 5, 120),
+                    // Rgb(39, 13, 255)
                 };
                 break;
             case 1:
@@ -275,11 +275,18 @@ public class TrackerOutputEffector : MonoBehaviour
                     // Rgb(22, 255, 136)
 
                     // fire orange/white
-                    Rgb(255, 202, 13),
-                    Rgb(255, 255, 255),
-                    Rgb(217, 95, 122),
+                    // Rgb(255, 202, 13),
+                    // Rgb(255, 255, 255),
+                    // Rgb(217, 95, 122),
+                    // Rgb(196, 2, 44),
+                    // Rgb(255, 84, 13)
+
+                    // fire orange/blue
+                    Rgb(255, 84, 13),
+                    Rgb(255, 0, 0),
                     Rgb(196, 2, 44),
-                    Rgb(255, 84, 13)
+                    Rgb(93, 5, 120),
+                    Rgb(39, 13, 255)
                 };
                 break;
         }
