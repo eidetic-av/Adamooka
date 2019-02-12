@@ -1,0 +1,3 @@
+[submodule "Assets/Confluence"]
+	path = Assets/Confluence
+	url = https://github.com/eidetic-av/Confluence.git
