@@ -71,8 +71,8 @@ public class RodParticleController : MonoBehaviour
                 scale.Scale(new Vector3(mappedX, mappedY, mappedZ));
             }
 
-            var shapeModule = GetComponent<ParticleSystem>().shape;
-            shapeModule.scale = scale;
+            // var shapeModule = GetComponent<ParticleSystem>().shape;
+            // shapeModule.scale = scale;
         }
         else
         {
@@ -80,7 +80,7 @@ public class RodParticleController : MonoBehaviour
             shapeModule.scale = ScaleMultiplier;
         }
 
-        if (EmissionEnabled || ConstantEmission)
-            GetComponent<ParticleSystem>().Emit(ParticleEmissionCount);
+        // if (EmissionEnabled || ConstantEmission)
+        //     GetComponent<ParticleSystem>().Emit(ParticleEmissionCount);
     }
 }

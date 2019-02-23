@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Utility
 {
@@ -21,19 +22,57 @@ namespace Utility
             return ((input - minimumInput) / (maximumInput - minimumInput)) * (maximumOutput - minimumOutput) + minimumOutput;
         }
 
+        // /// <summary>
+        // /// Map a float from one range to another.
+        // /// </summary>
+        // /// <param name="input">The input float to map</param>
+        // /// <param name="minimumInput">Original minimum value</param>
+        // /// <param name="maximumInput">Original maximum value</param>
+        // /// <param name="minimumOutput">New minimum value</param>
+        // /// <param name="maximumOutput">New maximum value</param>
+        // /// <returns>Float mapped to the new range</returns>
+        // public static float Map(this float input, float minimumInput, float maximumInput, float minimumOutput, float maximumOutput)
+        // {
+        //     return ((input - minimumInput) / (maximumInput - minimumInput)) * (maximumOutput - minimumOutput) + minimumOutput;
+        // }
+
         /// <summary>
-        /// Map a float from one range to another.
+        /// Map an int from one range to another.
         /// </summary>
-        /// <param name="input">The input float to map</param>
+        /// <param name="input">The input int to map</param>
         /// <param name="minimumInput">Original minimum value</param>
         /// <param name="maximumInput">Original maximum value</param>
         /// <param name="minimumOutput">New minimum value</param>
         /// <param name="maximumOutput">New maximum value</param>
-        /// <returns>Float mapped to the new range</returns>
-        //public static float Map(this float input, float minimumInput, float maximumInput, float minimumOutput, float maximumOutput)
-        //{
-        //    return ((input - minimumInput) / (maximumInput - minimumInput)) * (maximumOutput - minimumOutput) + minimumOutput;
-        //}
+        /// <returns>Int mapped to the new range, rounded to nearest.</returns>
+        public static int Map(this int input, int minimumInput, int maximumInput, int minimumOutput, int maximumOutput)
+        {
+            return (int)Math.Round(((input - minimumInput) / (float)(maximumInput - minimumInput)) * (maximumOutput - minimumOutput) + minimumOutput);
+        }
+
+        /// <summary>
+        /// Map a float from one range to another.
+        /// </summary>
+        /// <param name="input">The input float to map</param>
+        /// <param name="inputRange">Original range</param>
+        /// <param name="outputRange">New range</param>
+        /// <returns>Float mapped to the new range.</returns>
+        public static float Map(this float input, Vector2 inputRange, Vector2 outputRange)
+        {
+            return ((input - inputRange.x) / (inputRange.y - inputRange.x)) * (outputRange.y - outputRange.x) + outputRange.x;
+        }
+
+        /// <summary>
+        /// Map a double from one range to another.
+        /// </summary>
+        /// <param name="input">The input double to map</param>
+        /// <param name="inputRange">Original range</param>
+        /// <param name="outputRange">New range</param>
+        /// <returns>Double mapped to the new range.</returns>
+        public static double Map(this double input, Vector2 inputRange, Vector2 outputRange)
+        {
+            return ((input - inputRange.x) / (inputRange.y - inputRange.x)) * (outputRange.y - outputRange.x) + outputRange.x;
+        }
 
         /// <summary>
         /// Clamps a value inside an arbitrary range.
