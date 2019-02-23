@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4088e22396170bf41bd4b4ca4a2437d0, type: 3}
-  m_Name: InternalSettings
+  m_Name: CustomExposure
   m_EditorClassIdentifier: 
   m_standardDrawers:
   - {fileID: 114453255388587516, guid: b292c517aa17d35498474513ea51053b, type: 2}
@@ -33,34 +33,7 @@ MonoBehaviour:
   m_hiddenVariables:
   - m_type: Object
     m_variables:
-    - '*'
-  - m_type: Renderer
-    m_variables:
-    - material
-    - materials
-  - m_type: MeshFilter
-    m_variables:
-    - mesh
-  - m_type: Transform
-    m_variables:
-    - right
-    - up
-    - forward
-    - rotationOrder
-    - parentInternal
-    - hierarchyCapacity
-    - drivenByObject
-    - drivenProperties
-  - m_type: Component
-    m_variables:
-    - name
-    - tag
-  - m_type: Collider
-    m_variables:
-    - material
-  - m_type: CanvasRenderer
-    m_variables:
-    - '*'
+    - transform
   m_exposedVariables:
   - m_type: RodController
     m_variables:
