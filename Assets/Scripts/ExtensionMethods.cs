@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Utility
+namespace Eidetic.Utility
 {
     /// <summary>
     /// Utility extension methods for C# classes in System library.
@@ -22,19 +22,17 @@ namespace Utility
             return ((input - minimumInput) / (maximumInput - minimumInput)) * (maximumOutput - minimumOutput) + minimumOutput;
         }
 
-        // /// <summary>
-        // /// Map a float from one range to another.
-        // /// </summary>
-        // /// <param name="input">The input float to map</param>
-        // /// <param name="minimumInput">Original minimum value</param>
-        // /// <param name="maximumInput">Original maximum value</param>
-        // /// <param name="minimumOutput">New minimum value</param>
-        // /// <param name="maximumOutput">New maximum value</param>
-        // /// <returns>Float mapped to the new range</returns>
-        // public static float Map(this float input, float minimumInput, float maximumInput, float minimumOutput, float maximumOutput)
-        // {
-        //     return ((input - minimumInput) / (maximumInput - minimumInput)) * (maximumOutput - minimumOutput) + minimumOutput;
-        // }
+        /// <summary>
+        /// Map a float from 0-1 to a desired range.
+        /// </summary>
+        /// <param name="input">The input float to map</param>
+        /// <param name="minimumOutput">New minimum value</param>
+        /// <param name="maximumOutput">New maximum value</param>
+        /// <returns>Float mapped to the new range</returns>
+        public static float Map(this float input, float minimumOutput, float maximumOutput)
+        {
+            return (input / 1) * (maximumOutput - minimumOutput) + minimumOutput;
+        }
 
         /// <summary>
         /// Map an int from one range to another.

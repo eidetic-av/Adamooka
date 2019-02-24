@@ -24,7 +24,7 @@ MonoBehaviour:
     a: 1}
   m_inputFieldInvalidBackgroundColor: {r: 1, g: 0.2509804, b: 0.2509804, a: 1}
   m_inputFieldTextColor: {r: 1, g: 1, b: 1, a: 1}
-  m_toggleCheckmarkColor: {r: 0.2794118, g: 0.2629758, b: 0.2629758, a: 1}
+  m_toggleCheckmarkColor: {r: 1, g: 1, b: 1, a: 1}
   m_buttonBackgroundColor: {r: 0.9338235, g: 0.94068986, b: 0.94068986, a: 1}
   m_buttonTextColor: {r: 0, g: 0, b: 0, a: 1}
   m_selectedItemBackgroundColor: {r: 0.3115809, g: 0.5730224, b: 0.8308824, a: 1}

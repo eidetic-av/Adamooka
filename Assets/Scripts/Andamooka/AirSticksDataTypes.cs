@@ -1,3 +1,4 @@
+using System;
 
 namespace Eidetic.Andamooka
 {
@@ -8,7 +9,7 @@ namespace Eidetic.Andamooka
             Left, Right
         }
 
-        public static class ControlTypes
+        public static class ControlType
         {
             public enum Motion
             {
@@ -23,22 +24,27 @@ namespace Eidetic.Andamooka
             {
                 Button1, Button2, Button3, Button4, Bumper
             }
+
+            public enum Velocity { Velocity }
         }
-        
-        [System.Serializable]
-        public struct MotionMapping
+
+        public abstract class AirSticksMapping<T> : Mapping<T> where T : struct, IConvertible
         {
-            public ControlTypes.Motion Input;
-            public float MinimumValue;
-            public float MaximumValue;
+            public Hand Hand;
+            public override float GetInputValue()
+            {
+                return GetStick(Hand).GetControlValue<T>(Input);
+            }
         }
-        
+
         [System.Serializable]
-        public struct VelocityMapping
-        {
-            public float MinimumValue;
-            public float MaximumValue;
-        }
+        public class MotionMapping : AirSticksMapping<ControlType.Motion> { }
+
+        [System.Serializable]
+        public class JoystickMapping : AirSticksMapping<ControlType.Joystick> { }
+
+        [System.Serializable]
+        public class VelocityMapping : AirSticksMapping<ControlType.Velocity> { }
 
     }
 }

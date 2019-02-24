@@ -22,23 +22,52 @@ public class RodController : RuntimeController
         RightHand = GameObject.Find("RightHand").GetComponent<ParticleSystem>();
         Ribbon = GameObject.Find("Ribbon").GetComponent<ParticleSystem>();
 
-        AirSticks.Left.NoteOn += SpawnLeft;
-        AirSticks.Right.NoteOn += SpawnRight;
-        AirSticks.Left.NoteOff += StopLeft;
-        AirSticks.Right.NoteOff += StopRight;
+        AirSticks.Left.NoteOn += Spawn;
+        AirSticks.Right.NoteOn += Spawn;
+        // AirSticks.Left.NoteOff += StopLeft;
+        // AirSticks.Right.NoteOff += StopRight;
     }
 
     //
     // Runtime control properties
     //
-    public AirSticks.VelocityMapping VelocityToSpawnSpeed { get; set; }
-        = new AirSticks.VelocityMapping { MinimumValue = 1, MaximumValue = 1 };
+    public bool ControlWithAirSticks {get; set;} = true;
+    public SerializableVector3 PositionScale {get; set;}
+        = new SerializableVector3(1, 1, 1);
+    public SerializableVector3 LeftHandOffset {get; set;}
+        = new SerializableVector3(0, 0, 0);
+    public SerializableVector3 RightHandOffset {get; set;}
+        = new SerializableVector3(0, 0, 0);
+    
+    public AirSticks.VelocityMapping SpawnSpeed { get; set; }
+    public AirSticks.MotionMapping Distortion { get; set; }
+
+    //
+    // Runtime loop
+    //
+    void Update() 
+    {
+        if (ControlWithAirSticks)
+        {
+            LeftHand.transform.position =
+                AirSticks.Left.Position * PositionScale + LeftHandOffset;
+            LeftHand.transform.position =
+                AirSticks.Right.Position * PositionScale + RightHandOffset;
+        
+            var test = Distortion.Output;
+            Debug.Log(test);
+        }
+    }
 
     //
     // Inner methods
     //
-    void SpawnLeft() { LeftHand.Restart(); }
-    void SpawnRight() { RightHand.Restart(); }
+    void Spawn() {
+
+        LeftHand.Restart();
+        RightHand.Restart(); 
+    }
+
     void StopLeft()
     {
         StartCoroutine(RemoveParticlesRoutine(LeftHand));
