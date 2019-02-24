@@ -32,7 +32,18 @@ public class RodController : RuntimeController
     //
 
     // Spawn speed maps these values to the NoteOn velocity 
-    public SerializableVector2 SpawnSpeedMinMax = new SerializableVector2(1f, 3f);
+    SerializableVector2 _spawnSpeedMinMax;
+    public SerializableVector2 SpawnSpeedMinMax
+    {
+        get
+        {
+            return _spawnSpeedMinMax;
+        }
+        set
+        {
+            _spawnSpeedMinMax = value;
+        }
+    }
 
     //
     // Inner methods

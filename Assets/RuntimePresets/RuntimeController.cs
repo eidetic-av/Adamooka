@@ -16,19 +16,20 @@ namespace Eidetic.Unity.Runtime
             PresetManager.Instantiate(this);
         }
 
-        public List<RuntimeControllerParameter> Pack() => GetType().GetFields()
-                .Select(f => new RuntimeControllerParameter()
+        public List<RuntimeControllerParameter> Pack() => GetType().GetProperties()
+                .Where(property => property.CanWrite)
+                .Select(property => new RuntimeControllerParameter()
                 {
-                    Name = f.Name,
-                    Value = f.GetValue(this)
+                    Name = property.Name,
+                    Value = property.GetValue(this)
                 }).ToList();
 
         public void Unpack(List<RuntimeControllerParameter> preset)
         {
-            foreach (var field in GetType().GetFields())
+            foreach (var property in GetType().GetProperties().Where(property => property.CanWrite))
             {
-                field.SetValue(this, preset.Where(
-                    parameter => parameter.Name.Equals(field.Name))
+                property.SetValue(this, preset.Where(
+                    parameter => parameter.Name.Equals(property.Name))
                         .Select(parameter => parameter.Value)
                         .First());
             }
