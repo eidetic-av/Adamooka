@@ -31,20 +31,8 @@ public class RodController : RuntimeController
     //
     // Runtime control properties
     //
-
-    // Spawn speed maps these values to the NoteOn velocity 
-    SerializableVector2 _spawnSpeedMinMax;
-    public SerializableVector2 SpawnSpeedMinMax
-    {
-        get
-        {
-            return _spawnSpeedMinMax;
-        }
-        set
-        {
-            _spawnSpeedMinMax = value;
-        }
-    }
+    public AirSticks.VelocityMapping VelocityToSpawnSpeed { get; set; }
+        = new AirSticks.VelocityMapping { MinimumValue = 1, MaximumValue = 1 };
 
     //
     // Inner methods
