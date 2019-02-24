@@ -6,6 +6,7 @@ using UnityOSC;
 using Midi;
 using System;
 using Eidetic;
+using Eidetic.Andamooka;
 using Utility;
 
 public partial class OSCReceive : MonoBehaviour

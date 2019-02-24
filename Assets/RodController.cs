@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using RuntimeInspectorNamespace;
+using Eidetic.Andamooka;
 using Eidetic.Unity.Runtime;
 using Eidetic.Unity.Utility;
 

@@ -5,6 +5,7 @@ using Midi;
 using System;
 using System.Diagnostics;
 using Utility;
+using Eidetic.Andamooka;
 
 public class RainController : MonoBehaviour
 {

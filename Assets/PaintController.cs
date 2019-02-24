@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Midi;
 using System;
+using Eidetic.Andamooka;
 
 public class PaintController : MonoBehaviour
 {

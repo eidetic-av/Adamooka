@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Midi;
 using System.Linq;
+using Eidetic.Andamooka;
 
 public class AirSticksUpdater : MonoBehaviour
 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Eidetic;
+using Eidetic.Andamooka;
 using Eidetic.Unity.Utility;
 using Midi;
 using Utility;

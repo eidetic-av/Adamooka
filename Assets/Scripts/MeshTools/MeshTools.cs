@@ -3,6 +3,7 @@ using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using Eidetic.Andamooka;
 using Eidetic.Unity.Utility;
 
 [RequireComponent(typeof(MeshRenderer))]

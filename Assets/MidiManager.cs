@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.PostProcessing;
+using Eidetic.Andamooka;
 
 public class
 MidiManager : MonoBehaviour
