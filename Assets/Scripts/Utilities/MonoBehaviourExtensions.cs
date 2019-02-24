@@ -2,7 +2,7 @@
 
 namespace Eidetic.Unity.Utility
 {
-    public static class MonoBehaviourExtensions
+    public static class UnityEngineExtensionMethods
     {
         public static GameObject FindChild(this GameObject parent, string name)
         {
@@ -15,6 +15,22 @@ namespace Eidetic.Unity.Utility
                 }
             }
             return null;
+        }
+        public static void FocusInRuntimeInspector(this GameObject gameObject)
+        {
+            RuntimeEditorInputControl.Inspector.Inspect(gameObject);
+        }
+
+        // Particle System extension methods
+        public static void Restart(this ParticleSystem particleSystem)
+        {
+            particleSystem.Clear();
+            particleSystem.Play();
+        }
+        public static void SetSimulationSpeed(this ParticleSystem particleSystem, float speed)
+        {
+            var mainModule = particleSystem.main;
+            mainModule.simulationSpeed = speed;
         }
     }
 }

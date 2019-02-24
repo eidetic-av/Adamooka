@@ -5,8 +5,6 @@ using UnityEngine;
 public class DummyAirsticks : MonoBehaviour {
 
     public bool DummyEnabled = false;
-    public bool ControlZPositionWithMouse = false;
-    public bool ControlXYRotationWithMouse = false;
 
     [Range(-1, 1)]
     public float LeftXRotation = 0;
@@ -41,16 +39,20 @@ public class DummyAirsticks : MonoBehaviour {
 
 		if (DummyEnabled)
         {
-            if (ControlZPositionWithMouse) {
-                LeftZPosition = Input.mousePosition.x / Screen.width;
-                RightZPosition = Input.mousePosition.y / Screen.height;
-            }
-
             AirSticks.Left.EulerAngles = new Vector3(LeftXRotation, LeftYRotation, LeftZRotation);
             AirSticks.Right.EulerAngles = new Vector3(RightXRotation, RightYRotation, RightZRotation);
 
             AirSticks.Left.Position = new Vector3(LeftXPosition, LeftYPosition, LeftZPosition);
             AirSticks.Right.Position = new Vector3(RightXPosition, RightYPosition, RightZPosition);
+
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+                AirSticks.Left.TriggerNoteOn();
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+                AirSticks.Right.TriggerNoteOn();
+            if (Input.GetKeyUp(KeyCode.LeftArrow))
+                AirSticks.Left.TriggerNoteOff();
+            if (Input.GetKeyUp(KeyCode.RightArrow))
+                AirSticks.Right.TriggerNoteOff();
         }
 	}
 }

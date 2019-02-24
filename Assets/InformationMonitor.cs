@@ -160,10 +160,10 @@ public class InformationMonitor : MonoBehaviour
             var usingMouse = false;
             if (DummyAirsticks != null)
             {
-                if (DummyAirsticks.DummyEnabled)
-                    usingMouse = DummyAirsticks.ControlZPositionWithMouse;
-                else
-                    usingMouse = false;
+                // if (DummyAirsticks.DummyEnabled)
+                //     usingMouse = DummyAirsticks.ControlZPositionWithMouse;
+                // else
+                //     usingMouse = false;
             }
             if (usingMouse)
                 if (ControlType.text != MOUSE_CONTROL_TYPE)

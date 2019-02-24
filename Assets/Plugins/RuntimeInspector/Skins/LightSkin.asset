@@ -3,7 +3,7 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -16,15 +16,16 @@ MonoBehaviour:
   m_lineHeight: 30
   m_indentAmount: 12
   m_windowColor: {r: 0.6838235, g: 0.68885165, b: 0.68885165, a: 1}
-  m_backgroundColor: {r: 0.7607844, g: 0.7607844, b: 0.7607844, a: 1}
-  m_textColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_backgroundColor: {r: 0.32137772, g: 0.32977673, b: 0.4339623, a: 1}
+  m_textColor: {r: 1, g: 1, b: 1, a: 1}
   m_scrollbarColor: {r: 0.4901961, g: 0.5568628, b: 0.65882355, a: 1}
   m_expandArrowColor: {r: 0.4666667, g: 0.4666667, b: 0.4666667, a: 1}
-  m_inputFieldNormalBackgroundColor: {r: 0.9485294, g: 0.9485294, b: 0.9485294, a: 1}
+  m_inputFieldNormalBackgroundColor: {r: 0.32156864, g: 0.32941177, b: 0.43529415,
+    a: 1}
   m_inputFieldInvalidBackgroundColor: {r: 1, g: 0.2509804, b: 0.2509804, a: 1}
-  m_inputFieldTextColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_inputFieldTextColor: {r: 1, g: 1, b: 1, a: 1}
   m_toggleCheckmarkColor: {r: 0.2794118, g: 0.2629758, b: 0.2629758, a: 1}
   m_buttonBackgroundColor: {r: 0.9338235, g: 0.94068986, b: 0.94068986, a: 1}
-  m_buttonTextColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_buttonTextColor: {r: 0, g: 0, b: 0, a: 1}
   m_selectedItemBackgroundColor: {r: 0.3115809, g: 0.5730224, b: 0.8308824, a: 1}
   m_selectedItemTextColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}

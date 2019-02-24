@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4088e22396170bf41bd4b4ca4a2437d0, type: 3}
-  m_Name: CustomExposure
+  m_Name: CustomisedSettings
   m_EditorClassIdentifier: 
   m_standardDrawers:
   - {fileID: 114453255388587516, guid: b292c517aa17d35498474513ea51053b, type: 2}
@@ -33,8 +33,24 @@ MonoBehaviour:
   m_hiddenVariables:
   - m_type: Object
     m_variables:
-    - transform
-  m_exposedVariables:
-  - m_type: RodController
+    - tag
+    - name
+    - hideFlags
+    - hierarchyCapacity
+    - useGUILayout
+    - runInEditMode
+    - enabled
+    - hasChanged
+    - parent
+    - parentInternal
+  - m_type: Transform
     m_variables:
-    - Test
+    - position
+    - eulerAngles
+    - right
+    - up
+    - forward
+    - rotation
+    - localRotation
+    - rotationOrder
+  m_exposedVariables: []
