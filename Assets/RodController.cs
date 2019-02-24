@@ -28,7 +28,7 @@ public class RodController : RuntimeController
     }
 
     //
-    // Runtime control properties and methods
+    // Runtime control properties
     //
 
     // Spawn speed maps these values to the NoteOn velocity 

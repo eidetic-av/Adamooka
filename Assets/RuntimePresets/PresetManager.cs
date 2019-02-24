@@ -21,12 +21,20 @@ public class PresetManager : MonoBehaviour {
 		presetManager.Controller = parentController;
 		presetManager.PresetName = DateTime.Now.ToFileTime().ToString();
 	}
-	public void Awake()
+	public void Start()
 	{
-		// Load presets if they are present in folder
+		// Load last used preset if one exists
 		PresetPath = Application.persistentDataPath + "/" + gameObject.name;
 		if (Directory.Exists(PresetPath)) {
-			var files = Directory.GetFiles(PresetPath);
+			var lastFile = Directory.GetFiles(PresetPath)
+				.OrderByDescending(file => File.GetLastWriteTime(file))
+				.FirstOrDefault();
+			if (lastFile != null)
+			{
+				PresetName = lastFile.Substring(PresetPath.Length + 1).Replace(".bin", "");
+				Debug.Log(PresetName);
+				LoadPreset();
+			}
 		}
 	}
 
@@ -53,6 +61,7 @@ public class PresetManager : MonoBehaviour {
 	{
 		var formatter = new BinaryFormatter();
 		var filePath = PresetPath + "/" +  PresetName + ".bin";
+				Debug.Log(filePath);
 
 		FileStream file = File.Open(filePath, FileMode.Open);
 		Controller.Unpack(formatter.Deserialize(file) as List<RuntimeControllerParameter>);

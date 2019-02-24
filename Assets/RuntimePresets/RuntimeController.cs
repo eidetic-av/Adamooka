@@ -30,8 +30,8 @@ namespace Eidetic.Unity.Runtime
             {
                 property.SetValue(this, preset.Where(
                     parameter => parameter.Name.Equals(property.Name))
-                        .Select(parameter => parameter.Value)
-                        .First());
+                    .Select(parameter => parameter.Value)
+                    .First());
             }
         }
     }
