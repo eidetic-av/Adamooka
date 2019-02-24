@@ -40,7 +40,10 @@ public class RodController : RuntimeController
         = new SerializableVector3(0, 0, 0);
     
     public AirSticks.VelocityMapping SpawnSpeed { get; set; }
-    public AirSticks.MotionMapping Distortion { get; set; }
+    public AirSticks.MotionMapping NoiseMappingLeft { get; set; }
+        = new AirSticks.MotionMapping(){ Hand = AirSticks.Hand.Left };
+    public AirSticks.MotionMapping NoiseMappingRight { get; set; }
+        = new AirSticks.MotionMapping(){ Hand = AirSticks.Hand.Right };
 
     //
     // Runtime loop
@@ -51,17 +54,29 @@ public class RodController : RuntimeController
         {
             LeftHand.transform.position =
                 AirSticks.Left.Position * PositionScale + LeftHandOffset;
-            LeftHand.transform.position =
+            RightHand.transform.position =
                 AirSticks.Right.Position * PositionScale + RightHandOffset;
         
-            var test = Distortion.Output;
-            Debug.Log(test);
+
+            // This works but need to use a different noise
+            // so the particles don't drift away from each other
+
+            // var leftNoise = LeftHand.noise;
+            // leftNoise.strength = NoiseMappingLeft.Output;
+            // var rightNoise = RightHand.noise;
+            // rightNoise.strength = NoiseMappingRight.Output;
         }
     }
 
     //
     // Inner methods
     //
+    ParticleSystem GetSystem(AirSticks.Hand hand)
+    {
+        if (hand == AirSticks.Hand.Left)
+            return LeftHand;
+        else return RightHand;
+    }
     void Spawn() {
 
         LeftHand.Restart();
