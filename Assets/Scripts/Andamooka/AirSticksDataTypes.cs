@@ -28,6 +28,7 @@ namespace Eidetic.Andamooka
             public enum Velocity { Velocity }
         }
 
+        [System.Serializable]
         public abstract class AirSticksMapping<T> : Mapping<T> where T : struct, IConvertible
         {
             public Hand Hand;
