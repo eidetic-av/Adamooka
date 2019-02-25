@@ -104,9 +104,9 @@ public partial class OSCReceive : MonoBehaviour
             if (address[3] == "note")
             {
                 if (address[4] == "on")
-                    targetStick.TriggerNoteOn();
+                    targetStick.NoteOn.RunOnMain((int)data[0]);
                 if (address[4] == "off")
-                    targetStick.TriggerNoteOff();
+                    targetStick.NoteOff.RunOnMain();
             }
             if (address[3] == "trigger")
             {

@@ -21,6 +21,10 @@ namespace Eidetic.Andamooka
         public class Stick
         {
             public Hand Hand;
+            
+            public Action<int> NoteOn { get; set; }
+            public Action NoteOff { get; set; }
+
             public float GetControlValue<T>(T controlType) where T : struct, IConvertible
             {
                 Enum controlTypeEnum = controlType as Enum; 
@@ -78,24 +82,8 @@ namespace Eidetic.Andamooka
 
             public bool Trigger = false;
 
-            public Action NoteOn { get; set; }
-            public Action NoteOff { get; set; }
-
             // Normalised velocity (0-1)
             public float Velocity { get; set; }
-
-            public void TriggerNoteOn()
-            {
-                if (NoteOn == null) return;
-                Threading.RunOnMain(NoteOn);
-                NoteIsOn = true;
-            }
-            public void TriggerNoteOff()
-            {
-                if (NoteOff == null) return;
-                Threading.RunOnMain(NoteOff);
-                NoteIsOn = false;
-            }
 
             public void Button4On()
             {

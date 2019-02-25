@@ -1,4 +1,5 @@
 using System;
+using Eidetic.Utility;
 
 namespace Eidetic.Andamooka
 {
@@ -6,7 +7,7 @@ namespace Eidetic.Andamooka
     {
         public enum Hand
         {
-            Left, Right
+            Left, Right, Both
         }
 
         public static class ControlType
@@ -32,20 +33,44 @@ namespace Eidetic.Andamooka
         public abstract class AirSticksMapping<T> : Mapping<T> where T : struct, IConvertible
         {
             public Hand Hand;
-            public override float GetInputValue()
+            public AirSticksMapping(Hand hand)
             {
-                return GetStick(Hand).GetControlValue<T>(Input);
+                Hand = hand;
             }
+            public AirSticksMapping(Hand hand, float minimum, float maximum)
+            {
+                Hand = hand;
+                MinimumValue = minimum;
+                MaximumValue = maximum;
+            }
+            // this Hand business seems wrong
+            public override float Output => GetOutput(Hand);
+            public override float GetInputValue() => GetInputValue(Hand);
+            public float GetInputValue(Hand hand) =>
+                GetStick(hand).GetControlValue<T>(Input);
+            public float GetOutput(Hand hand) => GetInputValue(hand).Map(MinimumValue, MaximumValue);
         }
 
         [System.Serializable]
-        public class MotionMapping : AirSticksMapping<ControlType.Motion> { }
+        public class MotionMapping : AirSticksMapping<ControlType.Motion>
+        {
+            public MotionMapping(Hand hand) : base(hand) { }
+            public MotionMapping(Hand hand, float minimum, float maximum) : base(hand, minimum, maximum) { }
+        }
 
         [System.Serializable]
-        public class JoystickMapping : AirSticksMapping<ControlType.Joystick> { }
+        public class JoystickMapping : AirSticksMapping<ControlType.Joystick>
+        {
+            public JoystickMapping(Hand hand) : base(hand) { }
+            public JoystickMapping(Hand hand, float minimum, float maximum) : base(hand, minimum, maximum) { }
+        }
 
         [System.Serializable]
-        public class VelocityMapping : AirSticksMapping<ControlType.Velocity> { }
+        public class VelocityMapping : AirSticksMapping<ControlType.Velocity>
+        {
+            public VelocityMapping(Hand hand) : base(hand) { }
+            public VelocityMapping(Hand hand, float minimum, float maximum) : base(hand, minimum, maximum) { }
+        }
 
     }
 }

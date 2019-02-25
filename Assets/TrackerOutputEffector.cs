@@ -103,13 +103,13 @@ public class TrackerOutputEffector : MonoBehaviour
 
         // Set AirSticks actions
 
-        AirSticks.Left.NoteOn += LeftNoteOn;
-        AirSticks.Left.NoteOff += LeftNoteOff;
-        AirSticks.Right.NoteOn += RightNoteOn;
-        AirSticks.Right.NoteOff += RightNoteOff;
+        // AirSticks.Left.NoteOn += LeftNoteOn;
+        // AirSticks.Left.NoteOff += LeftNoteOff;
+        // AirSticks.Right.NoteOn += RightNoteOn;
+        // AirSticks.Right.NoteOff += RightNoteOff;
 
-        AirSticks.Right.NoteOn += AlphaOn;
-        AirSticks.Right.NoteOff += AlphaOff;
+        // AirSticks.Right.NoteOn += AlphaOn;
+        // AirSticks.Right.NoteOff += AlphaOff;
         gameObject.InstanceMaterial();
 
         // add 10 clones to the scene on either side and hide them

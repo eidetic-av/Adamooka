@@ -76,8 +76,8 @@ public class CircleParticleController : MonoBehaviour
 void Start()
     {
         Instance = this;
-        AirSticks.Right.NoteOn += () => EnableEmission();
-        AirSticks.Right.NoteOff += () => DisableEmission();
+        // AirSticks.Right.NoteOn += () => EnableEmission();
+        // AirSticks.Right.NoteOff += () => DisableEmission();
         ParticleSystem.gameObject.SetActive(false);
     }
 

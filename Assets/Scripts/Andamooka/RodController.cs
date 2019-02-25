@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using RuntimeInspectorNamespace;
 using Eidetic.Andamooka;
+using Eidetic.Utility;
 using Eidetic.Unity.Runtime;
 using Eidetic.Unity.Utility;
 
@@ -11,44 +12,47 @@ using Eidetic.Unity.Utility;
 public class RodController : RuntimeController
 {
     //
+    // Runtime control properties
+    //
+    public bool ControlWithAirSticks { get; set; } = true;
+    public SerializableVector3 PositionScale { get; set; }
+        = new SerializableVector3(1, 1, 1);
+    public SerializableVector3 LeftHandOffset { get; set; }
+        = new SerializableVector3(0, 0, 0);
+    public SerializableVector3 RightHandOffset { get; set; }
+        = new SerializableVector3(0, 0, 0);
+
+    public AirSticks.VelocityMapping VelocityToSpawnSpeed { get; set; }
+        = new AirSticks.VelocityMapping(AirSticks.Hand.Both);
+    public AirSticks.MotionMapping MotionToHandScale { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Both);
+
+    //
     // Initialisation stuff
     //
     ParticleSystem LeftHand;
     ParticleSystem RightHand;
     ParticleSystem Ribbon;
+
     void Start()
     {
         LeftHand = GameObject.Find("LeftHand").GetComponent<ParticleSystem>();
         RightHand = GameObject.Find("RightHand").GetComponent<ParticleSystem>();
         Ribbon = GameObject.Find("Ribbon").GetComponent<ParticleSystem>();
 
-        AirSticks.Left.NoteOn += Spawn;
-        AirSticks.Right.NoteOn += Spawn;
+        AirSticks.Left.NoteOn += (velocity)
+            => Spawn(AirSticks.Hand.Left, velocity);
+        AirSticks.Right.NoteOn += (velocity)
+            => Spawn(AirSticks.Hand.Right, velocity);
+
         // AirSticks.Left.NoteOff += StopLeft;
         // AirSticks.Right.NoteOff += StopRight;
     }
 
     //
-    // Runtime control properties
-    //
-    public bool ControlWithAirSticks {get; set;} = true;
-    public SerializableVector3 PositionScale {get; set;}
-        = new SerializableVector3(1, 1, 1);
-    public SerializableVector3 LeftHandOffset {get; set;}
-        = new SerializableVector3(0, 0, 0);
-    public SerializableVector3 RightHandOffset {get; set;}
-        = new SerializableVector3(0, 0, 0);
-    
-    public AirSticks.VelocityMapping SpawnSpeed { get; set; }
-    public AirSticks.MotionMapping NoiseMappingLeft { get; set; }
-        = new AirSticks.MotionMapping(){ Hand = AirSticks.Hand.Left };
-    public AirSticks.MotionMapping NoiseMappingRight { get; set; }
-        = new AirSticks.MotionMapping(){ Hand = AirSticks.Hand.Right };
-
-    //
     // Runtime loop
     //
-    void Update() 
+    void Update()
     {
         if (ControlWithAirSticks)
         {
@@ -56,7 +60,11 @@ public class RodController : RuntimeController
                 AirSticks.Left.Position * PositionScale + LeftHandOffset;
             RightHand.transform.position =
                 AirSticks.Right.Position * PositionScale + RightHandOffset;
-        
+
+            LeftHand.transform.localScale = Vector3.one *
+                MotionToHandScale.GetOutput(AirSticks.Hand.Left);
+            RightHand.transform.localScale = Vector3.one *
+                MotionToHandScale.GetOutput(AirSticks.Hand.Right);
 
             // This works but need to use a different noise
             // so the particles don't drift away from each other
@@ -75,22 +83,27 @@ public class RodController : RuntimeController
     {
         if (hand == AirSticks.Hand.Left)
             return LeftHand;
-        else return RightHand;
+        else if (hand == AirSticks.Hand.Right)
+            return RightHand;
+        else throw new System.ArgumentException();
     }
-    void Spawn() {
-
-        LeftHand.Restart();
-        RightHand.Restart(); 
-    }
-
-    void StopLeft()
+    ParticleSystem GetOtherSystem(AirSticks.Hand hand)
     {
-        StartCoroutine(RemoveParticlesRoutine(LeftHand));
+        if (hand == AirSticks.Hand.Left)
+            return RightHand;
+        else if (hand == AirSticks.Hand.Right)
+            return LeftHand;
+        else throw new System.ArgumentException();
     }
-    void StopRight()
+    void Spawn(AirSticks.Hand hand, int velocity)
     {
-        StartCoroutine(RemoveParticlesRoutine(RightHand));
+        GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
+        
+        GetSystem(hand).Restart();
     }
+
+    void StopLeft() => StartCoroutine(RemoveParticlesRoutine(LeftHand));
+    void StopRight() => StartCoroutine(RemoveParticlesRoutine(RightHand));
 
     IEnumerator RemoveParticlesRoutine(ParticleSystem system, float interval = 0.01f, int count = 5)
     {

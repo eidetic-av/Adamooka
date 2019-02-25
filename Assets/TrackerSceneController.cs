@@ -45,7 +45,7 @@ public class TrackerSceneController : MonoBehaviour
     {
         Instance = this;
         // AirSticks.Left.NoteOn += NoteOnCycleColours;
-        AirSticks.Right.NoteOn += NoteOnCycleColours;
+        // AirSticks.Right.NoteOn += NoteOnCycleColours;
         OutputQuad = GameObject.Find("OutputQuad");
     }
 

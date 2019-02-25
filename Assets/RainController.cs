@@ -118,7 +118,7 @@ public class RainController : MonoBehaviour
 
         //AirSticks.Right.NoteOn += HoneOn;
         //AirSticks.Right.NoteOff += HoneOff;
-        AirSticks.Right.NoteOn += DoHitOut;
+        // AirSticks.Right.NoteOn += DoHitOut;
     }
 
     void DoHitOut()

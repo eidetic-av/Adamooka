@@ -73,17 +73,17 @@ public class OneFiveNineCircleController : MonoBehaviour
         // AirSticks.Left.NoteOn += SnareOn;
         // AirSticks.Left.NoteOff += SnareOff;
 
-        AirSticks.Right.NoteOn += () => {
-            if (AirSticksKickSnare) {
-                DoSubKick();
-            }
-        };
+        // AirSticks.Right.NoteOn += () => {
+        //     if (AirSticksKickSnare) {
+        //         DoSubKick();
+        //     }
+        // };
 
-        AirSticks.Left.NoteOn += () => {
-            if (AirSticksKickSnare) {
-                DoAirSticksSnare();
-            }
-        };
+        // AirSticks.Left.NoteOn += () => {
+        //     if (AirSticksKickSnare) {
+        //         DoAirSticksSnare();
+        //     }
+        // };
 
         SphereScaleFromTo = SphereScale;
     }

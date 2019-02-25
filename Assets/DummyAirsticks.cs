@@ -34,6 +34,8 @@ public class DummyAirsticks : MonoBehaviour {
     [Range(-1, 1)]
     public float RightZPosition = 0;
 
+    public int Velocity = 127;
+
     void Update () {
         if (Input.GetKeyDown(KeyCode.A))
             DummyEnabled = !DummyEnabled;
@@ -47,13 +49,13 @@ public class DummyAirsticks : MonoBehaviour {
             AirSticks.Right.Position = new Vector3(RightXPosition, RightYPosition, RightZPosition);
 
             if (Input.GetKeyDown(KeyCode.LeftArrow))
-                AirSticks.Left.TriggerNoteOn();
+                AirSticks.Left.NoteOn.RunOnMain(Velocity);
             if (Input.GetKeyDown(KeyCode.RightArrow))
-                AirSticks.Right.TriggerNoteOn();
+                AirSticks.Right.NoteOn.RunOnMain(Velocity);
             if (Input.GetKeyUp(KeyCode.LeftArrow))
-                AirSticks.Left.TriggerNoteOff();
+                AirSticks.Left.NoteOff.RunOnMain();
             if (Input.GetKeyUp(KeyCode.RightArrow))
-                AirSticks.Right.TriggerNoteOff();
+                AirSticks.Right.NoteOff.RunOnMain();
         }
 	}
 }

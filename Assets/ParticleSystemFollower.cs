@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Eidetic.Unity.Utility;
 
 [RequireComponent(typeof(ParticleSystem))]
 public class ParticleSystemFollower : MonoBehaviour
@@ -20,8 +21,11 @@ public class ParticleSystemFollower : MonoBehaviour
                 {
                     var theseParticles = new ParticleSystem.Particle[system.particleCount];
                     system.GetParticles(theseParticles);
-					for (int i = 0; i < theseParticles.Length; i++)
-						theseParticles[i].position += system.transform.position;
+					for (int i = 0; i < theseParticles.Length; i++){
+                        theseParticles[i].position = theseParticles[i].position
+                            .Multiply(system.transform.localScale)
+                            .Add(system.transform.position);
+                    }
                     return theseParticles;
                 }).ToArray(),
             ParticleCount

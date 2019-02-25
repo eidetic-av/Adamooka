@@ -29,8 +29,16 @@ namespace Eidetic.Unity.Utility
         }
         public static void SetSimulationSpeed(this ParticleSystem particleSystem, float speed)
         {
+            Debug.Log("setting sim speed: " + speed);
             var mainModule = particleSystem.main;
             mainModule.simulationSpeed = speed;
         }
+
+        //Vector extensions
+        public static Vector3 Multiply(this Vector3 a, Vector3 b) => 
+            new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+        public static Vector3 Add(this Vector3 a, Vector3 b) => 
+            new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+
     }
 }

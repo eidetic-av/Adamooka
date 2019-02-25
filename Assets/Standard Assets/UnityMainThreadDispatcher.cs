@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,7 +24,9 @@ using System;
 /// <summary>
 /// A thread-safe class which holds a queue with actions to execute on the next Update() method. It can be used to make calls to the main thread for
 /// things such as UI Manipulation in Unity. It was developed for use in combination with the Firebase Unity plugin, which uses separate threads for event handling
-/// </summary>
+/// 
+/// Additions by Eidetic 2019
+///  </summary>
 public class UnityMainThreadDispatcher : MonoBehaviour
 {
 
@@ -68,6 +71,20 @@ public class UnityMainThreadDispatcher : MonoBehaviour
         yield return null;
     }
 
+    /// <summary>
+    /// Locks the queue and adds the Action to the queue
+    /// </summary>
+    /// <param name="action">function that will be executed from the main thread.</param>
+    public void Enqueue<T>(Action<T> action, T parameter)
+    {
+        Enqueue(ActionWrapper(action, parameter));
+    }
+    IEnumerator ActionWrapper<T>(Action<T> a, T parameter)
+    {
+        a(parameter);
+        yield return null;
+    }
+
 
     private static UnityMainThreadDispatcher _instance = null;
 
@@ -100,5 +117,11 @@ public class UnityMainThreadDispatcher : MonoBehaviour
         _instance = null;
     }
 
+}
 
+public static class ThreadExtensions {
+    public static void RunOnMain(this Action action) => 
+        UnityMainThreadDispatcher.Instance().Enqueue(action);
+    public static void RunOnMain<T>(this Action<T> action, T parameter) =>
+        UnityMainThreadDispatcher.Instance().Enqueue(action, parameter);
 }

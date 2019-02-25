@@ -161,16 +161,16 @@ public class MeshTools : MonoBehaviour
         
         //Desmond
 
-        AirSticks.Right.NoteOn += ExplodeA;
-        AirSticks.Left.NoteOn += ExplodeB;
+        // AirSticks.Right.NoteOn += ExplodeA;
+        // AirSticks.Left.NoteOn += ExplodeB;
 
         //Gran Related cuts
 
-        AirSticks.Right.NoteOn += () => GranRelatedOn(AirSticks.Hand.Right);
-        AirSticks.Left.NoteOn += () => GranRelatedOn(AirSticks.Hand.Left);
+        // AirSticks.Right.NoteOn += () => GranRelatedOn(AirSticks.Hand.Right);
+        // AirSticks.Left.NoteOn += () => GranRelatedOn(AirSticks.Hand.Left);
 
-        AirSticks.Right.NoteOff += GranRelatedOff;
-        AirSticks.Left.NoteOff += GranRelatedOff;
+        // AirSticks.Right.NoteOff += GranRelatedOff;
+        // AirSticks.Left.NoteOff += GranRelatedOff;
 
         Iridescence = gameObject.GetComponent<IridescenceController>();
 

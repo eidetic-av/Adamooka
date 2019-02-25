@@ -6,7 +6,7 @@ namespace Eidetic.Utility
     /// <summary>
     /// Utility extension methods for C# classes in System library.
     /// </summary>
-    public static class ExtensionMethods
+    public static partial class ExtensionMethods
     {
         /// <summary>
         /// Map a double from one range to another.

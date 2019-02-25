@@ -35,8 +35,8 @@ public class RodParticleController : MonoBehaviour
     void Start()
     {
         Instance = this;
-        AirSticks.Right.NoteOn += () => EmissionEnabled = true;
-        AirSticks.Right.NoteOff += () => EmissionEnabled = false;
+        // AirSticks.Right.NoteOn += () => EmissionEnabled = true;
+        // AirSticks.Right.NoteOff += () => EmissionEnabled = false;
     }
 
     void Update()
