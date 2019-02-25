@@ -29,7 +29,6 @@ namespace Eidetic.Unity.Utility
         }
         public static void SetSimulationSpeed(this ParticleSystem particleSystem, float speed)
         {
-            Debug.Log("setting sim speed: " + speed);
             var mainModule = particleSystem.main;
             mainModule.simulationSpeed = speed;
         }

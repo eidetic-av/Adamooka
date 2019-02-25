@@ -21,17 +21,25 @@ namespace Eidetic.Andamooka
         public class Stick
         {
             public Hand Hand;
-            
+
             public Action<int> NoteOn { get; set; }
             public Action NoteOff { get; set; }
+            public float Velocity = 0; // Normalised
+            public bool NoteIsOn = false;
+
+            public Stick()
+            {
+                NoteOn += (velocity) => { NoteIsOn = true; Velocity = (velocity / 127f); };
+                NoteOff += () => { NoteIsOn = false; };
+            }
 
             public float GetControlValue<T>(T controlType) where T : struct, IConvertible
             {
-                Enum controlTypeEnum = controlType as Enum; 
+                Enum controlTypeEnum = controlType as Enum;
                 if (controlTypeEnum == null) return 0;
 
                 var controlTypeName = controlTypeEnum.ToString();
-                
+
                 switch (controlTypeName)
                 {
                     case ("PositionX"): return Position.x;
@@ -50,8 +58,6 @@ namespace Eidetic.Andamooka
             public bool FlipZ = true;
 
             public float JoystickY;
-
-            public bool NoteIsOn { get; private set; } = false;
 
             public bool Button4 { get; private set; } = false;
 
@@ -82,9 +88,6 @@ namespace Eidetic.Andamooka
 
             public bool Trigger = false;
 
-            // Normalised velocity (0-1)
-            public float Velocity { get; set; }
-
             public void Button4On()
             {
                 Button4 = true;
@@ -94,6 +97,12 @@ namespace Eidetic.Andamooka
             {
                 Button4 = false;
             }
+        }
+        public static Hand GetOtherHand(this Hand hand){
+            if (hand.Equals(Hand.Left))
+                return Hand.Right;
+            else
+                return Hand.Left;
         }
     }
 }

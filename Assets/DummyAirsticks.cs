@@ -34,6 +34,7 @@ public class DummyAirsticks : MonoBehaviour {
     [Range(-1, 1)]
     public float RightZPosition = 0;
 
+    [Range(0, 127)]
     public int Velocity = 127;
 
     void Update () {

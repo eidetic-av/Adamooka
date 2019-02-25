@@ -56,6 +56,7 @@ namespace Eidetic.Andamooka
         {
             public MotionMapping(Hand hand) : base(hand) { }
             public MotionMapping(Hand hand, float minimum, float maximum) : base(hand, minimum, maximum) { }
+            
         }
 
         [System.Serializable]

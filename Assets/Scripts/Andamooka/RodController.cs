@@ -23,9 +23,24 @@ public class RodController : RuntimeController
         = new SerializableVector3(0, 0, 0);
 
     public AirSticks.VelocityMapping VelocityToSpawnSpeed { get; set; }
-        = new AirSticks.VelocityMapping(AirSticks.Hand.Both);
-    public AirSticks.MotionMapping MotionToHandScale { get; set; }
-        = new AirSticks.MotionMapping(AirSticks.Hand.Both);
+        = new AirSticks.VelocityMapping(AirSticks.Hand.Both)
+        {
+            MinimumValue = 1f,
+            MaximumValue = 1f
+        };
+    public AirSticks.MotionMapping HandScale { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Both)
+        {
+            Input = AirSticks.ControlType.Motion.RotationX,
+            MinimumValue = 0.2f,
+            MaximumValue = 1.5f
+        };
+    public AirSticks.VelocityMapping VelocityToScale { get; set; }
+        = new AirSticks.VelocityMapping(AirSticks.Hand.Both)
+        {
+            MinimumValue = 0.5f,
+            MaximumValue = 1f
+        };
 
     //
     // Initialisation stuff
@@ -45,8 +60,10 @@ public class RodController : RuntimeController
         AirSticks.Right.NoteOn += (velocity)
             => Spawn(AirSticks.Hand.Right, velocity);
 
-        // AirSticks.Left.NoteOff += StopLeft;
-        // AirSticks.Right.NoteOff += StopRight;
+        // AirSticks.Left.NoteOff += ()
+        //     => Shrink(AirSticks.Hand.Left, NoteOffShrinkRate, HandScale.MinimumValue);
+        // AirSticks.Right.NoteOff += ()
+        //     => Shrink(AirSticks.Hand.Right, NoteOffShrinkRate, HandScale.MinimumValue);
     }
 
     //
@@ -61,10 +78,20 @@ public class RodController : RuntimeController
             RightHand.transform.position =
                 AirSticks.Right.Position * PositionScale + RightHandOffset;
 
+            // if (AirSticks.Left.NoteIsOn || AirSticks.Right.NoteIsOn)
+            // {
             LeftHand.transform.localScale = Vector3.one *
-                MotionToHandScale.GetOutput(AirSticks.Hand.Left);
+                HandScale.GetOutput(AirSticks.Hand.Left);
             RightHand.transform.localScale = Vector3.one *
-                MotionToHandScale.GetOutput(AirSticks.Hand.Right);
+                HandScale.GetOutput(AirSticks.Hand.Right);
+            // }
+
+            // Velocity to scale mapping
+            LeftHand.transform.localScale = LeftHand.transform.localScale
+                .Multiply(Vector3.one * AirSticks.Left.Velocity.Map(VelocityToScale));
+                
+            RightHand.transform.localScale = RightHand.transform.localScale
+                .Multiply(Vector3.one * AirSticks.Right.Velocity.Map(VelocityToScale));
 
             // This works but need to use a different noise
             // so the particles don't drift away from each other
@@ -98,22 +125,40 @@ public class RodController : RuntimeController
     void Spawn(AirSticks.Hand hand, int velocity)
     {
         GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
-        
         GetSystem(hand).Restart();
     }
 
-    void StopLeft() => StartCoroutine(RemoveParticlesRoutine(LeftHand));
-    void StopRight() => StartCoroutine(RemoveParticlesRoutine(RightHand));
+    // public float NoteOffShrinkRate { get; set; } = 20f;
 
-    IEnumerator RemoveParticlesRoutine(ParticleSystem system, float interval = 0.01f, int count = 5)
-    {
-        while (system.particleCount > 0)
-        {
-            var particles = new ParticleSystem.Particle[system.particleCount];
-            particles.ToList().RemoveRange(0, count);
-            system.SetParticles(particles.ToArray(), system.particleCount - count);
-            yield return new WaitForSeconds(interval);
-        }
-        system.Stop();
-    }
+    // public bool ConstantEmission { get; set; } = false;
+
+    // void Shrink(AirSticks.Hand hand, float shrinkRate, float minimumScale = 0f) =>
+    //     StartCoroutine(ShrinkRoutine(hand, shrinkRate, minimumScale));
+
+    // IEnumerator ShrinkRoutine(AirSticks.Hand hand, float shrinkRate, float minimumScale = 0f)
+    // {
+    //     var system = GetSystem(hand);
+    //     while (system.transform.localScale.x > (minimumScale + .005f))
+    //     {
+    //         var scale = system.transform.localScale;
+    //         scale -= (Vector3.one * shrinkRate * Time.deltaTime);
+    //         system.transform.localScale = scale;
+    //         yield return null;
+    //     }
+    //     system.transform.localScale = Vector3.one * minimumScale;
+
+    //     if (!ConstantEmission)
+    //     {
+    //         var otherSystem = GetSystem(hand.GetOtherHand());
+    //         if (otherSystem.transform.localScale == Vector3.one * minimumScale)
+    //         {
+    //             // if both systems are shrunk, stop the simulations
+    //             system.Stop();
+    //             system.Clear();
+    //             otherSystem.Stop();
+    //             otherSystem.Clear();
+    //             Ribbon.Clear();
+    //         }
+    //     }
+    // }
 }
