@@ -22,8 +22,9 @@ public abstract class MidiTriggerController : RuntimeController
         UnityMainThreadDispatcher.Instance().Enqueue(() =>
         {
             if (!noteOnMessage.Channel.Equals(MidiChannel)) return;
-            Triggers.SingleOrDefault(trigger =>
-                    trigger.Note.Equals(noteOnMessage.Pitch))?.Action.Invoke();
+            Triggers.Where(trigger =>
+                        trigger.Note.Equals(noteOnMessage.Pitch))?.ToList()
+                    .ForEach(trigger => trigger.Action.Invoke());
         });
     }
 

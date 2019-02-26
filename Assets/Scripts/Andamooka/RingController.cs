@@ -44,32 +44,76 @@ public class RingController : MidiTriggerController
         CircleController = GameObject.Find("NoiseCircleController")
             .GetComponent<NoiseCircleController>();
         Triggers = new List<MidiTrigger>()
-    {
-        new MidiTrigger(Pitch.F2, KickA),
-        new MidiTrigger(Pitch.ASharp2, KickB),
-        new MidiTrigger(Pitch.G2, SnareA),
-        new MidiTrigger(Pitch.CSharp3, SnareB),
-        new MidiTrigger(Pitch.A2, HiHat)
-    };
+        {
+            new MidiTrigger(Pitch.E2, KickA),
+            new MidiTrigger(Pitch.ASharp2, KickB),
+            new MidiTrigger(Pitch.C3, SnareA),
+            new MidiTrigger(Pitch.D3, SnareB),
+            new MidiTrigger(Pitch.GSharp2, HiHat)
+        };
     }
 
-    [RuntimeInspectorButton("0: KickA", false, ButtonVisibility.InitializedObjects)]
+    bool Active = false;
+    [RuntimeInspectorButton("Toggle Active", false, ButtonVisibility.InitializedObjects)]
+    public void ToggleActive()
+    {
+        Active = !Active;
+        CircleController.ParticleSystems.ForEach(s => s.gameObject.SetActive(Active));
+        CircleController.StartSystem = true;
+    }
+
+    [RuntimeInspectorButton("0: Kick A", false, ButtonVisibility.InitializedObjects)]
     public void KickA() =>
         CircleController.Triggers[4] = true;
 
-    [RuntimeInspectorButton("1: KickB", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("1: Kick B", false, ButtonVisibility.InitializedObjects)]
     public void KickB() =>
         CircleController.Triggers[1] = true;
 
-    [RuntimeInspectorButton("2: SnareA", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("2: Snare A", false, ButtonVisibility.InitializedObjects)]
     public void SnareA() =>
         CircleController.Triggers[6] = true;
 
-    [RuntimeInspectorButton("3: SnareB", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("3: Snare B", false, ButtonVisibility.InitializedObjects)]
     public void SnareB() =>
         CircleController.Triggers[5] = true;
 
-    [RuntimeInspectorButton("4: HiHat", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("4: Hi-Hat", false, ButtonVisibility.InitializedObjects)]
     public void HiHat() =>
         CircleController.Triggers[2] = true;
+
+    //
+    // Drum synth, not sure if we are using this:
+    //
+    public bool DrumSynthActive = false;
+
+    [RuntimeInspectorButton("5: Drum synth kick", false, ButtonVisibility.InitializedObjects)]
+    public void DrumSynthKick(int velocity)
+    {
+        if (DrumSynthActive)
+            CircleController.Triggers[7] = true;
+    }
+
+    [RuntimeInspectorButton("6: Drum synth snare", false, ButtonVisibility.InitializedObjects)]
+    public void DrumSynthSnare(int velocity)
+    {
+        if (DrumSynthActive)
+            CircleController.Triggers[8] = true;
+    }
+
+    public void ToggleDrumSynth()
+    {
+        if (!DrumSynthActive)
+        {
+            AirSticks.Left.NoteOn += DrumSynthKick;
+            AirSticks.Right.NoteOn += DrumSynthSnare;
+            DrumSynthActive = true;
+        }
+        else
+        {
+            AirSticks.Left.NoteOn -= DrumSynthKick;
+            AirSticks.Right.NoteOn -= DrumSynthSnare;
+            DrumSynthActive = false;
+        }
+    }
 }

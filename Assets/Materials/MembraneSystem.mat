@@ -32,7 +32,7 @@ Material:
     - _InvFade: 1
     - _Thickness: 5
     m_Colors:
-    - _Color: {r: 0.98397076, g: 0.98397076, b: 0.98397076, a: 1}
+    - _Color: {r: 0.9763012, g: 0.9763012, b: 0.9763012, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _TintColor: {r: 1, g: 1, b: 1, a: 1}

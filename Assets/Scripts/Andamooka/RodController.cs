@@ -15,7 +15,7 @@ public class RodController : RuntimeController
     //
     // Runtime control properties
     //
-    public bool ControlWithAirSticks { get; set; } = true;
+    public bool AirSticksControlActive { get; set; } = false;
     public SerializableVector3 PositionScale { get; set; }
         = new SerializableVector3(1, 1, 1);
     public SerializableVector3 LeftHandOffset { get; set; }
@@ -82,7 +82,7 @@ public class RodController : RuntimeController
     //
     void Update()
     {
-        if (ControlWithAirSticks)
+        if (ConstantEmission || AirSticks.Left.NoteIsOn || AirSticks.Right.NoteIsOn)
         {
             LeftHand.transform.position =
                 AirSticks.Left.Position * PositionScale + LeftHandOffset;
@@ -104,8 +104,6 @@ public class RodController : RuntimeController
             // Noise mapping
             ApplyNoiseLeft();
             ApplyNoiseRight();
-
-            // Final scale mapping if the system is 'noteoff'
         }
     }
 
@@ -115,8 +113,11 @@ public class RodController : RuntimeController
 
     void Spawn(AirSticks.Hand hand, int velocity)
     {
-        GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
-        GetSystem(hand).Restart();
+        if (AirSticksControlActive)
+        {
+            GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
+            GetSystem(hand).Restart();
+        }
     }
 
     void TurnOff()
