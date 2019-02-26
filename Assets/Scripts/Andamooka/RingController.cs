@@ -17,7 +17,21 @@ public class RingController : RuntimeController
     // Runtime control properties
     //
     public bool ControlWithAirSticks { get; set; } = true;
-    public Channel MidiChannel {get; set;} = Channel.Channel9;
+    float ringScale = 0.8f;
+    public float RingScale
+    {
+        get
+        {
+            return ringScale;
+        }
+        set
+        {
+            ringScale = value;
+            CircleController.InitialRadius = ringScale;
+            CircleController.CurrentMaxRadius = ringScale;
+        }
+    }
+    public Channel MidiChannel { get; set; } = Channel.Channel9;
     public List<MidiTrigger> Triggers { get; set; }
 
     //
@@ -40,7 +54,8 @@ public class RingController : RuntimeController
     }
 
     void RouteRingMidi(NoteOnMessage noteOnMessage) =>
-        UnityMainThreadDispatcher.Instance().Enqueue(() => {
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
             if (!ControlWithAirSticks) return;
             if (!noteOnMessage.Channel.Equals(MidiChannel)) return;
             Triggers.SingleOrDefault(trigger =>
@@ -71,7 +86,10 @@ public class RingController : RuntimeController
     public class MidiTrigger
     {
         public Pitch Note;
+
+        [NonSerialized]
         public Action Action;
+        
         public MidiTrigger(Pitch note, Action action)
         {
             Note = note;

@@ -33,7 +33,7 @@ public class RodController : RuntimeController
         {
             Input = AirSticks.ControlType.Motion.RotationX,
             MinimumValue = 0.2f,
-            MaximumValue = 1.5f
+            MaximumValue = 1f
         };
     public AirSticks.VelocityMapping VelocityToScale { get; set; }
         = new AirSticks.VelocityMapping(AirSticks.Hand.Both)
@@ -46,8 +46,8 @@ public class RodController : RuntimeController
         {
             Input = AirSticks.ControlType.Motion.PositionY,
             MinimumValue = 0f,
-            MaximumValue = 1f,
-            FlipAxis = true
+            MaximumValue = 0.05f,
+            ClampInputRange = true
         };
 
     //
@@ -97,11 +97,13 @@ public class RodController : RuntimeController
             // Velocity to scale mapping
             LeftHand.transform.localScale = LeftHand.transform.localScale
                 .Multiply(Vector3.one * AirSticks.Left.Velocity.Map(VelocityToScale));
-                
+
             RightHand.transform.localScale = RightHand.transform.localScale
                 .Multiply(Vector3.one * AirSticks.Right.Velocity.Map(VelocityToScale));
 
             // Noise mapping
+            ApplyNoiseLeft();
+            ApplyNoiseRight();
         }
     }
 
@@ -128,6 +130,77 @@ public class RodController : RuntimeController
     {
         GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
         GetSystem(hand).Restart();
+    }
+
+    Vector3[] LeftPositionsPreNoise;
+    Vector3[] LastLeftRandomVectors;
+    Vector3[] RightPositionsPreNoise;
+    Vector3[] LastRightRandomVectors;
+
+    void ApplyNoiseLeft()
+    {
+        var multiplier = HandNoise.GetOutput(AirSticks.Hand.Left);
+        var system = GetSystem(AirSticks.Hand.Left);
+        var particles = new ParticleSystem.Particle[system.particleCount];
+        system.GetParticles(particles);
+
+        // Remove the noise of the previous frame
+        // Otherwise the particles lose their shape
+        LeftPositionsPreNoise = particles.Select((particle, i) =>
+        {
+            if (LastLeftRandomVectors != null && i < LastLeftRandomVectors.Length)
+                particle.position -= LastLeftRandomVectors[i];
+            return particle.position;
+        }).ToArray();
+
+        var randomVectors = new Vector3[system.particleCount];
+
+        for (int i = 0; i < particles.Length; i++)
+        {
+            randomVectors[i] = GenerateRandomVector3(multiplier) * HandScale.GetOutput(AirSticks.Hand.Left);
+            particles[i].position = LeftPositionsPreNoise[i] + randomVectors[i];
+        }
+
+        LastLeftRandomVectors = randomVectors;
+
+        system.SetParticles(particles, particles.Length);
+    }
+    void ApplyNoiseRight()
+    {
+        var multiplier = HandNoise.GetOutput(AirSticks.Hand.Right);
+        var system = GetSystem(AirSticks.Hand.Right);
+        var particles = new ParticleSystem.Particle[system.particleCount];
+        system.GetParticles(particles);
+
+        // Remove the noise of the previous frame
+        // Otherwise the particles lose their shape
+        RightPositionsPreNoise = particles.Select((particle, i) =>
+        {
+            if (LastRightRandomVectors != null && i < LastRightRandomVectors.Length)
+                particle.position -= LastRightRandomVectors[i];
+            return particle.position;
+        }).ToArray();
+
+        var randomVectors = new Vector3[system.particleCount];
+
+        for (int i = 0; i < particles.Length; i++)
+        {
+            randomVectors[i] = GenerateRandomVector3(multiplier) * HandScale.GetOutput(AirSticks.Hand.Right);
+            particles[i].position = RightPositionsPreNoise[i] + randomVectors[i];
+        }
+
+        LastRightRandomVectors = randomVectors;
+
+        system.SetParticles(particles, particles.Length);
+    }
+
+    Vector3 GenerateRandomVector3(float multiplier = 1f)
+    {
+        return new Vector3(
+            Random.Range(-1f, 1f) * multiplier,
+            Random.Range(-1f, 1f) * multiplier,
+            Random.Range(-1f, 1f) * multiplier
+        );
     }
 
     // public float NoteOffShrinkRate { get; set; } = 20f;

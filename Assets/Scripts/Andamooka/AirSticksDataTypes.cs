@@ -32,8 +32,10 @@ namespace Eidetic.Andamooka
         [System.Serializable]
         public abstract class AirSticksMapping<T> : Mapping<T> where T : struct, IConvertible
         {
-            public Hand Hand {get; set;}
-            public bool FlipAxis {get; set;}
+            public Hand Hand { get; set; }
+            public bool FlipAxis { get; set; }
+            public SerializableVector2 InputRange { get; set; } = new SerializableVector2(0f, 1f);
+            public bool ClampInputRange { get; set; } = false;
             public AirSticksMapping(Hand hand)
             {
                 Hand = hand;
@@ -47,12 +49,31 @@ namespace Eidetic.Andamooka
             // all this below is too convoluted... needs to be refactored
             public override float Output => GetOutput(Hand);
             public override float GetInputValue() => GetInputValue(Hand);
-            public float GetInputValue(Hand hand) =>
-                GetStick(hand).GetControlValue<T>(Input);
-            public float GetOutput(Hand hand) { 
-                var value = GetInputValue(hand).Map(MinimumValue, MaximumValue);
+            public float GetInputValue(Hand hand)
+            {
+                var value = GetStick(hand).GetControlValue<T>(Input);
+                if (ClampInputRange)
+                    value = Clamp(value, InputRange);
                 if (FlipAxis) value *= -1;
                 return value;
+            }
+            public float GetOutput(Hand hand)
+            {
+                var value = GetInputValue(hand);
+                value = Map(value, InputRange, MinimumValue, MaximumValue);
+                return value;
+            }
+
+            public static float Map(float input, SerializableVector2 inputRange, float minimumOutput, float maximumOutput)
+            {
+                return ((input - inputRange.x) / (inputRange.y - inputRange.x)) * (maximumOutput - minimumOutput) + minimumOutput;
+            }
+
+            public static float Clamp(float input, SerializableVector2 range)
+            {
+                if (input.CompareTo(range.x) < 0) return range.x;
+                else if (input.CompareTo(range.y) > 0) return range.y;
+                else return input;
             }
         }
 
@@ -61,7 +82,7 @@ namespace Eidetic.Andamooka
         {
             public MotionMapping(Hand hand) : base(hand) { }
             public MotionMapping(Hand hand, float minimum, float maximum) : base(hand, minimum, maximum) { }
-            
+
         }
 
         [System.Serializable]
