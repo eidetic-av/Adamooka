@@ -32,7 +32,8 @@ namespace Eidetic.Andamooka
         [System.Serializable]
         public abstract class AirSticksMapping<T> : Mapping<T> where T : struct, IConvertible
         {
-            public Hand Hand;
+            public Hand Hand {get; set;}
+            public bool FlipAxis {get; set;}
             public AirSticksMapping(Hand hand)
             {
                 Hand = hand;
@@ -43,12 +44,16 @@ namespace Eidetic.Andamooka
                 MinimumValue = minimum;
                 MaximumValue = maximum;
             }
-            // this Hand business seems wrong
+            // all this below is too convoluted... needs to be refactored
             public override float Output => GetOutput(Hand);
             public override float GetInputValue() => GetInputValue(Hand);
             public float GetInputValue(Hand hand) =>
                 GetStick(hand).GetControlValue<T>(Input);
-            public float GetOutput(Hand hand) => GetInputValue(hand).Map(MinimumValue, MaximumValue);
+            public float GetOutput(Hand hand) { 
+                var value = GetInputValue(hand).Map(MinimumValue, MaximumValue);
+                if (FlipAxis) value *= -1;
+                return value;
+            }
         }
 
         [System.Serializable]

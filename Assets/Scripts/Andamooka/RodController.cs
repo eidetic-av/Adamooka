@@ -41,6 +41,14 @@ public class RodController : RuntimeController
             MinimumValue = 0.5f,
             MaximumValue = 1f
         };
+    public AirSticks.MotionMapping HandNoise { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Both)
+        {
+            Input = AirSticks.ControlType.Motion.PositionY,
+            MinimumValue = 0f,
+            MaximumValue = 1f,
+            FlipAxis = true
+        };
 
     //
     // Initialisation stuff
@@ -93,13 +101,7 @@ public class RodController : RuntimeController
             RightHand.transform.localScale = RightHand.transform.localScale
                 .Multiply(Vector3.one * AirSticks.Right.Velocity.Map(VelocityToScale));
 
-            // This works but need to use a different noise
-            // so the particles don't drift away from each other
-
-            // var leftNoise = LeftHand.noise;
-            // leftNoise.strength = NoiseMappingLeft.Output;
-            // var rightNoise = RightHand.noise;
-            // rightNoise.strength = NoiseMappingRight.Output;
+            // Noise mapping
         }
     }
 
