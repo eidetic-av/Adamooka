@@ -19,13 +19,13 @@ public class RingController : RuntimeController
     //
     // Initialisation
     //
-    ParticleSystem InnerRing;
-    ParticleSystem Membrane;
+    ParticleSystem WhiteSystem;
+    ParticleSystem ColourSystem;
     void Start()
     {
-        InnerRing = GameObject.Find("NoiseCircleSystem")
+        WhiteSystem = GameObject.Find("WhiteSystem")
             .GetComponent<ParticleSystem>();
-        Membrane = GameObject.Find("MembraneSystem")
+        ColourSystem = GameObject.Find("ColourSystem")
             .GetComponent<ParticleSystem>();
     }
 

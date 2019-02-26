@@ -28,19 +28,14 @@ public class RuntimeEditorInputControl : MonoBehaviour
 
     void Update()
     {
-        // Interaction only through the modifier
-        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-        {
-            // Toggle inspector
-            if (Input.GetKeyDown(KeyCode.I))
-                Inspector.gameObject.SetActive(Active = !Active);
+        // Toggle inspector
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.I))
+            Inspector.gameObject.SetActive(Active = !Active);
 
-            // Set inspector focus to the index(+1) selected with alpha keys
-            else if (Active && Input.anyKeyDown)
-                FocusedObjects
-                    .FirstOrDefault(o =>
-                        Input.GetKeyDown((FocusedObjects.IndexOf(o) + 1).ToString()))?
-                    .FocusInRuntimeInspector();
-        }
+        // Set inspector focus to the index(+1) selected with alpha keys
+        else if (Active && Input.anyKeyDown)
+            FocusedObjects.FirstOrDefault(o =>
+                    Input.GetKeyDown((FocusedObjects.IndexOf(o) + 1).ToString()))?
+                .FocusInRuntimeInspector();
     }
 }

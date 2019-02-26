@@ -5,7 +5,7 @@ using UnityEngine;
 public class NoiseCircleController : MonoBehaviour
 {
     public static NoiseCircleController Instance;
-    public ParticleSystem ParticleSystem;
+    public List<ParticleSystem> ParticleSystems;
     public bool StartSystem = false;
     public float StartSystemLength = 5f;
     private float StartSystemTime;
@@ -56,127 +56,135 @@ public class NoiseCircleController : MonoBehaviour
 
     void Update()
     {
-        if (StartSystem) {
-            StartingSystem = true;
-            StartSystemTime = Time.time;
-            ParticleSystem.Emit(ParticleCount);
-            StartSystem = false;
-        }
-        if (StartingSystem) {
-            var position = (Time.time - StartSystemTime) / StartSystemLength;
-            if (position >= 1) {
-                position = 1;
-                StartingSystem = false;
-            }
-            var renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
-            renderer.trailMaterial.SetColor("_Color", new Color(position, position, position, 1));
-        }
-        
-        if (StopSystem) {
-            StoppingSystem = true;
-            StopSystemTime = Time.time;
-            StopSystem = false;
-        }
-        if (StoppingSystem) {
-            var position = (Time.time - StopSystemTime) / StopSystemLength;
-            if (position >= 1) {
-                position = 1;
-                StoppingSystem = false;
-            }
-            var renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
-            renderer.trailMaterial.SetColor("_Color", new Color(1 - position, 1 - position, 1 - position, 1));
-        }
-
         CheckVariables();
-
         UpdateHitPointVaraibles();
         UpdateHitPointEnvelopes();
 
-        var main = ParticleSystem.main;
-        main.maxParticles = ParticleCount;
-
-        var particles = new ParticleSystem.Particle[ParticleCount];
-
-        ParticleSystem.GetParticles(particles);
-
-        // if (ParticleSystem.particleCount != ParticleCount)
-        // {
-        //     ParticleSystem.Clear();
-        //     ParticleSystem.Emit(ParticleCount);
-        // }
-
-        var subAngle = (2 * Mathf.PI) / ParticleCount;
-
-        CurrentMaxRadius = InitialRadius;
-
-        for (int i = 0; i < ParticleCount; i++)
+        ParticleSystems.ForEach(particleSystem =>
         {
-            var angle = subAngle * i;
-            var x = Mathf.Cos(angle) * InitialRadius;
-            var y = Mathf.Sin(angle) * InitialRadius;
-
-            var curveOffset = 0f;
-
-            foreach (var hitPoint in HitPoints)
+            if (StartSystem)
             {
-                var weight = hitPoint.WeightCurve.Evaluate((float)i / ParticleCount);
-                curveOffset += hitPoint.CurveIntensity * weight;
-
-                // Apply individual hit noise
-                // Create the value
-                var newNoiseValue = (Random.value * 2) - 1;
-                hitPoint.NoiseValues.y = (newNoiseValue * (hitPoint.CurveIntensity * weight)) * hitPoint.NoiseIntensity;
-                // Damp it
-                hitPoint.NoiseValues.x =
-                    hitPoint.NoiseValues.x + (hitPoint.NoiseValues.y - hitPoint.NoiseValues.x) / hitPoint.NoiseDamping;
-
-                // Add it to the curve offset
-                curveOffset += hitPoint.NoiseValues.x;
+                StartingSystem = true;
+                StartSystemTime = Time.time;
+                ParticleSystems.ForEach(ps => ps.Emit(ParticleCount));
+                StartSystem = false;
+            }
+            if (StartingSystem)
+            {
+                var position = (Time.time - StartSystemTime) / StartSystemLength;
+                if (position >= 1)
+                {
+                    position = 1;
+                    StartingSystem = false;
+                }
+                var renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
+                renderer.trailMaterial.SetColor("_Color", new Color(position, position, position, 1));
             }
 
-            var pos = particles[i].position = new Vector2(x + (x * curveOffset), y + (y * curveOffset));
-
-            var radius = GetDistanceBetweenPoints(0, 0, pos.x, pos.y);
-            if (radius > CurrentMaxRadius) CurrentMaxRadius = radius;
-
-            // Apply base circle noise
-            if (EnableBaseNoise) {
-                // Create a new noise value between -1 and 1
-                var newNoiseValue = (Random.value * 2) - 1;
-                BaseNoiseValues[i].y = newNoiseValue;
-
-                // Damp it's movement
-                BaseNoiseValues[i].x =
-                    BaseNoiseValues[i].x + (BaseNoiseValues[i].y - BaseNoiseValues[i].x) / BaseNoiseDamping;
-
-                var noisyX = pos.x + ((BaseNoiseValues[i].x * pos.x) * BaseNoiseIntensity);
-                var noisyY = pos.y + ((BaseNoiseValues[i].x * pos.y) * BaseNoiseIntensity);
-
-                pos = particles[i].position = new Vector2(noisyX, noisyY);
+            if (StopSystem)
+            {
+                StoppingSystem = true;
+                StopSystemTime = Time.time;
+                StopSystem = false;
+            }
+            if (StoppingSystem)
+            {
+                var position = (Time.time - StopSystemTime) / StopSystemLength;
+                if (position >= 1)
+                {
+                    position = 1;
+                    StoppingSystem = false;
+                }
+                var renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
+                renderer.trailMaterial.SetColor("_Color", new Color(1 - position, 1 - position, 1 - position, 1));
             }
 
-            if (CloseCircle) {
-                if (i == ParticleCount - 1) {
-                    pos = particles[i].position = particles[i -1].position;
+            var main = particleSystem.main;
+            main.maxParticles = ParticleCount;
+
+            var particles = new ParticleSystem.Particle[ParticleCount];
+
+            particleSystem.GetParticles(particles);
+
+            var subAngle = (2 * Mathf.PI) / ParticleCount;
+
+            CurrentMaxRadius = InitialRadius;
+
+            for (int i = 0; i < ParticleCount; i++)
+            {
+                var angle = subAngle * i;
+                var x = Mathf.Cos(angle) * InitialRadius;
+                var y = Mathf.Sin(angle) * InitialRadius;
+
+                var curveOffset = 0f;
+
+                foreach (var hitPoint in HitPoints)
+                {
+                    var weight = hitPoint.WeightCurve.Evaluate((float)i / ParticleCount);
+                    curveOffset += hitPoint.CurveIntensity * weight;
+
+                    // Apply individual hit noise
+                    // Create the value
+                    var newNoiseValue = (Random.value * 2) - 1;
+                    hitPoint.NoiseValues.y = (newNoiseValue * (hitPoint.CurveIntensity * weight)) * hitPoint.NoiseIntensity;
+                    // Damp it
+                    hitPoint.NoiseValues.x =
+                        hitPoint.NoiseValues.x + (hitPoint.NoiseValues.y - hitPoint.NoiseValues.x) / hitPoint.NoiseDamping;
+
+                    // Add it to the curve offset
+                    curveOffset += hitPoint.NoiseValues.x;
+                }
+
+                var pos = particles[i].position = new Vector2(x + (x * curveOffset), y + (y * curveOffset));
+
+                var radius = GetDistanceBetweenPoints(0, 0, pos.x, pos.y);
+                if (radius > CurrentMaxRadius) CurrentMaxRadius = radius;
+
+                // Apply base circle noise
+                if (EnableBaseNoise)
+                {
+                    // Create a new noise value between -1 and 1
+                    var newNoiseValue = (Random.value * 2) - 1;
+                    BaseNoiseValues[i].y = newNoiseValue;
+
+                    // Damp it's movement
+                    BaseNoiseValues[i].x =
+                        BaseNoiseValues[i].x + (BaseNoiseValues[i].y - BaseNoiseValues[i].x) / BaseNoiseDamping;
+
+                    var noisyX = pos.x + ((BaseNoiseValues[i].x * pos.x) * BaseNoiseIntensity);
+                    var noisyY = pos.y + ((BaseNoiseValues[i].x * pos.y) * BaseNoiseIntensity);
+
+                    pos = particles[i].position = new Vector2(noisyX, noisyY);
+                }
+
+                if (CloseCircle)
+                {
+                    if (i == ParticleCount - 1)
+                    {
+                        pos = particles[i].position = particles[i - 1].position;
+                    }
                 }
             }
-        }
 
-        ParticleSystem.SetParticles(particles, ParticleCount);
+            particleSystem.SetParticles(particles, ParticleCount);
 
-        if (ExpandToRain) {
-            var renderer = ParticleSystem.GetComponent<ParticleSystemRenderer>();
-            renderer.maxParticleSize = 0.003f;
-            var trails = ParticleSystem.trails;
-            trails.widthOverTrail = new ParticleSystem.MinMaxCurve(trails.widthOverTrail.constant - 0.01f);
-            InitialRadius = InitialRadius + 0.05f;
-            if (InitialRadius > 4) {
-                ExpandToRain = false;
+            if (ExpandToRain)
+            {
+                var renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
+                renderer.maxParticleSize = 0.003f;
+                var trails = particleSystem.trails;
+                trails.widthOverTrail = new ParticleSystem.MinMaxCurve(trails.widthOverTrail.constant - 0.01f);
+                InitialRadius = InitialRadius + 0.05f;
+                if (InitialRadius > 4)
+                {
+                    ExpandToRain = false;
+                }
             }
-        }
+        });
     }
 
-    void CheckVariables() {
+    void CheckVariables()
+    {
         if (BaseNoiseDamping < 1) BaseNoiseDamping = 1;
     }
 
