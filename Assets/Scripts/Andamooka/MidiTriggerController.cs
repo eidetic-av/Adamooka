@@ -26,6 +26,24 @@ public abstract class MidiTriggerController : RuntimeController
                     trigger.Note.Equals(noteOnMessage.Pitch))?.Action.Invoke();
         });
     }
+
+    // Since the MidiTriggers don't serialize their Actions
+    // and we don't want to alter the actions at runtime anyway,
+    // they must be stored and reloaded when we load a preset from a file
+    Action[] LoadingActions;
+    public override void BeforeLoad()
+    {
+        LoadingActions = Triggers.Select(trigger => trigger.Action).ToArray();
+    }
+
+    public override void AfterLoad()
+    {
+        for (int i = 0; i < LoadingActions.Length; i++)
+        {
+            Triggers[i].Action = LoadingActions[i];
+        }
+        LoadingActions = null;
+    }
 }
 
 [System.Serializable]

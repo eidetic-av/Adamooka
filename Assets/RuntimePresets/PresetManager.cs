@@ -59,6 +59,8 @@ public class PresetManager : MonoBehaviour {
 	[RuntimeInspectorButton("Load Preset", false, ButtonVisibility.InitializedObjects)]
 	public void LoadPreset()
 	{
+		Controller.BeforeLoad();
+
 		var formatter = new BinaryFormatter();
 		var filePath = PresetPath + "/" +  PresetName + ".bin";
 				Debug.Log(filePath);
@@ -67,5 +69,7 @@ public class PresetManager : MonoBehaviour {
 		Controller.Unpack(formatter.Deserialize(file) as List<RuntimeControllerParameter>);
 		
 		file.Close();
+
+		Controller.AfterLoad();
 	}
 }

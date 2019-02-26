@@ -21,10 +21,10 @@ public class CueController : MidiTriggerController
 
 		Triggers = new List<MidiTrigger>()
 		{
-			new MidiTrigger(Pitch.G1, ConstantRods)
+			new MidiTrigger(Pitch.G1, ToggleConstantRods)
 		};
     }
 
-    [RuntimeInspectorButton("0: ConstantRods", false, ButtonVisibility.InitializedObjects)]
-    public void ConstantRods() => Rods.ConstantEmission = !Rods.ConstantEmission;
+    [RuntimeInspectorButton("0: ToggleConstantRods", false, ButtonVisibility.InitializedObjects)]
+    public void ToggleConstantRods() => Rods.ConstantEmission = !Rods.ConstantEmission;
 }

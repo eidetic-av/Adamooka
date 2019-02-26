@@ -34,6 +34,8 @@ namespace Eidetic.Unity.Runtime
                     .First());
             }
         }
+        public virtual void BeforeLoad() {}
+        public virtual void AfterLoad() {}
     }
 
     [System.Serializable]
