@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -50,6 +51,8 @@ public class RodController : RuntimeController
             ClampInputRange = true
         };
 
+    public bool ConstantEmission = false;
+
     //
     // Initialisation stuff
     //
@@ -68,10 +71,10 @@ public class RodController : RuntimeController
         AirSticks.Right.NoteOn += (velocity)
             => Spawn(AirSticks.Hand.Right, velocity);
 
-        // AirSticks.Left.NoteOff += ()
-        //     => Shrink(AirSticks.Hand.Left, NoteOffShrinkRate, HandScale.MinimumValue);
-        // AirSticks.Right.NoteOff += ()
-        //     => Shrink(AirSticks.Hand.Right, NoteOffShrinkRate, HandScale.MinimumValue);
+        AirSticks.Left.NoteOff += ()
+            => TurnOff();
+        AirSticks.Right.NoteOff += ()
+            => TurnOff();
     }
 
     //
@@ -86,24 +89,49 @@ public class RodController : RuntimeController
             RightHand.transform.position =
                 AirSticks.Right.Position * PositionScale + RightHandOffset;
 
-            // if (AirSticks.Left.NoteIsOn || AirSticks.Right.NoteIsOn)
-            // {
+            // Airstick to scale mapping
             LeftHand.transform.localScale = Vector3.one *
                 HandScale.GetOutput(AirSticks.Hand.Left);
             RightHand.transform.localScale = Vector3.one *
                 HandScale.GetOutput(AirSticks.Hand.Right);
-            // }
 
             // Velocity to scale mapping
             LeftHand.transform.localScale = LeftHand.transform.localScale
                 .Multiply(Vector3.one * AirSticks.Left.Velocity.Map(VelocityToScale));
-
             RightHand.transform.localScale = RightHand.transform.localScale
                 .Multiply(Vector3.one * AirSticks.Right.Velocity.Map(VelocityToScale));
 
             // Noise mapping
             ApplyNoiseLeft();
             ApplyNoiseRight();
+
+            // Final scale mapping if the system is 'noteoff'
+        }
+    }
+
+    //
+    // Actions
+    //
+
+    void Spawn(AirSticks.Hand hand, int velocity)
+    {
+        GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
+        GetSystem(hand).Restart();
+    }
+
+    void TurnOff()
+    {
+        if (!ConstantEmission)
+        {
+            if (!AirSticks.Left.NoteIsOn && !AirSticks.Right.NoteIsOn)
+            {
+                LeftHand.Clear();
+                LeftHand.Stop();
+                RightHand.Clear();
+                RightHand.Stop();
+                Ribbon.Clear();
+                Ribbon.Stop();
+            }
         }
     }
 
@@ -125,11 +153,6 @@ public class RodController : RuntimeController
         else if (hand == AirSticks.Hand.Right)
             return LeftHand;
         else throw new System.ArgumentException();
-    }
-    void Spawn(AirSticks.Hand hand, int velocity)
-    {
-        GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
-        GetSystem(hand).Restart();
     }
 
     Vector3[] LeftPositionsPreNoise;
@@ -197,43 +220,9 @@ public class RodController : RuntimeController
     Vector3 GenerateRandomVector3(float multiplier = 1f)
     {
         return new Vector3(
-            Random.Range(-1f, 1f) * multiplier,
-            Random.Range(-1f, 1f) * multiplier,
-            Random.Range(-1f, 1f) * multiplier
+            UnityEngine.Random.Range(-1f, 1f) * multiplier,
+            UnityEngine.Random.Range(-1f, 1f) * multiplier,
+            UnityEngine.Random.Range(-1f, 1f) * multiplier
         );
     }
-
-    // public float NoteOffShrinkRate { get; set; } = 20f;
-
-    // public bool ConstantEmission { get; set; } = false;
-
-    // void Shrink(AirSticks.Hand hand, float shrinkRate, float minimumScale = 0f) =>
-    //     StartCoroutine(ShrinkRoutine(hand, shrinkRate, minimumScale));
-
-    // IEnumerator ShrinkRoutine(AirSticks.Hand hand, float shrinkRate, float minimumScale = 0f)
-    // {
-    //     var system = GetSystem(hand);
-    //     while (system.transform.localScale.x > (minimumScale + .005f))
-    //     {
-    //         var scale = system.transform.localScale;
-    //         scale -= (Vector3.one * shrinkRate * Time.deltaTime);
-    //         system.transform.localScale = scale;
-    //         yield return null;
-    //     }
-    //     system.transform.localScale = Vector3.one * minimumScale;
-
-    //     if (!ConstantEmission)
-    //     {
-    //         var otherSystem = GetSystem(hand.GetOtherHand());
-    //         if (otherSystem.transform.localScale == Vector3.one * minimumScale)
-    //         {
-    //             // if both systems are shrunk, stop the simulations
-    //             system.Stop();
-    //             system.Clear();
-    //             otherSystem.Stop();
-    //             otherSystem.Clear();
-    //             Ribbon.Clear();
-    //         }
-    //     }
-    // }
 }
