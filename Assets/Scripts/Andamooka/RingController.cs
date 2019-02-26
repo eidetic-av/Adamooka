@@ -10,7 +10,7 @@ using Eidetic.Unity.Utility;
 using Midi;
 
 [System.Serializable]
-public class RingController : RuntimeController
+public class RingController : MidiTriggerController
 {
 
     //
@@ -31,8 +31,8 @@ public class RingController : RuntimeController
             CircleController.CurrentMaxRadius = ringScale;
         }
     }
-    public Channel MidiChannel { get; set; } = Channel.Channel9;
-    public List<MidiTrigger> Triggers { get; set; }
+    public override Channel MidiChannel { get; set; } = Channel.Channel9;
+    public override List<MidiTrigger> Triggers { get; set; }
 
     //
     // Initialisation
@@ -40,60 +40,36 @@ public class RingController : RuntimeController
     NoiseCircleController CircleController;
     void Start()
     {
+        InitialiseMidi();
         CircleController = GameObject.Find("NoiseCircleController")
             .GetComponent<NoiseCircleController>();
-        Triggers = new List<MidiTrigger>() {
-            new MidiTrigger(Pitch.F2, KickA),
-            new MidiTrigger(Pitch.ASharp2, KickB),
-            new MidiTrigger(Pitch.G2, SnareA),
-            new MidiTrigger(Pitch.CSharp3, SnareB),
-            new MidiTrigger(Pitch.A2, HiHat)
-        };
-
-        MidiEventDispatcher.Instance.InputDevice.NoteOn += RouteRingMidi;
+        Triggers = new List<MidiTrigger>()
+    {
+        new MidiTrigger(Pitch.F2, KickA),
+        new MidiTrigger(Pitch.ASharp2, KickB),
+        new MidiTrigger(Pitch.G2, SnareA),
+        new MidiTrigger(Pitch.CSharp3, SnareB),
+        new MidiTrigger(Pitch.A2, HiHat)
+    };
     }
 
-    void RouteRingMidi(NoteOnMessage noteOnMessage) =>
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
-        {
-            if (!ControlWithAirSticks) return;
-            if (!noteOnMessage.Channel.Equals(MidiChannel)) return;
-            Triggers.SingleOrDefault(trigger =>
-                    trigger.Note.Equals(noteOnMessage.Pitch))?.Action.Invoke();
-        });
-
-    [RuntimeInspectorButton("KickA", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("0: KickA", false, ButtonVisibility.InitializedObjects)]
     public void KickA() =>
         CircleController.Triggers[4] = true;
 
-    [RuntimeInspectorButton("KickB", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("1: KickB", false, ButtonVisibility.InitializedObjects)]
     public void KickB() =>
         CircleController.Triggers[1] = true;
 
-    [RuntimeInspectorButton("SnareA", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("2: SnareA", false, ButtonVisibility.InitializedObjects)]
     public void SnareA() =>
         CircleController.Triggers[6] = true;
 
-    [RuntimeInspectorButton("SnareB", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("3: SnareB", false, ButtonVisibility.InitializedObjects)]
     public void SnareB() =>
         CircleController.Triggers[5] = true;
 
-    [RuntimeInspectorButton("HiHat", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("4: HiHat", false, ButtonVisibility.InitializedObjects)]
     public void HiHat() =>
         CircleController.Triggers[2] = true;
-
-    [System.Serializable]
-    public class MidiTrigger
-    {
-        public Pitch Note;
-
-        [NonSerialized]
-        public Action Action;
-        
-        public MidiTrigger(Pitch note, Action action)
-        {
-            Note = note;
-            Action = action;
-        }
-    }
 }

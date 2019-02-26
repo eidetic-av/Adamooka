@@ -7,23 +7,15 @@ using Eidetic.Andamooka;
 
 public class MidiEventDispatcher : MonoBehaviour
 {
-    static MidiEventDispatcher instance;
-    public static MidiEventDispatcher Instance
-    {
-        get
-        {
-            if (instance == null)
-                instance = new GameObject("MidiEventDispatcher").AddComponent<MidiEventDispatcher>();
-            return instance;
-        }
-    }
-    // public string DeviceName = "rtpMIDI";
-    public string DeviceName = "loopMIDI Port";
+    public static MidiEventDispatcher Instance;
+
+    public string DeviceName = "rtpMIDI";
 
     public InputDevice InputDevice { get; set; }
 
     void Awake()
     {
+        Instance = this;
         foreach (InputDevice inputDevice in InputDevice.InstalledDevices)
         {
             if (inputDevice.Name.ToLower().Equals(DeviceName.ToLower()))
