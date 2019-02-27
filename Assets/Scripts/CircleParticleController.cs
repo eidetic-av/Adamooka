@@ -180,7 +180,6 @@ void Start()
                 ExpandedScale.y += IncreaseRate;
             }
             CentrePosition = true;
-            EmitConstantly = true;
 
             var mainModule = ParticleSystem.main;
             mainModule.simulationSpeed = 0.5f;
@@ -212,62 +211,6 @@ void Start()
 
         if (TrackAirsticks)
         {
-            var leftPosition = new Vector3(
-                (-AirSticks.Left.Position.x * LeftMultiplier.x),
-                (AirSticks.Left.Position.y * LeftMultiplier.y),
-                (AirSticks.Left.Position.z * LeftMultiplier.z));
-
-            var rightPosition = new Vector3(
-                (-AirSticks.Right.Position.x * RightMultiplier.x),
-                (AirSticks.Right.Position.y * RightMultiplier.y),
-                (AirSticks.Right.Position.z * RightMultiplier.z));
-
-            var averageX = (leftPosition.x + rightPosition.x) / 2;
-            var averageY = (leftPosition.x + rightPosition.x) / 2;
-            var averageZ = (leftPosition.x + rightPosition.x) / 2;
-
-            if (!CentrePosition)
-            {
-                ParticleSystem.transform.position = new Vector3(
-                        (averageX * SpherePositionMultiplier.x) + SpherePositionOffset.x,
-                        (averageY * SpherePositionMultiplier.y) + SpherePositionOffset.y,
-                        (averageZ * SpherePositionMultiplier.z) + SpherePositionOffset.z);
-            } else
-            {
-                ParticleSystem.transform.position = new Vector3(
-                        SpherePositionOffset.x,
-                        SpherePositionOffset.y,
-                        SpherePositionOffset.z);
-            }
-
-            if (ControlSphereSize)
-            {
-                Vector3 outputSize = Vector3.zero;
-
-                outputSize.x = Mathf.Abs(rightPosition.x - leftPosition.x);
-                outputSize.y = Mathf.Abs(rightPosition.y - leftPosition.y);
-                outputSize.z = Mathf.Abs(rightPosition.z - leftPosition.z);
-
-                var shapeModule = ParticleSystem.shape;
-                if (!Expanded)
-                    shapeModule.scale = new Vector3(outputSize.x * SphereSizeMultiplier.x, outputSize.y * SphereSizeMultiplier.y, outputSize.z * SphereSizeMultiplier.z);
-                else
-                {
-                    if (ExpandedScale.x != ExpandedScale.y)
-                    {
-                        ExpandedScale.x = ExpandedScale.x + (ExpandedScale.y - ExpandedScale.x) / ExpandedScaleDamping;
-                    }
-                    shapeModule.scale = new Vector3(1 * ExpandedScale.x, 1 * ExpandedScale.x, 2 * ExpandedScale.x);
-                }
-            }
-
-            if (ControlTrailThickness)
-            {
-                var trailModule = ParticleSystem.trails;
-                var shiftedRotation = (AirSticks.Left.EulerAngles.x + 1) / 2;
-                var mappedThickness = shiftedRotation.Map(0, 1, ThicknessMinMax.x, ThicknessMinMax.y);
-                trailModule.widthOverTrail = new MinMaxCurve(mappedThickness, 0.1f);
-            }
 
             if (ControlScaleFromMembrane) {
                 var scale = ParticleSystem.transform.localScale;

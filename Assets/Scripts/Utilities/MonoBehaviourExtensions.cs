@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Eidetic.Unity.Runtime;
 
 namespace Eidetic.Unity.Utility
 {

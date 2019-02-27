@@ -53,6 +53,8 @@ namespace Midi
     /// <seealso cref="Interval"/>
     public enum Pitch
     {
+        /// <summary>Any note.</summary>
+        Any = 999,
         /// <summary>C in octave -1.</summary>
         CNeg1 = 0,
         /// <summary>C# in octave -1.</summary>

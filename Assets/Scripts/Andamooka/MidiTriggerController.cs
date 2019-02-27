@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Eidetic.Unity.Runtime;
 
+using UnityEngine;
+
 [System.Serializable]
 public abstract class MidiTriggerController : RuntimeController
 {
@@ -22,8 +24,8 @@ public abstract class MidiTriggerController : RuntimeController
         UnityMainThreadDispatcher.Instance().Enqueue(() =>
         {
             if (!noteOnMessage.Channel.Equals(MidiChannel)) return;
-            Triggers.Where(trigger =>
-                        trigger.Note.Equals(noteOnMessage.Pitch))?.ToList()
+            Triggers.Where(trigger => 
+                        trigger.Note.Equals(noteOnMessage.Pitch) || trigger.Note.Equals(Pitch.Any))?.ToList()
                     .ForEach(trigger => trigger.Action.Invoke());
         });
     }

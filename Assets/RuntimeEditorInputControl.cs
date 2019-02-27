@@ -5,40 +5,45 @@ using System.Linq;
 using UnityEngine;
 using Eidetic.Unity.Utility;
 
-public class RuntimeEditorInputControl : MonoBehaviour
+namespace Eidetic.Unity.Runtime
 {
-    public static RuntimeInspector Inspector;
-    public static bool Active;
-
-    public bool ActiveOnAwake;
-    public List<GameObject> FocusedObjects;
-
-    void Awake()
+    public class RuntimeEditorInputControl : MonoBehaviour
     {
-        Inspector = GameObject.Find("RuntimeInspector")
-            .GetComponent<RuntimeInspector>();
-        Inspector.gameObject.SetActive(Active = ActiveOnAwake);
-    }
+        public static RuntimeInspector Inspector;
+        public static bool Active;
 
-    void Start()
-    {
-        if (Inspector.InspectedObject == null)
-            FocusedObjects.FirstOrDefault()?.FocusInRuntimeInspector();
-    }
+        public List<GameObject> FocusedObjects =>
+            gameObject.GetComponentsInChildren<RuntimeController>().Select(rc => rc.gameObject).ToList();
 
-    void Update()
-    {
-        if (Input.GetKey(KeyCode.LeftShift))
+        void Awake()
         {
-            // Toggle inspector
-            if (Input.GetKeyDown(KeyCode.I))
-                Inspector.gameObject.SetActive(Active = !Active);
+            Inspector = GameObject.Find("RuntimeInspector")
+                .GetComponent<RuntimeInspector>();
+            // default inspector to not active
+            Inspector.gameObject.SetActive(false);
+            // and when it is activated, if there is no focused object, focus the first available
+            Inspector.OnActivate += () =>
+            {
+                if (Inspector.InspectedObject == null)
+                    FocusedObjects.FirstOrDefault()?.FocusInRuntimeInspector();
+            };
+        }
 
-            // Set inspector focus to the index(+1) selected with alpha keys
-            else if (Active && Input.anyKeyDown)
-                FocusedObjects.FirstOrDefault(o =>
-                        Input.GetKeyDown((FocusedObjects.IndexOf(o) + 1).ToString()))?
-                    .FocusInRuntimeInspector();
+        void Update()
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                // Toggle inspector
+                if (Input.GetKeyDown(KeyCode.I)) {
+                    Inspector.gameObject.SetActive(Active = !Active);
+                }
+
+                // Set inspector focus to the index(+1) selected with alpha keys
+                else if (Active && Input.anyKeyDown)
+                    FocusedObjects.FirstOrDefault(o =>
+                            Input.GetKeyDown((FocusedObjects.IndexOf(o) + 1).ToString()))?
+                        .FocusInRuntimeInspector();
+            }
         }
     }
 }

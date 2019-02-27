@@ -13,6 +13,7 @@ public class CueController : MidiTriggerController
 
 	RodController Rods;
 	RingController Ring;
+  VortexController Vortex;
 
     void Start()
     {
@@ -20,13 +21,15 @@ public class CueController : MidiTriggerController
 
 		Rods = GameObject.Find("Rods").GetComponent<RodController>();
 		Ring = GameObject.Find("Ring").GetComponent<RingController>();
+    Vortex = GameObject.Find("Vortex").GetComponent<VortexController>();
 
 		Triggers = new List<MidiTrigger>()
 		{
 			new MidiTrigger(Pitch.A1, ToggleRods),
 			new MidiTrigger(Pitch.G1, ToggleConstantRods),
 			new MidiTrigger(Pitch.ASharp1, ToggleRing),
-			new MidiTrigger(Pitch.DSharp1, ToggleRingDrumSynth)
+			new MidiTrigger(Pitch.DSharp1, ToggleRingDrumSynth),
+			new MidiTrigger(Pitch.CSharp1, ToggleHiHatVortex)
 		};
     }
 
@@ -41,4 +44,7 @@ public class CueController : MidiTriggerController
 
     [RuntimeInspectorButton("3: Toggle Ring Drum Synth", false, ButtonVisibility.InitializedObjects)]
     public void ToggleRingDrumSynth() => Ring.ToggleDrumSynth();
+
+    [RuntimeInspectorButton("4: Toggle HiHat Vortex", false, ButtonVisibility.InitializedObjects)]
+    public void ToggleHiHatVortex() => Vortex.ToggleHiHatSystem();
 }
