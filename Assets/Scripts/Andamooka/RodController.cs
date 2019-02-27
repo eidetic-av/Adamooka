@@ -72,9 +72,9 @@ public class RodController : RuntimeController
             => Spawn(AirSticks.Hand.Right, velocity);
 
         AirSticks.Left.NoteOff += ()
-            => TurnOff();
+            => TurnOff(AirSticks.Hand.Left);
         AirSticks.Right.NoteOff += ()
-            => TurnOff();
+            => TurnOff(AirSticks.Hand.Right);
     }
 
     //
@@ -115,15 +115,68 @@ public class RodController : RuntimeController
     {
         if (AirSticksControlActive)
         {
-            GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
-            GetSystem(hand).Restart();
+            if (!ConstantEmission)
+            {
+                // if in regular mode, the right hand turns the system on and off,
+                // so if its the right hand, start the system
+                if (hand == AirSticks.Hand.Right)
+                {
+                    if (!GetSystem(AirSticks.Hand.Left).isPlaying)
+                    {   // if the opposing system is not already playing, restart it
+                        GetSystem(AirSticks.Hand.Left).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
+                        GetSystem(AirSticks.Hand.Left).Restart();
+                    }
+                    MonoUtility.StartDelayedAction(this, () =>
+                    {
+                        GetSystem(AirSticks.Hand.Right).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
+                        GetSystem(AirSticks.Hand.Right).Restart();
+                    }, 0.05f);
+                }
+                else if (hand == AirSticks.Hand.Left)
+                {
+                    // if the left hand is causing the note on, restart the left system
+                    // to swap the colours ONLY if the right one is already on
+                    if (AirSticks.Right.NoteIsOn)
+                    {
+                        GetSystem(AirSticks.Hand.Left).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
+                        GetSystem(AirSticks.Hand.Left).Restart();
+                    }
+                }
+            }
+            else
+            {   // if in constant emission mode
+                if (!GetOtherSystem(hand).isPlaying)
+                {   // only restart the opposing system if its not already playing
+                    GetOtherSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
+                    GetOtherSystem(hand).Restart();
+                }
+                MonoUtility.StartDelayedAction(this, () =>
+                {
+                    GetSystem(hand).SetSimulationSpeed((velocity / 127f).Map(VelocityToSpawnSpeed));
+                    GetSystem(hand).Restart();
+                }, 0.05f);
+            }
         }
     }
 
-    void TurnOff()
+    void TurnOff(AirSticks.Hand hand)
     {
         if (!ConstantEmission)
         {
+            // if we're in regular mode, only turn off with the right hand
+            if (hand == AirSticks.Hand.Right)
+            {
+                LeftHand.Clear();
+                LeftHand.Stop();
+                RightHand.Clear();
+                RightHand.Stop();
+                Ribbon.Clear();
+                Ribbon.Stop();
+            }
+        }
+        else
+        {
+            // if we're in constant emission mode, both hands have to be off to turn the system off
             if (!AirSticks.Left.NoteIsOn && !AirSticks.Right.NoteIsOn)
             {
                 LeftHand.Clear();
@@ -225,5 +278,20 @@ public class RodController : RuntimeController
             UnityEngine.Random.Range(-1f, 1f) * multiplier,
             UnityEngine.Random.Range(-1f, 1f) * multiplier
         );
+    }
+}
+
+// Todo: Move this somewhere!
+public static class MonoUtility
+{
+    public static void StartDelayedAction(MonoBehaviour monoBehaviour, Action action, float delayTime)
+    {
+        monoBehaviour.StartCoroutine(DelayedAction(action, delayTime));
+    }
+
+    public static IEnumerator DelayedAction(Action action, float delayTime)
+    {
+        yield return new WaitForSeconds(delayTime);
+        action.Invoke();
     }
 }
