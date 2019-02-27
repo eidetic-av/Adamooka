@@ -9,8 +9,9 @@ namespace Eidetic.Andamooka
 {
     public static partial class AirSticks
     {
-        public static Stick Left = new Stick() { Hand = Hand.Left };
-        public static Stick Right = new Stick() { Hand = Hand.Right };
+        public static Stick Left = new Stick(Hand.Left);
+        public static Stick Right = new Stick(Hand.Right);
+
         public static Stick GetStick(Hand hand)
         {
             if (hand == Hand.Left)
@@ -20,15 +21,16 @@ namespace Eidetic.Andamooka
 
         public class Stick
         {
-            public Hand Hand;
+            public Hand Hand {get; private set;}
 
             public Action<int> NoteOn { get; set; }
             public Action NoteOff { get; set; }
             public float Velocity = 0; // Normalised
             public bool NoteIsOn = false;
 
-            public Stick()
+            public Stick(Hand hand)
             {
+                Hand = hand;
                 NoteOn += (velocity) => { NoteIsOn = true; Velocity = (velocity / 127f); };
                 NoteOff += () => { NoteIsOn = false; };
             }

@@ -3,4 +3,4 @@
 	url = https://github.com/eidetic-av/Confluence.git
 [submodule "Assets/Scripts/Andamooka/OscJack"]
 	path = Assets/Scripts/Andamooka/OscJack
-	url = https://github.com/keijiro/OscJack.git
+	url = https://github.com/eidetic-av/OscJack.git
