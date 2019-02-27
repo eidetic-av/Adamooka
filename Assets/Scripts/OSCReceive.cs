@@ -44,19 +44,18 @@ public partial class OSCReceive : MonoBehaviour
     {
         if (packet == null) return;
 
-        // Origin
-        int serverPort = packet.server.ServerPort;
-
         // Data at index 0
         if (packet.Data[0] == null) return;
+        Debug.Log(packet.IsBundle());
 
         for (int i = 0; i < packet.Data.Count; i++)
         {
             try
             {
-                var address = ((OSCMessage)packet.Data[i]).Address.Split("/".ToCharArray());
-                var dataList = ((OSCMessage)packet.Data[i]).Data;
-                RouteOSC(address, dataList);
+                // Debug.Log(m);
+                // var address = ((OSCMessage)packet.Data[i]).Address.Split("/".ToCharArray());
+                // var dataList = ((OSCMessage)packet.Data[i]).Data;
+                // RouteOSC(address, dataList);
             }
             catch (Exception e)
             {
@@ -65,6 +64,21 @@ public partial class OSCReceive : MonoBehaviour
         }
 
     }
+
+    
+	private string DataToString(List<object> data)
+	{
+		string buffer = "";
+		
+		for(int i = 0; i < data.Count; i++)
+		{
+			buffer += data[i].ToString() + " ";
+		}
+		
+		buffer += "\n";
+		
+		return buffer;
+	}
 
     private void RouteOSC(string[] address, List<object> data)
     {
