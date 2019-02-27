@@ -18,12 +18,16 @@ namespace Eidetic.Andamooka
         void Start()
         {
             Server = new OscServer(Port);
-			
+
             Server.MessageDispatcher.AddCallback(String.Empty, (address, data) =>
             {
                 if (address.StartsWith("/airsticks"))
                     RouteAirSticksOsc(address, data);
             });
+
+            StartCoroutine(UpdateConnectedMonitor());
+			Server.OnDataReceived += () => 
+				UnityMainThreadDispatcher.Instance().Enqueue(() => StartCoroutine(UpdateReceivedMonitor()));
         }
 
         void OnDestroy()
@@ -36,7 +40,7 @@ namespace Eidetic.Andamooka
         {
             var address = addressString.TrimStart('/').Split('/').Skip(1).ToArray();
 
-			// address.ToList().ForEach(n => Debug.Log(n));
+            // address.ToList().ForEach(n => Debug.Log(n));
 
             // select the target airstick
             AirSticks.Stick targetStick;
@@ -60,6 +64,30 @@ namespace Eidetic.Andamooka
                     else targetStick.NoteOff.RunOnMain();
                     break;
             }
+        }
+
+        IEnumerator UpdateConnectedMonitor()
+        {
+            while (Application.isPlaying)
+            {
+                if (ActivityMonitor.Instance.gameObject.activeInHierarchy
+                    && !ActivityMonitor.OscReceiving)
+                {
+                    ActivityMonitor.OscConnected = Server.Connected;
+                }
+                yield return new WaitForSeconds(2f);
+            }
+        }
+
+        IEnumerator UpdateReceivedMonitor()
+        {
+            if (ActivityMonitor.Instance.gameObject.activeInHierarchy)
+            {
+                ActivityMonitor.OscReceiving = true;
+                yield return new WaitForSeconds(.125f);
+                ActivityMonitor.OscReceiving = false;
+            }
+            yield return null;
         }
     }
 }

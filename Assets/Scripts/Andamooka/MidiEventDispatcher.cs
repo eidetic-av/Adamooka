@@ -1,6 +1,7 @@
 using Eidetic.Unity.Utility;
 using Midi;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Eidetic.Andamooka;
@@ -12,6 +13,8 @@ public class MidiEventDispatcher : MonoBehaviour
     public string DeviceName = "rtpMIDI";
 
     public InputDevice InputDevice { get; set; }
+
+    ActivityMonitor ActivityMonitor;
 
     void Awake()
     {
@@ -29,6 +32,9 @@ public class MidiEventDispatcher : MonoBehaviour
             InputDevice.Open();
             InputDevice.StartReceiving(null);
             Debug.Log("Opened MIDI Device: " + InputDevice.Name);
+            StartCoroutine(UpdateConnectedMonitor());
+            MidiEventDispatcher.Instance.InputDevice.NoteOn += (noteOnMessage) =>
+                UnityMainThreadDispatcher.Instance().Enqueue(() => StartCoroutine(UpdateReceivedMonitor()));
         }
     }
 
@@ -40,5 +46,29 @@ public class MidiEventDispatcher : MonoBehaviour
             InputDevice.Close();
             Debug.Log("Closed MIDI Device: " + InputDevice.Name);
         }
+    }
+
+    IEnumerator UpdateConnectedMonitor()
+    {
+        while (Application.isPlaying)
+        {
+            if (ActivityMonitor.Instance.gameObject.activeInHierarchy
+                && !ActivityMonitor.MidiReceiving)
+            {
+                ActivityMonitor.MidiConnected = InputDevice != null && InputDevice.IsReceiving;
+            }
+            yield return new WaitForSeconds(2f);
+        }
+    }
+
+    IEnumerator UpdateReceivedMonitor()
+    {
+        if (ActivityMonitor.Instance.gameObject.activeInHierarchy)
+        {
+            ActivityMonitor.MidiReceiving = true;
+            yield return new WaitForSeconds(.125f);
+            ActivityMonitor.MidiReceiving = false;
+        }
+        yield return null;
     }
 }
