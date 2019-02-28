@@ -117,10 +117,10 @@ public class VortexController : MidiTriggerController
         }
     }
 
-    [RuntimeInspectorButton("Toggle HiHat System", false, ButtonVisibility.InitializedObjects)]
-    public void ToggleHiHatSystem() => Active = !Active;
+    [RuntimeInspectorButton("Toggle System Active", false, ButtonVisibility.InitializedObjects)]
+    public void ToggleSystemActive() => Active = !Active;
 
-    [RuntimeInspectorButton("0: Rotate HiHat Vortex", false, ButtonVisibility.InitializedObjects)]
+    [RuntimeInspectorButton("0: Trigger Emission", false, ButtonVisibility.InitializedObjects)]
     void RotateSystem() => RotateSystem(Pitch.F2, 127);
     void RotateSystem(Pitch pitch, int velocity)
     {

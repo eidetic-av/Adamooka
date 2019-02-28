@@ -15,7 +15,8 @@ public class CueController : MidiTriggerController
 
     RodController Rods;
     RingController Ring;
-    VortexController Vortex;
+    VortexController HiHatVortex;
+    VortexController BasslineVortex;
 
     void Start()
     {
@@ -23,7 +24,8 @@ public class CueController : MidiTriggerController
 
         Rods = GameObject.Find("Rods").GetComponent<RodController>();
         Ring = GameObject.Find("Ring").GetComponent<RingController>();
-        Vortex = GameObject.Find("HiHatVortex").GetComponent<VortexController>();
+        HiHatVortex = GameObject.Find("HiHatVortex").GetComponent<VortexController>();
+        BasslineVortex = GameObject.Find("BasslineVortex").GetComponent<VortexController>();
 
         Triggers = new List<MidiTrigger>()
         {
@@ -31,7 +33,9 @@ public class CueController : MidiTriggerController
             new MidiTrigger(Pitch.G1, ToggleConstantRods),
             new MidiTrigger(Pitch.ASharp1, ToggleRing),
             new MidiTrigger(Pitch.DSharp1, ToggleRingDrumSynth),
-            new MidiTrigger(Pitch.CSharp1, ToggleHiHatVortex)
+            new MidiTrigger(Pitch.CSharp1, ToggleHiHatVortex),
+            new MidiTrigger(Pitch.C1, ToggleBasslineVortex),
+            new MidiTrigger(Pitch.B1, ToggleBothVortexes)
         };
     }
 
@@ -48,7 +52,17 @@ public class CueController : MidiTriggerController
     public void ToggleRingDrumSynth() => Ring.ToggleDrumSynth();
 
     [RuntimeInspectorButton("4: Toggle HiHat Vortex", false, ButtonVisibility.InitializedObjects)]
-    public void ToggleHiHatVortex() => Vortex.ToggleHiHatSystem();
+    public void ToggleHiHatVortex() => HiHatVortex.ToggleSystemActive();
+
+    [RuntimeInspectorButton("5: Toggle Bassline Vortex", false, ButtonVisibility.InitializedObjects)]
+    public void ToggleBasslineVortex() => BasslineVortex.ToggleSystemActive();
+
+    [RuntimeInspectorButton("6: Toggle Both Vortexes", false, ButtonVisibility.InitializedObjects)]
+    public void ToggleBothVortexes()
+    {
+        ToggleHiHatVortex();
+        ToggleBasslineVortex();
+    }
 
     void Update()
     {
@@ -58,11 +72,13 @@ public class CueController : MidiTriggerController
         InvokeOnKey(ToggleRing, KeyCode.E, KeyCode.LeftControl);
         InvokeOnKey(ToggleRingDrumSynth, KeyCode.R, KeyCode.LeftControl);
         InvokeOnKey(ToggleHiHatVortex, KeyCode.T, KeyCode.LeftControl);
+        InvokeOnKey(ToggleBasslineVortex, KeyCode.Y, KeyCode.LeftControl);
+        InvokeOnKey(ToggleBothVortexes, KeyCode.U, KeyCode.LeftControl);
     }
     public static void InvokeOnKey(Action action, KeyCode keyCode, KeyCode? modifier = null)
     {
-      if (modifier == null || Input.GetKey((KeyCode)modifier))
-        if (Input.GetKeyDown(keyCode))
-            action.Invoke();
+        if (modifier == null || Input.GetKey((KeyCode)modifier))
+            if (Input.GetKeyDown(keyCode))
+                action.Invoke();
     }
 }

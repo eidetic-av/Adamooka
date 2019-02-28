@@ -46,11 +46,13 @@ public abstract class MidiTriggerController : RuntimeController
     // Since the MidiTriggers don't serialize their Actions
     // and we don't want to alter the actions at runtime anyway,
     // they must be stored and reloaded when we load a preset from a file
+    MidiTrigger[] TriggersBeforeLoad;
     Action[] LoadingTriggerActions;
     Action<Pitch, int>[] NoteOnTriggerActions;
     List<int> NoteOnTriggerIndexes = new List<int>();
     public override void BeforeLoad()
     {
+        TriggersBeforeLoad = Triggers.ToArray();
         LoadingTriggerActions = Triggers.Where(t => t.GetType() == typeof(MidiTrigger))
             .Select(trigger => trigger.Action).ToArray();
 
@@ -71,12 +73,16 @@ public abstract class MidiTriggerController : RuntimeController
     {
         for (int i = 0; i < LoadingTriggerActions.Length; i++)
         {
-            Triggers[i].Action = LoadingTriggerActions[i];
+            if (i < Triggers.Count)
+                Triggers[i].Action = LoadingTriggerActions[i];
+            else
+                Triggers.Add(TriggersBeforeLoad[i]);
         }
         for (int i = 0; i < NoteOnTriggerActions.Length; i++)
         {
             ((NoteOnTrigger)Triggers[NoteOnTriggerIndexes[i]]).NoteOnAction = NoteOnTriggerActions[i];
         }
+        TriggersBeforeLoad = null;
         LoadingTriggerActions = null;
         NoteOnTriggerActions = null;
         NoteOnTriggerIndexes.Clear();
