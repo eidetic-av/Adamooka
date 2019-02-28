@@ -1,36 +1,38 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Eidetic.Unity.Runtime;
+using Eidetic.Unity.Utility;
 using Midi;
 using RuntimeInspectorNamespace;
 
 public class CueController : MidiTriggerController
 {
-    public override Channel MidiChannel { get; set; } = Channel.Channel1;
+    public override Channel MidiChannel { get; set; } = Channel.Channel10;
 
     public override List<MidiTrigger> Triggers { get; set; }
 
-	RodController Rods;
-	RingController Ring;
-  VortexController Vortex;
+    RodController Rods;
+    RingController Ring;
+    VortexController Vortex;
 
     void Start()
     {
-		InitialiseMidi();
+        InitialiseMidi();
 
-		Rods = GameObject.Find("Rods").GetComponent<RodController>();
-		Ring = GameObject.Find("Ring").GetComponent<RingController>();
-    Vortex = GameObject.Find("Vortex").GetComponent<VortexController>();
+        Rods = GameObject.Find("Rods").GetComponent<RodController>();
+        Ring = GameObject.Find("Ring").GetComponent<RingController>();
+        Vortex = GameObject.Find("HiHatVortex").GetComponent<VortexController>();
 
-		Triggers = new List<MidiTrigger>()
-		{
-			new MidiTrigger(Pitch.A1, ToggleRods),
-			new MidiTrigger(Pitch.G1, ToggleConstantRods),
-			new MidiTrigger(Pitch.ASharp1, ToggleRing),
-			new MidiTrigger(Pitch.DSharp1, ToggleRingDrumSynth),
-			new MidiTrigger(Pitch.CSharp1, ToggleHiHatVortex)
-		};
+        Triggers = new List<MidiTrigger>()
+        {
+            new MidiTrigger(Pitch.A1, ToggleRods),
+            new MidiTrigger(Pitch.G1, ToggleConstantRods),
+            new MidiTrigger(Pitch.ASharp1, ToggleRing),
+            new MidiTrigger(Pitch.DSharp1, ToggleRingDrumSynth),
+            new MidiTrigger(Pitch.CSharp1, ToggleHiHatVortex)
+        };
     }
 
     [RuntimeInspectorButton("0: Toggle Rods", false, ButtonVisibility.InitializedObjects)]
@@ -47,4 +49,20 @@ public class CueController : MidiTriggerController
 
     [RuntimeInspectorButton("4: Toggle HiHat Vortex", false, ButtonVisibility.InitializedObjects)]
     public void ToggleHiHatVortex() => Vortex.ToggleHiHatSystem();
+
+    void Update()
+    {
+        // hotkeys
+        InvokeOnKey(ToggleRods, KeyCode.Q, KeyCode.LeftControl);
+        InvokeOnKey(ToggleConstantRods, KeyCode.W, KeyCode.LeftControl);
+        InvokeOnKey(ToggleRing, KeyCode.E, KeyCode.LeftControl);
+        InvokeOnKey(ToggleRingDrumSynth, KeyCode.R, KeyCode.LeftControl);
+        InvokeOnKey(ToggleHiHatVortex, KeyCode.T, KeyCode.LeftControl);
+    }
+    public static void InvokeOnKey(Action action, KeyCode keyCode, KeyCode? modifier = null)
+    {
+      if (modifier == null || Input.GetKey((KeyCode)modifier))
+        if (Input.GetKeyDown(keyCode))
+            action.Invoke();
+    }
 }

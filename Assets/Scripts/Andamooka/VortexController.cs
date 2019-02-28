@@ -1,5 +1,7 @@
+using System;
 using Eidetic.Andamooka;
 using Eidetic.Unity.Runtime;
+using Eidetic.Utility;
 using Midi;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,35 +12,39 @@ public class VortexController : MidiTriggerController
 {
     public override Channel MidiChannel { get; set; } = Channel.Channel14;
 
-    float hiHatRotateAngle = 10f;
-    public float HiHatRotateAngle
+    public float RotateAngle { get; set; } = 10f;
+    float innerRadius = 2.4f;
+    public float InnerRadius
     {
         get
         {
-            return hiHatRotateAngle;
+            return innerRadius;
         }
         set
         {
-            HiHatController.RotationIncrement = value;
-            hiHatRotateAngle = value;
-        }
-    }
-    float hiHatVortexRadius = 2.4f;
-    public float HiHatVortexRadius
-    {
-        get
-        {
-            return hiHatVortexRadius;
-        }
-        set
-        {
-            var shapeModule = HiHatController.ParticleSystem.shape;
+            var shapeModule = ParticleSystem.shape;
             shapeModule.radius = value;
-            hiHatVortexRadius = value;
+            innerRadius = value;
         }
     }
 
-    public AirSticks.MotionMapping HiHatParticleThickness {get; set;}
+    public int EmissionCount { get; set; } = 100;
+    int maxParticles = 500;
+    public int MaxParticles
+    {
+        get
+        {
+            return maxParticles;
+        }
+        set
+        {
+            var mainModule = ParticleSystem.main;
+            mainModule.maxParticles = value;
+            maxParticles = value;
+        }
+    }
+
+    public AirSticks.MotionMapping ParticleThickness { get; set; }
         = new AirSticks.MotionMapping(AirSticks.Hand.Left)
         {
             Input = AirSticks.ControlType.Motion.RotationX,
@@ -47,18 +53,23 @@ public class VortexController : MidiTriggerController
             InputRange = new SerializableVector2(-1, 1)
         };
 
-    public AirSticks.MotionMapping HiHatZoomSpeed {get; set;}
+    public AirSticks.MotionMapping ZoomSpeed { get; set; }
         = new AirSticks.MotionMapping(AirSticks.Hand.Left)
         {
             Input = AirSticks.ControlType.Motion.PositionZ,
-            MinimumValue = 10f,
-            MaximumValue = 10f,
+            MinimumValue = 0f,
+            MaximumValue = 0f,
             FlipAxis = true
         };
 
     public override List<MidiTrigger> Triggers { get; set; }
 
-    CircleParticleController HiHatController;
+    public bool Active = false;
+    ParticleSystem ParticleSystem;
+
+    public float RotationDamping = 2f;
+    private Vector2 Rotation = Vector2.zero;
+
     void Start()
     {
         InitialiseMidi();
@@ -66,29 +77,39 @@ public class VortexController : MidiTriggerController
         {
             new MidiTrigger(Pitch.Any, RotateHats)
         };
-        HiHatController = GameObject.Find("HiHatLayer").GetComponent<CircleParticleController>();
+        ParticleSystem = GameObject.Find("HiHatVortexParticles").GetComponent<ParticleSystem>();
     }
 
     void Update()
     {
-        var hiHatMainModule = HiHatController.ParticleSystem.main;
-        hiHatMainModule.startSpeed = HiHatZoomSpeed.Output;
-        
-        var hihatTrailModule = HiHatController.ParticleSystem.trails;
-        hihatTrailModule.widthOverTrail = new ParticleSystem.MinMaxCurve(HiHatParticleThickness.Output, 0.1f);
+        if (ParticleSystem.IsAlive())
+        {
+            var mainModule = ParticleSystem.main;
+            mainModule.startSpeed = ZoomSpeed.Output;
 
+            var trailModule = ParticleSystem.trails;
+            trailModule.widthOverTrail = new ParticleSystem.MinMaxCurve(ParticleThickness.Output);
+
+            Rotation.x = Rotation.x + (Rotation.y - Rotation.x) / RotationDamping;
+
+            var euler = ParticleSystem.transform.rotation.eulerAngles;
+            euler.z = Rotation.x;
+            var quaternion = Quaternion.Euler(euler);
+            ParticleSystem.transform.SetPositionAndRotation(Vector3.zero, quaternion);
+        }
     }
 
     [RuntimeInspectorButton("Toggle HiHat System", false, ButtonVisibility.InitializedObjects)]
-    public void ToggleHiHatSystem()
-    {
-        if (HiHatController.ParticleSystem.IsAlive())
-            HiHatController.EmitConstantly = false;
-        else
-            HiHatController.EmitConstantly = true;
-    }
+    public void ToggleHiHatSystem() => Active = !Active;
 
     [RuntimeInspectorButton("0: Rotate HiHat Vortex", false, ButtonVisibility.InitializedObjects)]
-    void RotateHats() => HiHatController.BangRotation = true;
+    void RotateHats()
+    {
+        if (Active)
+        {
+            Rotation.y += RotateAngle;
+            ParticleSystem.Emit(EmissionCount);
+        }
+    }
 
 }

@@ -2,11 +2,13 @@
 using System.Collections;
 using UnityEngine;
 using Eidetic.Unity.Runtime;
+using RuntimeInspectorNamespace;
 
 namespace Eidetic.Unity.Utility
 {
     public static class UnityEngineExtensionMethods
     {
+        // GameObject extension methods
         public static GameObject FindChild(this GameObject parent, string name)
         {
             Transform[] trs = parent.GetComponentsInChildren<Transform>(true);
@@ -21,7 +23,8 @@ namespace Eidetic.Unity.Utility
         }
         public static void FocusInRuntimeInspector(this GameObject gameObject)
         {
-            RuntimeEditorInputControl.Inspector.Inspect(gameObject);
+            RuntimeInspector.Active = true;
+            RuntimeInspector.Instance.Inspect(gameObject);
         }
 
         // Particle System extension methods

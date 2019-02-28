@@ -168,7 +168,7 @@ MidiManager : MonoBehaviour
                     }
                 case Channel.Channel14:
                     {
-                        CircleParticleController.Instance.BangRotation = true;
+                        // CircleParticleController.Instance.BangRotation = true;
                         break;
                     }
                 case Channel.Channel2:
@@ -334,11 +334,11 @@ MidiManager : MonoBehaviour
 
             case Pitch.F3:
                 // Invasion start
-                CircleParticleController.Instance.StartInvasion = true;
+                // CircleParticleController.Instance.StartInvasion = true;
                 break;
             case Pitch.FSharp3:
                 // Invasion explode / beat in
-                CircleParticleController.Instance.StartInvasionRevert = true;
+                // CircleParticleController.Instance.StartInvasionRevert = true;
                 OneFiveNineCircleController.Instance.AirSticksKickSnare = true;
                 break;
 

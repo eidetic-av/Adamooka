@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
+using RuntimeInspectorNamespace;
+using Eidetic.Unity.Utility;
 
 namespace Eidetic.Unity.Runtime
 {
@@ -11,9 +13,13 @@ namespace Eidetic.Unity.Runtime
     [System.Serializable]
     public abstract class RuntimeController : MonoBehaviour
     {
+        public bool FocusOnAwake;
         public void Awake()
         {
             PresetManager.Instantiate(this);
+            
+            if (FocusOnAwake)
+                gameObject.FocusInRuntimeInspector();
         }
 
         public List<RuntimeControllerParameter> Pack() => GetType().GetProperties()

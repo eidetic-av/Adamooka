@@ -9,40 +9,24 @@ namespace Eidetic.Unity.Runtime
 {
     public class RuntimeEditorInputControl : MonoBehaviour
     {
-        public static RuntimeInspector Inspector;
-        public static bool Active;
-
-        public List<GameObject> FocusedObjects =>
+        public List<GameObject> RuntimeControlObjects =>
             gameObject.GetComponentsInChildren<RuntimeController>().Select(rc => rc.gameObject).ToList();
 
         void Awake()
         {
-            Inspector = GameObject.Find("RuntimeInspector")
-                .GetComponent<RuntimeInspector>();
-            // default inspector to not active
-            Inspector.gameObject.SetActive(false);
-            // and when it is activated, if there is no focused object, focus the first available
-            Inspector.OnActivate += () =>
-            {
-                if (Inspector.InspectedObject == null)
-                    FocusedObjects.FirstOrDefault()?.FocusInRuntimeInspector();
-            };
+            RuntimeInspector.Active = false;
         }
-
         void Update()
         {
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                // Toggle inspector
-                if (Input.GetKeyDown(KeyCode.I)) {
-                    Inspector.gameObject.SetActive(Active = !Active);
-                }
+                if (Input.GetKeyDown(KeyCode.I))
+                    RuntimeInspector.Active = !RuntimeInspector.Active;
 
                 // Set inspector focus to the index(+1) selected with alpha keys
-                else if (Active && Input.anyKeyDown)
-                    FocusedObjects.FirstOrDefault(o =>
-                            Input.GetKeyDown((FocusedObjects.IndexOf(o) + 1).ToString()))?
-                        .FocusInRuntimeInspector();
+                RuntimeControlObjects.SingleOrDefault(o =>
+                        Input.GetKeyDown((RuntimeControlObjects.IndexOf(o) + 1).ToString()))?
+                    .FocusInRuntimeInspector();
             }
         }
     }

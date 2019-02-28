@@ -100,9 +100,9 @@ public class OneFiveNineCircleController : MonoBehaviour
             ResetSceneLight = false;
             SendSnareToParticles = true;
             ActivateScene = false;
-            CircleParticleController.Instance.Visible = false;
-            CircleParticleController.Instance.Expanded = true;
-            CircleParticleController.Instance.ParticleEmissionCount = 500;
+            // CircleParticleController.Instance.Visible = false;
+            // CircleParticleController.Instance.Expanded = true;
+            // CircleParticleController.Instance.ParticleEmissionCount = 500;
         }
 
         if (ActivateAirSticksKickSnare)

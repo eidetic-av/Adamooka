@@ -39,7 +39,7 @@ public class BondiCueController : MonoBehaviour
         if (EnableVortex) {
             RodParticleController.Instance.TrackAirsticks = true;
             RodParticleController.Instance.ConstantEmission = false;
-            CircleParticleController.Instance.StartSystem = true;
+            // CircleParticleController.Instance.StartSystem = true;
             EnableVortex = false;
         }
         if (DisableRodsForDrums) {
@@ -77,7 +77,7 @@ public class BondiCueController : MonoBehaviour
             DisableRodsAfterMelody = false;
         }
         if (DisableVortex) {
-            CircleParticleController.Instance.StopSystem = true;
+            // CircleParticleController.Instance.StopSystem = true;
             DisableVortex = false;
         }
         if (FadeOutNoiseCircle) {

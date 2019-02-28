@@ -9,6 +9,20 @@ namespace RuntimeInspectorNamespace
 {
     public class RuntimeInspector : SkinnedWindow
     {
+        public static RuntimeInspector Instance;
+        public static GameObject GameObject => Instance.gameObject;
+        public static bool Active
+        {
+            get
+            {
+                return GameObject.activeInHierarchy;
+            }
+            set
+            {
+                GameObject.SetActive(value);
+            }
+        }
+
         public delegate object InspectedObjectChangingDelegate(object previousInspectedObject, object newInspectedObject);
 
         private const string POOL_OBJECT_NAME = "RuntimeInspectorPool";
@@ -185,6 +199,8 @@ namespace RuntimeInspectorNamespace
         protected override void Awake()
         {
             base.Awake();
+
+            Instance = this;
 
             drawArea = scrollView.content;
 
@@ -498,10 +514,10 @@ namespace RuntimeInspectorNamespace
                 m_exposePrivateFields, m_exposePublicFields, m_exposePrivateProperties, m_exposePublicProperties);
         }
 
-		public Action OnActivate = () => {};
+        public Action OnActivate = () => { };
         void OnEnable()
         {
-			OnActivate.Invoke();
+            OnActivate.Invoke();
         }
     }
 }
