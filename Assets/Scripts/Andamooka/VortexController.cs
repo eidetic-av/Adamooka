@@ -13,7 +13,15 @@ public class VortexController : MidiTriggerController
 {
     public override Channel MidiChannel { get; set; } = Channel.Channel14;
 
-    public float RotateAngle { get; set; } = 12f;
+    public AirSticks.MotionMapping RotateAngle { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+        {
+            Input = AirSticks.ControlType.Motion.RotationX,
+            MinimumValue = 12f,
+            MaximumValue = 12f,
+            InputRange = new SerializableVector2(-1, 1)
+        };
+    
     float rotationDamping = 2f;
     public float RotationDamping
     {
@@ -31,7 +39,6 @@ public class VortexController : MidiTriggerController
     }
     public float InnerRadius { get; set; } = .8f;
     public float OuterRadius { get; set; } = 1.3f;
-    public int BaseEmissionCount { get; set; } = 3;
     public PitchRange PitchRange { get; set; } = new PitchRange(Pitch.C1, Pitch.F1);
     public int StepsPerRing { get; set; } = 1;
     public float PitchAngleOffset { get; set; } = 0f;
@@ -64,8 +71,25 @@ public class VortexController : MidiTriggerController
             maxParticles = value;
         }
     }
+    public AirSticks.MotionMapping BaseEmissionCount { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+        {
+            Input = AirSticks.ControlType.Motion.RotationX,
+            MinimumValue = 3,
+            MaximumValue = 3,
+            InputRange = new SerializableVector2(-1, 1)
+        };
 
     public List<SerializableColor> Colors { get; set; } = new List<SerializableColor>() { Color.white };
+    
+    public AirSticks.MotionMapping OpacityMultiplier { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+        {
+            Input = AirSticks.ControlType.Motion.RotationX,
+            MinimumValue = 1f,
+            MaximumValue = 1f,
+            InputRange = new SerializableVector2(-1, 1)
+        };
 
     public AirSticks.MotionMapping ParticleThickness { get; set; }
         = new AirSticks.MotionMapping(AirSticks.Hand.Left)
@@ -85,19 +109,13 @@ public class VortexController : MidiTriggerController
             FlipAxis = true
         };
 
-    float particleTiling = 1f;
-    public float ParticleTiling
-    {
-        get
+    public AirSticks.MotionMapping ParticleTiling { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
         {
-            return particleTiling;
-        }
-        set
-        {
-            ParticleSystem.GetTrailMaterial().SetTextureScale("_MainTex", new Vector2(1, value));
-            particleTiling = value;
-        }
-    }
+            Input = AirSticks.ControlType.Motion.PositionZ,
+            MinimumValue = 1,
+            MaximumValue = 1
+        };
 
     public override List<MidiTrigger> Triggers { get; set; }
 
@@ -148,14 +166,12 @@ public class VortexController : MidiTriggerController
     {
         if (Active)
         {
-            Rotation.y += RotateAngle;
+            Rotation.y += RotateAngle.Output;
 
             var ringCount = Mathf.RoundToInt((float) PitchRange.Size / StepsPerRing);
             var ringNumber = Mathf.FloorToInt(
                         ((float)PitchRange.GetPosition(pitch)).Map(0f, StepsPerRing, 0f, 1f));
             var normalisedRingValue = ((float)ringNumber).Map(0, ringCount, 0f, 1f);
-
-                    Debug.Log(ringNumber);
 
             var shapeModule = ParticleSystem.shape;
             shapeModule.radius = normalisedRingValue.Map(0f, 1f, InnerRadius, OuterRadius);
@@ -173,15 +189,21 @@ public class VortexController : MidiTriggerController
                 else
                     colorIndex = Mathf.Clamp(ringNumber.Map(0, ringCount, 0, Colors.Count - 1), 0, ringCount);
 
-                mainModule.startColor = new ParticleSystem.MinMaxGradient(Colors[colorIndex]);
+                mainModule.startColor = new ParticleSystem.MinMaxGradient(new Color(
+                    Colors[colorIndex].Color.r,
+                    Colors[colorIndex].Color.g,
+                    Colors[colorIndex].Color.b,
+                    Colors[colorIndex].Color.a * OpacityMultiplier.Output));
             }
 
             var additionalEmission = ringNumber * PitchEmissionCountAddition;
             if (additionalEmission < 0) additionalEmission = 0;
 
-            var emissionCount = BaseEmissionCount + additionalEmission;
+            var emissionCount = Mathf.FloorToInt(BaseEmissionCount.Output) + additionalEmission;
 
             ParticleSystem.Emit(emissionCount);
+
+            ParticleSystem.GetTrailMaterial().SetTextureScale("_MainTex", new Vector2(1, Mathf.FloorToInt(ParticleTiling.Output)));
         }
     }
 }
