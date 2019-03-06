@@ -67,18 +67,18 @@ public class CueController : MidiTriggerController
     void Update()
     {
         // hotkeys
-        InvokeOnKey(ToggleRods, KeyCode.Q, KeyCode.LeftControl);
-        InvokeOnKey(ToggleConstantRods, KeyCode.W, KeyCode.LeftControl);
-        InvokeOnKey(ToggleRing, KeyCode.E, KeyCode.LeftControl);
-        InvokeOnKey(ToggleRingDrumSynth, KeyCode.R, KeyCode.LeftControl);
-        InvokeOnKey(ToggleHiHatVortex, KeyCode.T, KeyCode.LeftControl);
-        InvokeOnKey(ToggleBasslineVortex, KeyCode.Y, KeyCode.LeftControl);
-        InvokeOnKey(ToggleBothVortexes, KeyCode.U, KeyCode.LeftControl);
+        // InvokeOnKey(ToggleRods, KeyCode.Q, KeyCode.LeftControl);
+        // InvokeOnKey(ToggleConstantRods, KeyCode.W, KeyCode.LeftControl);
+        // InvokeOnKey(ToggleRing, KeyCode.E, KeyCode.LeftControl);
+        // InvokeOnKey(ToggleRingDrumSynth, KeyCode.R, KeyCode.LeftControl);
+        // InvokeOnKey(ToggleHiHatVortex, KeyCode.T, KeyCode.LeftControl);
+        // InvokeOnKey(ToggleBasslineVortex, KeyCode.Y, KeyCode.LeftControl);
+        // InvokeOnKey(ToggleBothVortexes, KeyCode.U, KeyCode.LeftControl);
     }
-    public static void InvokeOnKey(Action action, KeyCode keyCode, KeyCode? modifier = null)
-    {
-        if (modifier == null || Input.GetKey((KeyCode)modifier))
-            if (Input.GetKeyDown(keyCode))
-                action.Invoke();
-    }
+    // public static void InvokeOnKey(Action action, KeyCode keyCode, KeyCode? modifier = null)
+    // {
+    //     if (modifier == null || Input.GetKey((KeyCode)modifier))
+    //         if (Input.GetKeyDown(keyCode))
+    //             action.Invoke();
+    // }
 }

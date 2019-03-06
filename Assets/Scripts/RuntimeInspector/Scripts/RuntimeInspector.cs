@@ -359,7 +359,7 @@ namespace RuntimeInspectorNamespace
                     currentDrawer = inspectedObjectDrawer;
 
                     GameObject go = m_inspectedObject as GameObject;
-                    if (go == null && m_inspectedObject is Component)
+                    if (go == null && m_inspectedObject is Component) 
                         go = ((Component)m_inspectedObject).gameObject;
 
                     if (!ConnectedHierarchy.IsNull() && (go == null || !ConnectedHierarchy.Select(go.transform)))

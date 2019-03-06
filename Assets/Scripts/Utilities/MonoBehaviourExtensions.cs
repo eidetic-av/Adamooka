@@ -51,6 +51,18 @@ namespace Eidetic.Unity.Utility
             return rendererModule.trailMaterial;
         }
 
+        public static void SetTrailMaterial(this ParticleSystem particleSystem, UnityEngine.Material material)
+        {
+            var rendererModule = particleSystem.GetComponent<ParticleSystemRenderer>();
+            rendererModule.trailMaterial = material;
+        }
+
+        // Material extensions
+        public static UnityEngine.Material CreateInstance(this UnityEngine.Material material)
+        {
+            return new UnityEngine.Material(material);
+        }
+
         //Vector extensions
         public static Vector3 Multiply(this Vector3 a, Vector3 b) =>
             new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);

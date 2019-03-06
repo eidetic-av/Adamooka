@@ -1,6 +1,7 @@
 using System;
 using Eidetic.Andamooka;
 using Eidetic.Unity.Runtime;
+using Eidetic.Unity.Utility;
 using Eidetic.Utility;
 using Midi;
 using System.Collections.Generic;
@@ -83,6 +84,20 @@ public class VortexController : MidiTriggerController
             FlipAxis = true
         };
 
+    float particleTiling = 1f;
+    public float ParticleTiling
+    {
+        get
+        {
+            return particleTiling;
+        }
+        set
+        {
+            ParticleSystem.GetTrailMaterial().SetTextureScale("_MainTex", new Vector2(1, value));
+            particleTiling = value;
+        }
+    }
+
     public override List<MidiTrigger> Triggers { get; set; }
 
     public bool Active = false;
@@ -97,6 +112,10 @@ public class VortexController : MidiTriggerController
             new NoteOnTrigger(RotateSystem)
         };
         ParticleSystem = gameObject.GetComponentInChildren<ParticleSystem>();
+        // Instance the trail material
+        ParticleSystem.SetTrailMaterial(ParticleSystem.GetTrailMaterial().CreateInstance());
+        // Active on startup
+        ToggleSystemActive();
     }
 
     void Update()
