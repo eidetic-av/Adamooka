@@ -17,7 +17,7 @@ namespace Eidetic.Unity.Runtime
         public void Awake()
         {
             PresetManager.Instantiate(this);
-            
+
             if (FocusOnAwake)
                 gameObject.FocusInRuntimeInspector();
         }
@@ -34,14 +34,21 @@ namespace Eidetic.Unity.Runtime
         {
             foreach (var property in GetType().GetProperties().Where(property => property.CanWrite))
             {
-                property.SetValue(this, preset.Where(
-                    parameter => parameter.Name.Equals(property.Name))
-                    .Select(parameter => parameter.Value)
-                    .First());
+                try
+                {
+                    property.SetValue(this, preset
+                        .Where(parameter => parameter.Name.Equals(property.Name))
+                        .Select(parameter => parameter.Value)
+                        .Single());
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
             }
         }
-        public virtual void BeforeLoad() {}
-        public virtual void AfterLoad() {}
+        public virtual void BeforeLoad() { }
+        public virtual void AfterLoad() { }
     }
 
     [System.Serializable]

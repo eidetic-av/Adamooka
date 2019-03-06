@@ -33,6 +33,7 @@ public class VortexController : MidiTriggerController
     public float OuterRadius { get; set; } = 1.3f;
     public int BaseEmissionCount { get; set; } = 3;
     public PitchRange PitchRange { get; set; } = new PitchRange(Pitch.C1, Pitch.F1);
+    public int StepsPerRing { get; set; } = 1;
     public float PitchAngleOffset { get; set; } = 0f;
     public int PitchEmissionCountAddition { get; set; } = 2;
     float particleLifetime = 1f;
@@ -100,6 +101,7 @@ public class VortexController : MidiTriggerController
 
     public override List<MidiTrigger> Triggers { get; set; }
 
+    public bool ActivateOnStart = true;
     public bool Active = false;
     ParticleSystem ParticleSystem;
     private Vector2 Rotation = Vector2.zero;
@@ -115,7 +117,8 @@ public class VortexController : MidiTriggerController
         // Instance the trail material
         ParticleSystem.SetTrailMaterial(ParticleSystem.GetTrailMaterial().CreateInstance());
         // Active on startup
-        ToggleSystemActive();
+        if (ActivateOnStart)
+            ToggleSystemActive();
     }
 
     void Update()
@@ -147,28 +150,33 @@ public class VortexController : MidiTriggerController
         {
             Rotation.y += RotateAngle;
 
-            var pitchValue = pitch.Normalize(PitchRange);
+            var ringCount = Mathf.RoundToInt((float) PitchRange.Size / StepsPerRing);
+            var ringNumber = Mathf.FloorToInt(
+                        ((float)PitchRange.GetPosition(pitch)).Map(0f, StepsPerRing, 0f, 1f));
+            var normalisedRingValue = ((float)ringNumber).Map(0, ringCount, 0f, 1f);
+
+                    Debug.Log(ringNumber);
 
             var shapeModule = ParticleSystem.shape;
-            shapeModule.radius = pitchValue.Map(0f, 1f, InnerRadius, OuterRadius);
+            shapeModule.radius = normalisedRingValue.Map(0f, 1f, InnerRadius, OuterRadius);
 
             var ringRotation = shapeModule.rotation;
-            ringRotation.z = pitchValue.Map(0f, 1f, 0f, ((float)PitchRange.Size) * PitchAngleOffset);
+            ringRotation.z = normalisedRingValue.Map(0f, 1f, 0f, ((float)PitchRange.Size) * PitchAngleOffset);
             shapeModule.rotation = ringRotation;
 
             var mainModule = ParticleSystem.main;
             if (Colors.Count != 0)
             {
                 var colorIndex = 0;
-                if (PitchRange.GetPosition(pitch) >= Colors.Count)
+                if (ringNumber >= Colors.Count)
                     colorIndex = Colors.Count - 1;
                 else
-                    colorIndex = PitchRange.GetPosition(pitch).Map(0, PitchRange.Size, 0, Colors.Count - 1);
+                    colorIndex = Mathf.Clamp(ringNumber.Map(0, ringCount, 0, Colors.Count - 1), 0, ringCount);
 
                 mainModule.startColor = new ParticleSystem.MinMaxGradient(Colors[colorIndex]);
             }
 
-            var additionalEmission = ((PitchRange.GetPosition(pitch)) * PitchEmissionCountAddition);
+            var additionalEmission = ringNumber * PitchEmissionCountAddition;
             if (additionalEmission < 0) additionalEmission = 0;
 
             var emissionCount = BaseEmissionCount + additionalEmission;
