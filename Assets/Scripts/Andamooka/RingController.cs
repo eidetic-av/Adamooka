@@ -58,8 +58,10 @@ public class RingController : MidiTriggerController
     public void ToggleActive()
     {
         Active = !Active;
-        CircleController.ParticleSystems.ForEach(s => s.gameObject.SetActive(Active));
-        CircleController.StartSystem = true;
+        if (Active)
+            CircleController.StartSystem = true;
+        else 
+            CircleController.StopSystem = true;
     }
 
     [RuntimeInspectorButton("0: Kick A", false, ButtonVisibility.InitializedObjects)]

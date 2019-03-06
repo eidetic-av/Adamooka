@@ -66,7 +66,11 @@ public class NoiseCircleController : MonoBehaviour
             {
                 StartingSystem = true;
                 StartSystemTime = Time.time;
-                ParticleSystems.ForEach(ps => ps.Emit(ParticleCount));
+                ParticleSystems.ForEach(ps =>
+                {
+                    ps.Play();
+                    ps.Emit(ParticleCount);
+                });
                 StartSystem = false;
             }
             if (StartingSystem)
@@ -77,8 +81,8 @@ public class NoiseCircleController : MonoBehaviour
                     position = 1;
                     StartingSystem = false;
                 }
-                var renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
-                renderer.trailMaterial.SetColor("_Color", new Color(position, position, position, 1));
+                var trailModule = particleSystem.trails;
+                trailModule.colorOverTrail = new ParticleSystem.MinMaxGradient(new Color(1, 1, 1, position));
             }
 
             if (StopSystem)
@@ -92,11 +96,19 @@ public class NoiseCircleController : MonoBehaviour
                 var position = (Time.time - StopSystemTime) / StopSystemLength;
                 if (position >= 1)
                 {
-                    position = 1;
                     StoppingSystem = false;
+                    ParticleSystems.ForEach(ps =>
+                    {
+                        var trailModule = ps.trails;
+                        trailModule.colorOverTrail = new ParticleSystem.MinMaxGradient(new Color(1, 1, 1, 0));
+                        ps.Stop();
+                    });
                 }
-                var renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
-                renderer.trailMaterial.SetColor("_Color", new Color(1 - position, 1 - position, 1 - position, 1));
+                else
+                {
+                    var trailModule = particleSystem.trails;
+                    trailModule.colorOverTrail = new ParticleSystem.MinMaxGradient(new Color(1, 1, 1, 1 - position));
+                }
             }
 
             var main = particleSystem.main;
