@@ -34,7 +34,22 @@ namespace Eidetic.Andamooka
         {
             public Hand Hand { get; set; }
             public bool FlipAxis { get; set; }
-            public SerializableVector2 InputRange { get; set; } = new SerializableVector2(0f, 1f);
+            SerializableVector2 inputRange = new SerializableVector2(0f, 1f);
+            public SerializableVector2 InputRange
+            {
+                get
+                {
+                    return inputRange;
+                }
+                set
+                {
+                    if (value.x == value.y)
+                    {
+                        value.x += 0.01f;
+                    }
+                    inputRange = value;
+                }
+            }
             public bool ClampInputRange { get; set; } = false;
             public AirSticksMapping(Hand hand)
             {

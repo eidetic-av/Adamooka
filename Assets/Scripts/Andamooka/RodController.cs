@@ -8,9 +8,10 @@ using Eidetic.Andamooka;
 using Eidetic.Utility;
 using Eidetic.Unity.Runtime;
 using Eidetic.Unity.Utility;
+using Midi;
 
 [System.Serializable]
-public class RodController : RuntimeController
+public class RodController : MidiTriggerController
 {
     //
     // Runtime control properties
@@ -42,14 +43,65 @@ public class RodController : RuntimeController
             MinimumValue = 0.5f,
             MaximumValue = 1f
         };
-    public AirSticks.MotionMapping HandNoise { get; set; }
-        = new AirSticks.MotionMapping(AirSticks.Hand.Both)
+    public AirSticks.MotionMapping HandNoiseLeft { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
         {
             Input = AirSticks.ControlType.Motion.PositionY,
             MinimumValue = 0f,
             MaximumValue = 0.05f,
             ClampInputRange = true
         };
+    public AirSticks.MotionMapping HandNoiseRight { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Right)
+        {
+            Input = AirSticks.ControlType.Motion.PositionY,
+            MinimumValue = 0f,
+            MaximumValue = 0.05f,
+            ClampInputRange = true
+        };
+
+    float naturalMotionAmount = 0.01f;
+    public float NaturalMotionAmount
+    {
+        get
+        {
+            return naturalMotionAmount;
+        }
+        set
+        {
+            LeftHand.SetNoiseStrength(value);
+            RightHand.SetNoiseStrength(value);
+            naturalMotionAmount = value;
+        }
+    }
+
+    public override Channel MidiChannel { get; set; } = Channel.Channel12;
+    public PitchRange ColorShiftRange { get; set; } = new PitchRange(Pitch.C1, Pitch.E1);
+    public List<SerializableVector2> ColorVectors {get; set;} = new List<SerializableVector2>() {
+        new SerializableVector2(1f, 0.5f),
+        new SerializableVector2(1f, 0.5f),
+        new SerializableVector2(1f, 0.5f),
+        new SerializableVector2(1f, 0.5f),
+        new SerializableVector2(1f, 0.5f)
+    };
+    
+    float colorShiftDamping = 30f;
+    public float ColorShiftDamping
+    {
+        get
+        {
+            return colorShiftDamping;
+        }
+        set
+        {
+            if (value <= 1)
+                colorShiftDamping = 1;
+            else
+                colorShiftDamping = value;
+        }
+    }
+    int ActiveColorVectorIndex = 0;
+    public override List<MidiTrigger> Triggers { get; set; }
 
     public bool ConstantEmission = false;
 
@@ -62,6 +114,13 @@ public class RodController : RuntimeController
 
     void Start()
     {
+        InitialiseMidi();
+
+        Triggers = new List<MidiTrigger>()
+        {
+            new NoteOnTrigger(SelectActiveColorVector)
+        };
+
         LeftHand = GameObject.Find("LeftHand").GetComponent<ParticleSystem>();
         RightHand = GameObject.Find("RightHand").GetComponent<ParticleSystem>();
         Ribbon = GameObject.Find("Ribbon").GetComponent<ParticleSystem>();
@@ -104,6 +163,16 @@ public class RodController : RuntimeController
             // Noise mapping
             ApplyNoiseLeft();
             ApplyNoiseRight();
+
+            // Color vector change damping
+            var trailTextureOffset = Ribbon.GetTrailMaterial().GetTextureOffset("_MainTex");
+            if (trailTextureOffset != ColorVectors[ActiveColorVectorIndex])
+            {
+                var intermediateOffset = new Vector2(trailTextureOffset.x, trailTextureOffset.y);
+                intermediateOffset.x = intermediateOffset.x + (ColorVectors[ActiveColorVectorIndex].x - intermediateOffset.x) / ColorShiftDamping;
+                intermediateOffset.y = intermediateOffset.y + (ColorVectors[ActiveColorVectorIndex].y - intermediateOffset.y) / ColorShiftDamping;
+                Ribbon.GetTrailMaterial().SetTextureOffset("_MainTex", intermediateOffset);
+            }
         }
     }
 
@@ -189,6 +258,9 @@ public class RodController : RuntimeController
         }
     }
 
+    void SelectActiveColorVector(Pitch pitch, int velocity) =>
+        ActiveColorVectorIndex = Mathf.RoundToInt(pitch.Normalize(ColorShiftRange).Map(0, 1, 0, ColorVectors.Count - 1));
+
     //
     // Inner methods
     //
@@ -216,7 +288,7 @@ public class RodController : RuntimeController
 
     void ApplyNoiseLeft()
     {
-        var multiplier = HandNoise.GetOutput(AirSticks.Hand.Left);
+        var multiplier = HandNoiseLeft.Output;
         var system = GetSystem(AirSticks.Hand.Left);
         var particles = new ParticleSystem.Particle[system.particleCount];
         system.GetParticles(particles);
@@ -244,7 +316,7 @@ public class RodController : RuntimeController
     }
     void ApplyNoiseRight()
     {
-        var multiplier = HandNoise.GetOutput(AirSticks.Hand.Right);
+        var multiplier = HandNoiseRight.Output;
         var system = GetSystem(AirSticks.Hand.Right);
         var particles = new ParticleSystem.Particle[system.particleCount];
         system.GetParticles(particles);

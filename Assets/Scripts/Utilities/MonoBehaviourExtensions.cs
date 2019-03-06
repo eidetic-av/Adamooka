@@ -39,6 +39,18 @@ namespace Eidetic.Unity.Utility
             mainModule.simulationSpeed = speed;
         }
 
+        public static void SetNoiseStrength(this ParticleSystem particleSystem, float strength)
+        {
+            var noiseModule = particleSystem.noise;
+            noiseModule.strength = strength;
+        }
+
+        public static UnityEngine.Material GetTrailMaterial(this ParticleSystem particleSystem)
+        {
+            var rendererModule = particleSystem.GetComponent<ParticleSystemRenderer>();
+            return rendererModule.trailMaterial;
+        }
+
         //Vector extensions
         public static Vector3 Multiply(this Vector3 a, Vector3 b) =>
             new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
