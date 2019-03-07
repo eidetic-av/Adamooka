@@ -85,36 +85,68 @@ public class RingController : MidiTriggerController
         CircleController.Triggers[2] = true;
 
     //
-    // Drum synth, not sure if we are using this:
+    // Drum synth
     //
     public bool DrumSynthActive = false;
 
-    [RuntimeInspectorButton("5: Drum synth kick", false, ButtonVisibility.InitializedObjects)]
-    public void DrumSynthKick(int velocity)
+    public AirSticks.MotionMapping SynthKickManipulation { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+        {
+            Input = AirSticks.ControlType.Motion.PositionZ,
+            MinimumValue = 1,
+            MaximumValue = 1
+        };
+
+    public AirSticks.MotionMapping SynthSnareManipulation { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+        {
+            Input = AirSticks.ControlType.Motion.PositionZ,
+            MinimumValue = 1,
+            MaximumValue = 1
+        };
+
+
+    public void DrumSynthKickOn(int velocity)
     {
         if (DrumSynthActive)
             CircleController.Triggers[7] = true;
     }
 
-    [RuntimeInspectorButton("6: Drum synth snare", false, ButtonVisibility.InitializedObjects)]
-    public void DrumSynthSnare(int velocity)
+    public void DrumSynthKickOff()
+    {
+        if (DrumSynthActive)
+            CircleController.HitPoints[7].CurrentEnvelopeState =
+                NoiseCircleController.EnvelopeState.Decay;
+    }
+
+    public void DrumSynthSnareOn(int velocity)
     {
         if (DrumSynthActive)
             CircleController.Triggers[8] = true;
+    }
+
+    public void DrumSynthSnareOff()
+    {
+            CircleController.HitPoints[8].CurrentEnvelopeState =
+                NoiseCircleController.EnvelopeState.Decay;
     }
 
     public void ToggleDrumSynth()
     {
         if (!DrumSynthActive)
         {
-            AirSticks.Left.NoteOn += DrumSynthKick;
-            AirSticks.Right.NoteOn += DrumSynthSnare;
+            AirSticks.Left.NoteOn += DrumSynthKickOn;
+            AirSticks.Left.NoteOff += DrumSynthKickOff;
+            AirSticks.Right.NoteOn += DrumSynthSnareOn;
+            AirSticks.Right.NoteOff += DrumSynthSnareOff;
             DrumSynthActive = true;
         }
         else
         {
-            AirSticks.Left.NoteOn -= DrumSynthKick;
-            AirSticks.Right.NoteOn -= DrumSynthSnare;
+            AirSticks.Left.NoteOn -= DrumSynthKickOn;
+            AirSticks.Left.NoteOff -= DrumSynthKickOff;
+            AirSticks.Right.NoteOn -= DrumSynthSnareOn;
+            AirSticks.Right.NoteOff -= DrumSynthSnareOff;
             DrumSynthActive = false;
         }
     }
