@@ -43,20 +43,16 @@ public class VortexController : MidiTriggerController
     public int StepsPerRing { get; set; } = 1;
     public float PitchAngleOffset { get; set; } = 0f;
     public int PitchEmissionCountAddition { get; set; } = 2;
-    float particleLifetime = 1f;
-    public float ParticleLifetime
-    {
-        get
+    
+    public AirSticks.MotionMapping ParticleLifetime { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
         {
-            return particleLifetime;
-        }
-        set
-        {
-            var mainModule = ParticleSystem.main;
-            mainModule.startLifetime = value;
-            particleLifetime = value;
-        }
-    }
+            Input = AirSticks.ControlType.Motion.RotationX,
+            MinimumValue = 1,
+            MaximumValue = 1,
+            InputRange = new SerializableVector2(0, 1)
+        };
+
     int maxParticles = 500;
     public int MaxParticles
     {
@@ -200,6 +196,8 @@ public class VortexController : MidiTriggerController
             if (additionalEmission < 0) additionalEmission = 0;
 
             var emissionCount = Mathf.FloorToInt(BaseEmissionCount.Output) + additionalEmission;
+            
+            mainModule.startLifetime = ParticleLifetime.Output;
 
             ParticleSystem.Emit(emissionCount);
 
