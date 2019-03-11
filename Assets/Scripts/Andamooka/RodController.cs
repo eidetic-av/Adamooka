@@ -59,6 +59,20 @@ public class RodController : MidiTriggerController
             MaximumValue = 0.05f,
             ClampInputRange = true
         };
+    public AirSticks.MotionMapping OrbitLeft { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+        {
+            Input = AirSticks.ControlType.Motion.PositionY,
+            MinimumValue = 0f,
+            MaximumValue = 0f
+        };
+    public AirSticks.MotionMapping OrbitRight { get; set; }
+        = new AirSticks.MotionMapping(AirSticks.Hand.Right)
+        {
+            Input = AirSticks.ControlType.Motion.PositionY,
+            MinimumValue = 0f,
+            MaximumValue = 0f
+        };
 
     float naturalMotionAmount = 0.01f;
     public float NaturalMotionAmount
@@ -77,14 +91,22 @@ public class RodController : MidiTriggerController
 
     public override Channel MidiChannel { get; set; } = Channel.Channel12;
     public PitchRange ColorShiftRange { get; set; } = new PitchRange(Pitch.C1, Pitch.E1);
-    public List<SerializableVector2> ColorVectors {get; set;} = new List<SerializableVector2>() {
+    public List<SerializableVector2> ColorVectors { get; set; } = new List<SerializableVector2>() {
         new SerializableVector2(1f, 0.5f),
         new SerializableVector2(1f, 0.5f),
         new SerializableVector2(1f, 0.5f),
         new SerializableVector2(1f, 0.5f),
         new SerializableVector2(1f, 0.5f)
     };
-    
+
+    public List<SerializableVector2> ColorTiling { get; set; } = new List<SerializableVector2>() {
+        new SerializableVector2(0.4f, 0),
+        new SerializableVector2(0.4f, 0),
+        new SerializableVector2(0.4f, 0),
+        new SerializableVector2(0.4f, 0),
+        new SerializableVector2(0.4f, 0)
+    };
+
     float colorShiftDamping = 30f;
     public float ColorShiftDamping
     {
@@ -105,11 +127,17 @@ public class RodController : MidiTriggerController
 
     public bool ConstantEmission = false;
 
+    Vector2 Opacity = new Vector2(0f, 0f);
+    public float FadeOutDamping { get; set; } = 5f;
+
     //
     // Initialisation stuff
     //
+    [SerializeField]
     ParticleSystem LeftHand;
+    [SerializeField]
     ParticleSystem RightHand;
+    [SerializeField]
     ParticleSystem Ribbon;
 
     void Start()
@@ -120,10 +148,6 @@ public class RodController : MidiTriggerController
         {
             new NoteOnTrigger(SelectActiveColorVector)
         };
-
-        LeftHand = GameObject.Find("LeftHand").GetComponent<ParticleSystem>();
-        RightHand = GameObject.Find("RightHand").GetComponent<ParticleSystem>();
-        Ribbon = GameObject.Find("Ribbon").GetComponent<ParticleSystem>();
 
         AirSticks.Left.NoteOn += (velocity)
             => Spawn(AirSticks.Hand.Left, velocity);
@@ -160,18 +184,47 @@ public class RodController : MidiTriggerController
             RightHand.transform.localScale = RightHand.transform.localScale
                 .Multiply(Vector3.one * AirSticks.Right.Velocity.Map(VelocityToScale));
 
+            // Orbit mapping
+            var leftVelocityModule = LeftHand.velocityOverLifetime;
+            leftVelocityModule.orbitalX = new ParticleSystem.MinMaxCurve(OrbitLeft.Output);
+            leftVelocityModule.orbitalY = new ParticleSystem.MinMaxCurve(OrbitLeft.Output);
+            leftVelocityModule.orbitalZ = new ParticleSystem.MinMaxCurve(OrbitLeft.Output);
+            var rightVelocityModule = RightHand.velocityOverLifetime;
+            rightVelocityModule.orbitalX = new ParticleSystem.MinMaxCurve(OrbitRight.Output);
+            rightVelocityModule.orbitalY = new ParticleSystem.MinMaxCurve(OrbitRight.Output);
+            rightVelocityModule.orbitalZ = new ParticleSystem.MinMaxCurve(OrbitRight.Output);
+
             // Noise mapping
             ApplyNoiseLeft();
             ApplyNoiseRight();
 
-            // Color vector change damping
-            var trailTextureOffset = Ribbon.GetTrailMaterial().GetTextureOffset("_MainTex");
-            if (trailTextureOffset != ColorVectors[ActiveColorVectorIndex])
+            // Color vector change
+            Ribbon.GetTrailMaterial().SetTextureOffset("_MainTex", ColorVectors[ActiveColorVectorIndex]);
+            Ribbon.GetTrailMaterial().SetTextureScale("_MainTex", ColorTiling[ActiveColorVectorIndex]);
+
+            // Opacity
+            if (Opacity.x != 0)
             {
-                var intermediateOffset = new Vector2(trailTextureOffset.x, trailTextureOffset.y);
-                intermediateOffset.x = intermediateOffset.x + (ColorVectors[ActiveColorVectorIndex].x - intermediateOffset.x) / ColorShiftDamping;
-                intermediateOffset.y = intermediateOffset.y + (ColorVectors[ActiveColorVectorIndex].y - intermediateOffset.y) / ColorShiftDamping;
-                Ribbon.GetTrailMaterial().SetTextureOffset("_MainTex", intermediateOffset);
+                Opacity.x = Opacity.x + (Opacity.y - Opacity.x) / FadeOutDamping;
+                if (Opacity.x <= 0.005f)
+                {
+                    Opacity.x = 0;
+                    LeftHand.Clear();
+                    LeftHand.Stop();
+                    RightHand.Clear();
+                    RightHand.Stop();
+                    Ribbon.Clear();
+                    Ribbon.Stop();
+                }
+                var ribbonColor = Ribbon.GetTrailMaterial().GetColor("_TintColor");
+                Ribbon.GetTrailMaterial().SetColor("_TintColor",
+                    new Color(ribbonColor.r, ribbonColor.g, ribbonColor.b, Opacity.x));
+                var leftColor = LeftHand.GetMaterial().GetColor("_Color");
+                LeftHand.GetMaterial().SetColor("_Color",
+                    new Color(leftColor.r, leftColor.g, leftColor.b, Opacity.x));
+                var rightColor = RightHand.GetMaterial().GetColor("_Color");
+                RightHand.GetMaterial().SetColor("_Color",
+                    new Color(leftColor.r, leftColor.g, leftColor.b, Opacity.x));
             }
         }
     }
@@ -184,6 +237,7 @@ public class RodController : MidiTriggerController
     {
         if (AirSticksControlActive)
         {
+            Opacity = new Vector2(1f, 1f);
             if (!ConstantEmission)
             {
                 // if in regular mode, the right hand turns the system on and off,
@@ -235,12 +289,8 @@ public class RodController : MidiTriggerController
             // if we're in regular mode, only turn off with the right hand
             if (hand == AirSticks.Hand.Right)
             {
-                LeftHand.Clear();
-                LeftHand.Stop();
-                RightHand.Clear();
-                RightHand.Stop();
-                Ribbon.Clear();
-                Ribbon.Stop();
+                Opacity.x = 1f;
+                Opacity.y = 0f;
             }
         }
         else
@@ -248,12 +298,8 @@ public class RodController : MidiTriggerController
             // if we're in constant emission mode, both hands have to be off to turn the system off
             if (!AirSticks.Left.NoteIsOn && !AirSticks.Right.NoteIsOn)
             {
-                LeftHand.Clear();
-                LeftHand.Stop();
-                RightHand.Clear();
-                RightHand.Stop();
-                Ribbon.Clear();
-                Ribbon.Stop();
+                Opacity.x = 1f;
+                Opacity.y = 0f;
             }
         }
     }
@@ -267,17 +313,17 @@ public class RodController : MidiTriggerController
     ParticleSystem GetSystem(AirSticks.Hand hand)
     {
         if (hand == AirSticks.Hand.Left)
-            return LeftHand;
+            return this.LeftHand;
         else if (hand == AirSticks.Hand.Right)
-            return RightHand;
+            return this.RightHand;
         else throw new System.ArgumentException();
     }
     ParticleSystem GetOtherSystem(AirSticks.Hand hand)
     {
         if (hand == AirSticks.Hand.Left)
-            return RightHand;
+            return this.RightHand;
         else if (hand == AirSticks.Hand.Right)
-            return LeftHand;
+            return this.LeftHand;
         else throw new System.ArgumentException();
     }
 

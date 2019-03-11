@@ -60,7 +60,7 @@ public class RingController : MidiTriggerController
         Active = !Active;
         if (Active)
             CircleController.StartSystem = true;
-        else 
+        else
             CircleController.StopSystem = true;
     }
 
@@ -90,7 +90,7 @@ public class RingController : MidiTriggerController
     public bool DrumSynthActive = false;
 
     public AirSticks.MotionMapping SynthKickManipulation { get; set; }
-        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+        = new AirSticks.MotionMapping(AirSticks.Hand.Right)
         {
             Input = AirSticks.ControlType.Motion.PositionZ,
             MinimumValue = 1,
@@ -105,30 +105,65 @@ public class RingController : MidiTriggerController
             MaximumValue = 1
         };
 
+    bool DrumSynthKickIsOn = false;
+    bool DrumSynthSnareIsOn = false;
 
     public void DrumSynthKickOn(int velocity)
     {
         if (DrumSynthActive)
+        {
             CircleController.Triggers[7] = true;
+            DrumSynthKickIsOn = true;
+        }
     }
 
     public void DrumSynthKickOff()
     {
         if (DrumSynthActive)
+        {
             CircleController.HitPoints[7].CurrentEnvelopeState =
                 NoiseCircleController.EnvelopeState.Decay;
+            DrumSynthKickIsOn = false;
+        }
     }
+
 
     public void DrumSynthSnareOn(int velocity)
     {
         if (DrumSynthActive)
+        {
             CircleController.Triggers[8] = true;
+            DrumSynthSnareIsOn = true;
+        }
     }
 
     public void DrumSynthSnareOff()
     {
+        if (DrumSynthActive)
+        {
             CircleController.HitPoints[8].CurrentEnvelopeState =
                 NoiseCircleController.EnvelopeState.Decay;
+            DrumSynthSnareIsOn = false;
+        }
+    }
+
+    void Update()
+    {
+        if (DrumSynthActive)
+        {
+            if (DrumSynthKickIsOn)
+            {
+                CircleController.NoiseAddition = SynthKickManipulation.Output;
+            }
+            else if (DrumSynthSnareIsOn)
+            {
+                CircleController.NoiseAddition = SynthSnareManipulation.Output;
+            }
+            else
+            {
+                CircleController.NoiseAddition = 0;
+            }
+        }
     }
 
     public void ToggleDrumSynth()

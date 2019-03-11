@@ -45,6 +45,12 @@ namespace Eidetic.Unity.Utility
             noiseModule.strength = strength;
         }
 
+        public static UnityEngine.Material GetMaterial(this ParticleSystem particleSystem)
+        {
+            var rendererModule = particleSystem.GetComponent<ParticleSystemRenderer>();
+            return rendererModule.material;
+        }
+
         public static UnityEngine.Material GetTrailMaterial(this ParticleSystem particleSystem)
         {
             var rendererModule = particleSystem.GetComponent<ParticleSystemRenderer>();

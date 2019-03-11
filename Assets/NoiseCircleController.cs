@@ -39,6 +39,8 @@ public class NoiseCircleController : MonoBehaviour
     public List<float> NoiseDamps = new List<float>();
     public List<bool> Triggers = new List<bool>();
 
+    public float NoiseAddition = 0f;
+
     void Start()
     {
         Instance = this;
@@ -163,8 +165,8 @@ public class NoiseCircleController : MonoBehaviour
                     BaseNoiseValues[i].x =
                         BaseNoiseValues[i].x + (BaseNoiseValues[i].y - BaseNoiseValues[i].x) / BaseNoiseDamping;
 
-                    var noisyX = pos.x + ((BaseNoiseValues[i].x * pos.x) * BaseNoiseIntensity);
-                    var noisyY = pos.y + ((BaseNoiseValues[i].x * pos.y) * BaseNoiseIntensity);
+                    var noisyX = pos.x + ((BaseNoiseValues[i].x * pos.x) * (BaseNoiseIntensity + NoiseAddition));
+                    var noisyY = pos.y + ((BaseNoiseValues[i].x * pos.y) * (BaseNoiseIntensity + NoiseAddition));
 
                     pos = particles[i].position = new Vector2(noisyX, noisyY);
                 }

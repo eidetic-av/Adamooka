@@ -14,6 +14,7 @@ public class CueController : MidiTriggerController
     public override List<MidiTrigger> Triggers { get; set; }
 
     RodController Rods;
+    RodController DrumRods;
     RingController Ring;
     VortexController HiHatVortex;
     VortexController BasslineVortex;
@@ -23,6 +24,7 @@ public class CueController : MidiTriggerController
         InitialiseMidi();
 
         Rods = GameObject.Find("Rods").GetComponent<RodController>();
+        DrumRods = GameObject.Find("DrumSynthRods").GetComponent<RodController>();
         Ring = GameObject.Find("Ring").GetComponent<RingController>();
         HiHatVortex = GameObject.Find("HiHatVortex").GetComponent<VortexController>();
         BasslineVortex = GameObject.Find("BasslineVortex").GetComponent<VortexController>();
@@ -32,7 +34,7 @@ public class CueController : MidiTriggerController
             new MidiTrigger(Pitch.A1, ToggleRods),
             new MidiTrigger(Pitch.G1, ToggleConstantRods),
             new MidiTrigger(Pitch.ASharp1, ToggleRing),
-            new MidiTrigger(Pitch.DSharp1, ToggleRingDrumSynth),
+            new MidiTrigger(Pitch.DSharp1, ToggleDrumSynth),
             new MidiTrigger(Pitch.CSharp1, ToggleHiHatVortex),
             new MidiTrigger(Pitch.C1, ToggleBasslineVortex),
             new MidiTrigger(Pitch.B1, ToggleBothVortexes)
@@ -48,8 +50,12 @@ public class CueController : MidiTriggerController
     [RuntimeInspectorButton("2: Toggle Ring", false, ButtonVisibility.InitializedObjects)]
     public void ToggleRing() => Ring.ToggleActive();
 
-    [RuntimeInspectorButton("3: Toggle Ring Drum Synth", false, ButtonVisibility.InitializedObjects)]
-    public void ToggleRingDrumSynth() => Ring.ToggleDrumSynth();
+    [RuntimeInspectorButton("3: Toggle Drum Synth Rods", false, ButtonVisibility.InitializedObjects)]
+    public void ToggleDrumSynth()
+    {
+        DrumRods.AirSticksControlActive = !DrumRods.AirSticksControlActive;
+        DrumRods.ConstantEmission = true;
+    }
 
     [RuntimeInspectorButton("4: Toggle HiHat Vortex", false, ButtonVisibility.InitializedObjects)]
     public void ToggleHiHatVortex() => HiHatVortex.ToggleSystemActive();
