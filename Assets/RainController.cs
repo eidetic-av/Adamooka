@@ -62,7 +62,7 @@ public class RainController : MonoBehaviour
     [Range(-2f, 2f)]
     public float RadialModifierIntesity = 0f;
 
-    public KinectInterop.JointType RadialOriginJoint;
+    //public KinectInterop.JointType RadialOriginJoint;
     public Vector3 JointScaling;
     public Vector3 JointOffset;
 
@@ -280,15 +280,15 @@ public class RainController : MonoBehaviour
 
         if (RadialModifier)
         {
-            var manager = KinectManager.Instance;
-            var origin = manager.GetJointPosition(manager.GetUserIdByIndex(0), (int)RadialOriginJoint);
-            var velocityModule = ParticleSystem.velocityOverLifetime;
+            // var manager = KinectManager.Instance;
+            // var origin = manager.GetJointPosition(manager.GetUserIdByIndex(0), (int)RadialOriginJoint);
+            // var velocityModule = ParticleSystem.velocityOverLifetime;
 
-            velocityModule.orbitalOffsetX = (origin.x * JointScaling.x) + JointOffset.x;
-            velocityModule.orbitalOffsetY = (origin.y * JointScaling.y) + JointOffset.y;
-            velocityModule.orbitalOffsetZ = (origin.z * JointScaling.z) + JointOffset.z;
+            // velocityModule.orbitalOffsetX = (origin.x * JointScaling.x) + JointOffset.x;
+            // velocityModule.orbitalOffsetY = (origin.y * JointScaling.y) + JointOffset.y;
+            // velocityModule.orbitalOffsetZ = (origin.z * JointScaling.z) + JointOffset.z;
 
-            velocityModule.radialMultiplier = RadialModifierIntesity;
+            // velocityModule.radialMultiplier = RadialModifierIntesity;
 
         }
         if (HitOut)
@@ -336,45 +336,45 @@ public class RainController : MonoBehaviour
         }
         if (Hone)
         {
-            if (KinectManager.Instance.GetUsersCount() != 0)
-            {
-                if (Wind != null)
-                    Wind.SetActive(false);
+            // if (KinectManager.Instance.GetUsersCount() != 0)
+            // {
+            //     if (Wind != null)
+            //         Wind.SetActive(false);
 
-                if (ParticleArray == null)
-                {
-                    ParticleArray = new ParticleSystem.Particle[ParticleSystem.main.maxParticles];
+            //     if (ParticleArray == null)
+            //     {
+            //         ParticleArray = new ParticleSystem.Particle[ParticleSystem.main.maxParticles];
 
-                    // and stop emission and forces
-                    var emissionModule = ParticleSystem.emission;
-                    OriginalParticleEmitRate = emissionModule.rateOverTime;
-                    emissionModule.rateOverTime = 0;
-                    var forcesModule = ParticleSystem.externalForces;
-                    OriginalParticleForceMultiplier = forcesModule.multiplier;
-                    forcesModule.multiplier = 0;
-                    var noiseModule = ParticleSystem.noise;
-                    OriginalNoiseEnabled = noiseModule.enabled;
-                    noiseModule.enabled = false;
+            //         // and stop emission and forces
+            //         var emissionModule = ParticleSystem.emission;
+            //         OriginalParticleEmitRate = emissionModule.rateOverTime;
+            //         emissionModule.rateOverTime = 0;
+            //         var forcesModule = ParticleSystem.externalForces;
+            //         OriginalParticleForceMultiplier = forcesModule.multiplier;
+            //         forcesModule.multiplier = 0;
+            //         var noiseModule = ParticleSystem.noise;
+            //         OriginalNoiseEnabled = noiseModule.enabled;
+            //         noiseModule.enabled = false;
 
-                    // increase the lifetime of particles and emit one burst
-                    var mainModule = ParticleSystem.main;
-                    OriginalLifetime = mainModule.startLifetime;
-                    mainModule.startLifetime = new ParticleSystem.MinMaxCurve(1000f, 1000f);
-                    ParticleSystem.Clear();
-                    ParticleSystem.Emit(ParticleSystem.main.maxParticles);
+            //         // increase the lifetime of particles and emit one burst
+            //         var mainModule = ParticleSystem.main;
+            //         OriginalLifetime = mainModule.startLifetime;
+            //         mainModule.startLifetime = new ParticleSystem.MinMaxCurve(1000f, 1000f);
+            //         ParticleSystem.Clear();
+            //         ParticleSystem.Emit(ParticleSystem.main.maxParticles);
 
-                    // initialise the particle position arrays
-                    var particleCount = ParticleSystem.GetParticles(ParticleArray);
-                    OriginalParticlePositions = new Vector3[particleCount];
-                    NewParticlePositions = new Vector3[particleCount];
+            //         // initialise the particle position arrays
+            //         var particleCount = ParticleSystem.GetParticles(ParticleArray);
+            //         OriginalParticlePositions = new Vector3[particleCount];
+            //         NewParticlePositions = new Vector3[particleCount];
 
-                    for (int i = 0; i < particleCount; i++)
-                    {
-                        OriginalParticlePositions[i] = ParticleArray[i].position;
-                        NewParticlePositions[i] = ParticleArray[i].position;
-                    }
-                }
-            }
+            //         for (int i = 0; i < particleCount; i++)
+            //         {
+            //             OriginalParticlePositions[i] = ParticleArray[i].position;
+            //             NewParticlePositions[i] = ParticleArray[i].position;
+            //         }
+            //     }
+            // }
         }
         else if (DoingHoneOff)
         {

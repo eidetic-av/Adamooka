@@ -5,22 +5,22 @@ using UnityEngine;
 public class ParticleHandsController : MonoBehaviour {
 
     GameObject ParticleHandsSystem;
-    KinectManager KinectManager;
+    //KinectManager KinectManager;
 
     Transform[] HandTransforms = new Transform[2];
 	// Use this for initialization
 	void Start () {
-        ParticleHandsSystem = GameObject.Find("ParticleHandsSystem");
-        KinectManager = GameObject.Find("KinectController").GetComponent<KinectManager>();
+        // ParticleHandsSystem = GameObject.Find("ParticleHandsSystem");
+        // KinectManager = GameObject.Find("KinectController").GetComponent<KinectManager>();
     }
 	
 	// Update is called once per frame
 	void Update () {
-        TrackJoint(0, KinectInterop.JointType.HandRight);
+        //TrackJoint(0, KinectInterop.JointType.HandRight);
 	}
 
-    void TrackJoint(int user, KinectInterop.JointType jointType)
-    {
+    //void TrackJoint(int user, KinectInterop.JointType jointType)
+    //{
         //long userId = KinectManager.GetUserIdByIndex(user);
         //int jointId = (int)jointType;
 
@@ -31,5 +31,5 @@ public class ParticleHandsController : MonoBehaviour {
 
         //TrackerCube.transform.position =
         //    KinectManager.GetJointPosColorOverlay(userId, jointId, Camera.main, Camera.main.pixelRect);
-    }
+    //}
 }

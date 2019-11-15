@@ -97,16 +97,10 @@ public class SceneChangeController : MonoBehaviour
 
     void DisableKinect()
     {
-        if (TrackerSceneController.Instance == null) return;
-        TrackerSceneController.Instance.DisableKinectUpdate = true;
-        TrackerSceneController.Instance.DisableUserRender = true;
     }
 
     void EnableKinect()
     {
-        if (TrackerSceneController.Instance == null) return;
-        TrackerSceneController.Instance.EnableKinectUpdate = true;
-        TrackerSceneController.Instance.EnableUserRender = true;
     }
 
     void ReadKeys()
@@ -130,14 +124,6 @@ public class SceneChangeController : MonoBehaviour
                 if (KinectPreview) EnableKinect();
                 else DisableKinect();
             }
-            // else if (Input.inputString == "t")
-            // {
-            //     SelectedScene = Scene.ComputerRainClones;
-            //     TrackerSceneController.Instance.SetCloneState(13);
-            //     var effector = GameObject.Find("TrackerScene Camera").GetComponentInChildren<TrackerOutputEffector>();
-            //     effector.ControlCloneDistanceWithAirSticks = false;
-            //     effector.CloneDistance = 0.55f;
-            // }
             else if (Input.inputString == "f")
             {
                 MidiManager.Instance.RouteNoteOn(Channel.Channel3, Pitch.C5);

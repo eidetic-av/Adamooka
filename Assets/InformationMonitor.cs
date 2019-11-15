@@ -142,17 +142,17 @@ public class InformationMonitor : MonoBehaviour
 
             // Kinect status
 
-            if (KinectManager.Instance != null)
-            {
-                if (KinectManager.Instance.GetUsersCount() > 0)
-                {
-                    KinectStatus.color = Color.green;
-                }
-                else
-                    KinectStatus.color = Color.black;
-            }
-            else
-                KinectStatus.color = Color.black;
+            // if (KinectManager.Instance != null)
+            // {
+            //     if (KinectManager.Instance.GetUsersCount() > 0)
+            //     {
+            //         KinectStatus.color = Color.green;
+            //     }
+            //     else
+            //         KinectStatus.color = Color.black;
+            // }
+            // else
+            //     KinectStatus.color = Color.black;
 
 
             // Control type

@@ -1,0 +1,97 @@
+// OSC Jack - Open Sound Control plugin for Unity
+// https://github.com/keijiro/OscJack
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace OscJack
+{
+    public sealed class OscMessageDispatcher
+    {
+        #region Callback wrapping type definitions
+
+        class MessageCallbackGroup
+        {
+            internal string Address;
+            internal List<MessageCallback> Callbacks;
+            internal MessageCallbackGroup(string address, Action<string, OscDataHandle> action, bool includeChildren)
+            {
+                Address = address;
+                Callbacks = new List<MessageCallback>();
+                Callbacks.Add(new MessageCallback(address, action, includeChildren));
+            }
+        }
+        struct MessageCallback
+        {
+            internal String Address;
+            internal bool IncludeChildren;
+            internal Action<string, OscDataHandle> Action;
+            internal MessageCallback(string address, Action<string, OscDataHandle> action, bool includeChildren)
+            {
+                Address = address;
+                IncludeChildren = includeChildren;
+                Action = action;
+            }
+        }
+
+        #endregion
+
+        #region Public accessors
+
+        public void AddCallback(string address, Action<string, OscDataHandle> action, bool includeChildren = false)
+        {
+            lock (Callbacks)
+            {
+                // if the address already has a callback group, add a callback to the existing list
+                var callbackGroup = Callbacks.SingleOrDefault(c => c.Address == address);
+                if (callbackGroup != null)
+                    callbackGroup.Callbacks.Add(new MessageCallback(address, action, includeChildren));
+                else // otherwise create a new callback group for it and initialise it with this first callback
+                    Callbacks.Add(new MessageCallbackGroup(address, action, includeChildren));
+            }
+        }
+
+        public void RemoveCallback(string address, Action<string, OscDataHandle> callback)
+        {
+            lock (Callbacks)
+            {
+
+            }
+        }
+
+        #endregion
+
+        #region Handler invocation
+
+        internal void Dispatch(string address, OscDataHandle data)
+        {
+            lock (Callbacks)
+            {
+                // get all the callbacks whose addresses start with this address
+                var callbacks = Callbacks.Where(c => c.Address.StartsWith(address))?
+                    .SelectMany(c => c.Callbacks).ToList();
+                callbacks.ForEach(c => {
+                    // if it doesn't include children, invoke it only if it is the exact address
+                    if (!c.IncludeChildren)
+                        if (c.Address == address)
+                            c.Action.Invoke(address, data);
+                    else // otherwise invoke it if it just starts with this address
+                        c.Action.Invoke(address, data);
+                });
+
+                // Monitor callback
+                // if (_callbackMap.TryGetValue(string.Empty, out callback))
+                //     callback(address, data);
+            }
+        }
+
+        #endregion
+
+        #region Private fields
+
+        List<MessageCallbackGroup> Callbacks = new List<MessageCallbackGroup>();
+
+        #endregion
+    }
+}
