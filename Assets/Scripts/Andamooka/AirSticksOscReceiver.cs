@@ -19,20 +19,23 @@ namespace Eidetic.Andamooka
         {
             Server = new OscServer(Port);
 
-            Server.MessageDispatcher.AddCallback(String.Empty, (address, data) =>
-            {
-                if (address.StartsWith("/airsticks"))
-                    RouteAirSticksOsc(address, data);
-            });
+            // Server.MessageDispatcher.AddCallback(String.Empty, (address, data) =>
+            // {
+            //     if (address.StartsWith("/airsticks"))
+            //         RouteAirSticksOsc(address, data);
+            // });
 
             StartCoroutine(UpdateConnectedMonitor());
-			Server.OnDataReceived += () => 
-				UnityMainThreadDispatcher.Instance().Enqueue(() => StartCoroutine(UpdateReceivedMonitor()));
+
+            Server.MessageDispatcher.AddRootNodeCallback("airsticks", RouteAirSticksOsc);
+
+            Server.OnDataReceived += () => UnityMainThreadDispatcher.Instance().Enqueue(() => StartCoroutine(UpdateReceivedMonitor()));
         }
 
         void OnDestroy()
         {
             Server.Dispose();
+            Server.MessageDispatcher.RemoveRootNodeCallback("airsticks", RouteAirSticksOsc);
         }
 
         // Routing

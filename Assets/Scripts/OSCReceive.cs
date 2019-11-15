@@ -1,12 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
-using UnityOSC;
-using Midi;
-using System;
 using Eidetic;
 using Eidetic.Andamooka;
+using Midi;
+using UnityEngine;
+using UnityOSC;
 using Utility;
 
 public partial class OSCReceive : MonoBehaviour
@@ -65,20 +65,19 @@ public partial class OSCReceive : MonoBehaviour
 
     }
 
-    
-	private string DataToString(List<object> data)
-	{
-		string buffer = "";
-		
-		for(int i = 0; i < data.Count; i++)
-		{
-			buffer += data[i].ToString() + " ";
-		}
-		
-		buffer += "\n";
-		
-		return buffer;
-	}
+    private string DataToString(List<object> data)
+    {
+        string buffer = "";
+
+        for (int i = 0; i < data.Count; i++)
+        {
+            buffer += data[i].ToString() + " ";
+        }
+
+        buffer += "\n";
+
+        return buffer;
+    }
 
     private void RouteOSC(string[] address, List<object> data)
     {
@@ -105,20 +104,20 @@ public partial class OSCReceive : MonoBehaviour
             }
             if (address[3] == "pos")
             {
-                targetStick.Position = new Vector3((float)data[0], (float)data[1], (float)data[2]);
+                targetStick.Position = new Vector3((float) data[0], (float) data[1], (float) data[2]);
                 if (LogHandPosition)
                     Debug.Log(targetStick.Hand.ToString() + "\n:" + targetStick.Position.x + ", " + targetStick.Position.y + ", " + targetStick.Position.z);
             }
             else if (address[3] == "angles")
             {
-                targetStick.EulerAngles.x = (float)data[0];
-                targetStick.EulerAngles.y = (float)data[1];
-                targetStick.EulerAngles.z = (float)data[2];
+                targetStick.EulerAngles.x = (float) data[0];
+                targetStick.EulerAngles.y = (float) data[1];
+                targetStick.EulerAngles.z = (float) data[2];
             }
             if (address[3] == "note")
             {
                 if (address[4] == "on")
-                    targetStick.NoteOn.RunOnMain((int)data[0]);
+                    targetStick.NoteOn.RunOnMain((int) data[0]);
                 if (address[4] == "off")
                     targetStick.NoteOff.RunOnMain();
             }
