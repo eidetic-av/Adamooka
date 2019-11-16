@@ -1,10 +1,9 @@
 using System;
-using Midi;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Eidetic.Unity.Runtime;
-
+using Midi;
 using UnityEngine;
 
 [System.Serializable]
@@ -14,12 +13,15 @@ public abstract class MidiTriggerController : RuntimeController
     public abstract Channel MidiChannel { get; set; }
     public abstract List<MidiTrigger> Triggers { get; set; }
 
+    public virtual List<NoteOffTrigger> NoteOffTriggers { get; set; } = new List<NoteOffTrigger>();
+
     public void InitialiseMidi()
     {
-        MidiEventDispatcher.Instance.InputDevice.NoteOn += RouteMidi;
+        MidiEventDispatcher.Instance.InputDevice.NoteOn += RouteNoteOn;
+        MidiEventDispatcher.Instance.InputDevice.NoteOff += RouteNoteOff;
     }
 
-    void RouteMidi(NoteOnMessage noteOnMessage)
+    void RouteNoteOn(NoteOnMessage noteOnMessage)
     {
         UnityMainThreadDispatcher.Instance().Enqueue(() =>
         {
@@ -28,17 +30,37 @@ public abstract class MidiTriggerController : RuntimeController
 
             // get the midi triggers
             var targetTriggers = Triggers.Where(trigger =>
-                        trigger.Note.Equals(noteOnMessage.Pitch) || trigger.Note.Equals(Pitch.Any))?.ToList();
+                trigger.Note.Equals(noteOnMessage.Pitch) || trigger.Note.Equals(Pitch.Any))?.ToList();
             // invoke the standard midi triggers
             targetTriggers.Where(t => t.GetType() == typeof(MidiTrigger))?.ToList()
                 .ForEach(t => t.Action.Invoke());
             // invoke the noteOn triggers
-            targetTriggers.Where(t => t.GetType() == typeof(NoteOnTrigger))?
+            targetTriggers.Where(t => t.GetType() == typeof(NoteOnTrigger)) ?
                 .Cast<NoteOnTrigger>().ToList()
                 .ForEach(t =>
                 {
                     if (t.NoteOnAction == null) Triggers.Remove(t);
                     else t.NoteOnAction.Invoke(noteOnMessage.Pitch, noteOnMessage.Velocity);
+                });
+        });
+    }
+
+    void RouteNoteOff(NoteOffMessage noteOffMessage)
+    {
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            // check midi channel
+            if (!noteOffMessage.Channel.Equals(MidiChannel)) return;
+            // get the midi triggers
+            var targetTriggers = NoteOffTriggers.Where(trigger =>
+                trigger.Note.Equals(noteOffMessage.Pitch) || trigger.Note.Equals(Pitch.Any))?.ToList();
+
+            // invoke the noteOff triggers
+            targetTriggers.OfType<NoteOffTrigger>().ToList()
+                .ForEach(t =>
+                {
+                    if (t.Action == null) Triggers.Remove(t);
+                    else t.Action.Invoke();
                 });
         });
     }
@@ -62,7 +84,7 @@ public abstract class MidiTriggerController : RuntimeController
         {
             if (Triggers[i].GetType() == typeof(NoteOnTrigger))
             {
-                NoteOnTriggerActions[noteOnIndex] = ((NoteOnTrigger)Triggers[i]).NoteOnAction;
+                NoteOnTriggerActions[noteOnIndex] = ((NoteOnTrigger) Triggers[i]).NoteOnAction;
                 NoteOnTriggerIndexes.Add(i);
                 noteOnIndex++;
             }
@@ -80,7 +102,7 @@ public abstract class MidiTriggerController : RuntimeController
         }
         for (int i = 0; i < NoteOnTriggerActions.Length; i++)
         {
-            ((NoteOnTrigger)Triggers[NoteOnTriggerIndexes[i]]).NoteOnAction = NoteOnTriggerActions[i];
+            ((NoteOnTrigger) Triggers[NoteOnTriggerIndexes[i]]).NoteOnAction = NoteOnTriggerActions[i];
         }
         TriggersBeforeLoad = null;
         LoadingTriggerActions = null;
@@ -108,6 +130,15 @@ public class MidiTrigger
         Action = action;
     }
 }
+
+[System.Serializable]
+public class NoteOffTrigger : MidiTrigger
+{
+    public NoteOffTrigger(Pitch note, Action action) : base(note, action)
+    {
+    }
+};
+
 [System.Serializable]
 public class NoteOnTrigger : MidiTrigger
 {

@@ -51,6 +51,13 @@ public class RingController : MidiTriggerController
             new MidiTrigger(Pitch.D3, SnareB),
             new MidiTrigger(Pitch.GSharp2, HiHat)
         };
+        NoteOffTriggers = new List<NoteOffTrigger>() {
+            new NoteOffTrigger(Pitch.E2, KickAOff),
+            new NoteOffTrigger(Pitch.ASharp2, KickBOff),
+            new NoteOffTrigger(Pitch.C3, SnareAOff),
+            new NoteOffTrigger(Pitch.D3, SnareBOff),
+            new NoteOffTrigger(Pitch.GSharp2, HiHatOff)
+        };
     }
 
     bool Active = false;
@@ -68,21 +75,40 @@ public class RingController : MidiTriggerController
     public void KickA() =>
         CircleController.Triggers[4] = true;
 
+    [RuntimeInspectorButton("0: Kick A Off", false, ButtonVisibility.InitializedObjects)]
+    public void KickAOff() => CircleController.NoteOffs[4] = true;
+
     [RuntimeInspectorButton("1: Kick B", false, ButtonVisibility.InitializedObjects)]
     public void KickB() =>
         CircleController.Triggers[1] = true;
+
+    [RuntimeInspectorButton("1: Kick B Off", false, ButtonVisibility.InitializedObjects)]
+    public void KickBOff() =>
+        CircleController.NoteOffs[1] = true;
 
     [RuntimeInspectorButton("2: Snare A", false, ButtonVisibility.InitializedObjects)]
     public void SnareA() =>
         CircleController.Triggers[6] = true;
 
+    [RuntimeInspectorButton("2: Snare A Off", false, ButtonVisibility.InitializedObjects)]
+    public void SnareAOff() =>
+        CircleController.NoteOffs[6] = true;
+
     [RuntimeInspectorButton("3: Snare B", false, ButtonVisibility.InitializedObjects)]
     public void SnareB() =>
         CircleController.Triggers[5] = true;
 
+    [RuntimeInspectorButton("3: Snare B Off", false, ButtonVisibility.InitializedObjects)]
+    public void SnareBOff() =>
+        CircleController.NoteOffs[5] = true;
+
     [RuntimeInspectorButton("4: Hi-Hat", false, ButtonVisibility.InitializedObjects)]
     public void HiHat() =>
         CircleController.Triggers[2] = true;
+
+    [RuntimeInspectorButton("4: Hi-Hat Off", false, ButtonVisibility.InitializedObjects)]
+    public void HiHatOff() =>
+        CircleController.NoteOffs[2] = true;
 
     //
     // Drum synth

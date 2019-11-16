@@ -38,6 +38,7 @@ public class NoiseCircleController : MonoBehaviour
     public List<float> NoiseIntensities = new List<float>();
     public List<float> NoiseDamps = new List<float>();
     public List<bool> Triggers = new List<bool>();
+    public List<bool> NoteOffs = new List<bool>();
 
     public float NoiseAddition = 0f;
 
@@ -134,7 +135,7 @@ public class NoiseCircleController : MonoBehaviour
 
                 foreach (var hitPoint in HitPoints)
                 {
-                    var weight = hitPoint.WeightCurve.Evaluate((float)i / ParticleCount);
+                    var weight = hitPoint.WeightCurve.Evaluate((float) i / ParticleCount);
                     curveOffset += hitPoint.CurveIntensity * weight;
 
                     // Apply individual hit noise
@@ -213,7 +214,8 @@ public class NoiseCircleController : MonoBehaviour
             HitPoints[i].DecayResponse = DecayResponses[i];
             HitPoints[i].NoiseIntensity = NoiseIntensities[i];
             HitPoints[i].NoiseDamping = NoiseDamps[i];
-            HitPoints[i].Trigger = Triggers[i];
+            HitPoints[i].NoteOn = Triggers[i];
+            HitPoints[i].NoteOff = NoteOffs[i];
         }
     }
 
@@ -221,10 +223,11 @@ public class NoiseCircleController : MonoBehaviour
     {
         foreach (var hitPoint in HitPoints)
         {
-            if (hitPoint.Trigger)
+            if (hitPoint.NoteOn)
             {
                 hitPoint.StartEnvelope();
                 Triggers[HitPoints.IndexOf(hitPoint)] = false;
+                NoteOffs[HitPoints.IndexOf(hitPoint)] = false;
             }
             else if (hitPoint.CurrentEnvelopeState != EnvelopeState.Off)
             {
@@ -242,12 +245,16 @@ public class NoiseCircleController : MonoBehaviour
 
     public enum EnvelopeState
     {
-        Off, Attack, Decay
+        Off,
+        Attack,
+        Decay
     }
 
     public class HitPoint
     {
-        public bool Trigger;
+        bool noteOn;
+        public bool NoteOn;
+        public bool NoteOff;
         public int AttackMs = 100;
         public int DecayMs = 500;
         public AnimationCurve AttackResponse = AnimationCurve.Linear(0, 0, 1, 1);
@@ -266,24 +273,31 @@ public class NoiseCircleController : MonoBehaviour
         public float NoiseDamping = 2f;
         public Vector2 NoiseValues = new Vector2(0f, 0f);
 
+        float time = 0;
         public void StartEnvelope()
         {
             // Start time = current time in Ms
+            time = 0;
             EnvelopeStartTime = GetCurrentMs();
 
             // set state to attack
             CurrentEnvelopeState = EnvelopeState.Attack;
 
-            Trigger = false;
+            NoteOn = false;
         }
 
         public void UpdateEnvelope()
         {
+            if (!(CurrentEnvelopeState == EnvelopeState.Decay && !NoteOff))
+            {
+                time = time + Time.deltaTime;
+            }
             switch (CurrentEnvelopeState)
             {
                 case EnvelopeState.Attack:
                     {
-                        var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float)AttackMs;
+                        NoteOff = false;
+                        var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float) AttackMs;
                         if (envelopeTime >= 1)
                         {
                             envelopeTime = 1;
@@ -295,14 +309,17 @@ public class NoiseCircleController : MonoBehaviour
                     }
                 case EnvelopeState.Decay:
                     {
-                        var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float)DecayMs;
-                        if (envelopeTime >= 1)
+                        if (NoteOff)
                         {
-                            envelopeTime = 1;
-                            CurrentEnvelopeState = EnvelopeState.Off;
-                            EnvelopeStartTime = 0;
+                            var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float) DecayMs;
+                            if (envelopeTime >= 1)
+                            {
+                                envelopeTime = 1;
+                                CurrentEnvelopeState = EnvelopeState.Off;
+                                EnvelopeStartTime = 0;
+                            }
+                            CurrentEnvelopeValue = DecayResponse.Evaluate(envelopeTime);
                         }
-                        CurrentEnvelopeValue = DecayResponse.Evaluate(envelopeTime);
                         break;
                     }
             }
@@ -312,7 +329,7 @@ public class NoiseCircleController : MonoBehaviour
 
         int GetCurrentMs()
         {
-            return Mathf.RoundToInt(Time.time * 1000);
+            return Mathf.RoundToInt(time * 1000);
         }
     }
 }
