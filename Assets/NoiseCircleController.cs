@@ -32,6 +32,7 @@ public class NoiseCircleController : MonoBehaviour
     public List<HitPoint> HitPoints = new List<HitPoint>();
 
     public List<AnimationCurve> WeightCurves = new List<AnimationCurve>();
+    public List<AnimationCurve> SecondaryWeightCurves = new List<AnimationCurve>();
     public List<Vector2Int> AttackDecayMs = new List<Vector2Int>();
     public List<AnimationCurve> AttackResponses = new List<AnimationCurve>();
     public List<AnimationCurve> DecayResponses = new List<AnimationCurve>();
@@ -42,15 +43,19 @@ public class NoiseCircleController : MonoBehaviour
 
     public float NoiseAddition = 0f;
 
+    public float SecondaryCurveInterpolation1 = 0f;
+    public float SecondaryCurveInterpolation2 = 0f;
+
     void Start()
     {
         Instance = this;
 
-        foreach (var curve in WeightCurves)
+        for (int i = 0; i < WeightCurves.Count; i++)
         {
             HitPoints.Add(new HitPoint()
             {
-                WeightCurve = curve
+                WeightCurve = WeightCurves[i],
+                SecondaryWeightCurve = SecondaryWeightCurves[i]
             });
         }
 
@@ -135,8 +140,18 @@ public class NoiseCircleController : MonoBehaviour
 
                 foreach (var hitPoint in HitPoints)
                 {
+                    var index = HitPoints.IndexOf(hitPoint);
+
                     var weight = hitPoint.WeightCurve.Evaluate((float) i / ParticleCount);
-                    curveOffset += hitPoint.CurveIntensity * weight;
+
+                    var secondaryWeight = hitPoint.SecondaryWeightCurve.Evaluate((float)i / ParticleCount);
+
+                    var interpolatedWeight = Mathf.Lerp(weight, secondaryWeight, SecondaryCurveInterpolation1);
+                    if (index == 6 || index == 5)
+                        interpolatedWeight = Mathf.Lerp(weight, secondaryWeight, SecondaryCurveInterpolation2);
+
+
+                    curveOffset += hitPoint.CurveIntensity * interpolatedWeight;
 
                     // Apply individual hit noise
                     // Create the value
@@ -268,6 +283,7 @@ public class NoiseCircleController : MonoBehaviour
         public float IntensityMultiplier = 1f;
 
         public AnimationCurve WeightCurve = AnimationCurve.Linear(0, 1, 1, 0);
+        public AnimationCurve SecondaryWeightCurve = AnimationCurve.Linear(0, 1, 1, 0);
 
         public float NoiseIntensity = 1f;
         public float NoiseDamping = 2f;
@@ -288,10 +304,10 @@ public class NoiseCircleController : MonoBehaviour
 
         public void UpdateEnvelope()
         {
-            if (!(CurrentEnvelopeState == EnvelopeState.Decay && !NoteOff))
-            {
+            // if (!(CurrentEnvelopeState == EnvelopeState.Decay && !NoteOff))
+            // {
                 time = time + Time.deltaTime;
-            }
+            // }
             switch (CurrentEnvelopeState)
             {
                 case EnvelopeState.Attack:
@@ -309,8 +325,8 @@ public class NoiseCircleController : MonoBehaviour
                     }
                 case EnvelopeState.Decay:
                     {
-                        if (NoteOff)
-                        {
+                        // if (NoteOff)
+                        // {
                             var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float) DecayMs;
                             if (envelopeTime >= 1)
                             {
@@ -319,7 +335,7 @@ public class NoiseCircleController : MonoBehaviour
                                 EnvelopeStartTime = 0;
                             }
                             CurrentEnvelopeValue = DecayResponse.Evaluate(envelopeTime);
-                        }
+                        // }
                         break;
                     }
             }

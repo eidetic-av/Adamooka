@@ -6,6 +6,7 @@ using Eidetic.Unity.Runtime;
 using Eidetic.Unity.Utility;
 using Midi;
 using RuntimeInspectorNamespace;
+using Eidetic.Andamooka;
 
 public class CueController : MidiTriggerController
 {
@@ -13,11 +14,20 @@ public class CueController : MidiTriggerController
 
     public override List<MidiTrigger> Triggers { get; set; }
 
+    public AirSticks.MotionMapping BloomIntensity { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Right)
+    {
+        Input = AirSticks.ControlType.Motion.PositionY,
+        MinimumValue = 0.001f,
+        MaximumValue = 0.001f,
+    };
+
     RodController Rods;
     RodController DrumRods;
     RingController Ring;
     VortexController HiHatVortex;
     VortexController BasslineVortex;
+
+    CameraFilterPack_Blur_Bloom Bloom;
 
     void Start()
     {
@@ -28,6 +38,8 @@ public class CueController : MidiTriggerController
         Ring = GameObject.Find("Ring").GetComponent<RingController>();
         HiHatVortex = GameObject.Find("HiHatVortex").GetComponent<VortexController>();
         BasslineVortex = GameObject.Find("BasslineVortex").GetComponent<VortexController>();
+
+        Bloom = Camera.main.GetComponent<CameraFilterPack_Blur_Bloom>();
 
         Triggers = new List<MidiTrigger>()
         {
@@ -68,6 +80,11 @@ public class CueController : MidiTriggerController
     {
         ToggleHiHatVortex();
         ToggleBasslineVortex();
+    }
+
+    void Update()
+    {
+        Bloom.Glow = BloomIntensity.Output;
     }
 
     // void Update()

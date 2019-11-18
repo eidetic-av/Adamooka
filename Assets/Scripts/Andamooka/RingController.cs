@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using RuntimeInspectorNamespace;
 using Eidetic.Andamooka;
 using Eidetic.Unity.Runtime;
 using Eidetic.Unity.Utility;
 using Midi;
+using RuntimeInspectorNamespace;
+using UnityEngine;
 
 [System.Serializable]
 public class RingController : MidiTriggerController
@@ -38,11 +38,15 @@ public class RingController : MidiTriggerController
     // Initialisation
     //
     NoiseCircleController CircleController;
+    ParticleSystem ColourSystem;
+    ParticleSystem WhiteSystem;
     void Start()
     {
         InitialiseMidi();
         CircleController = GameObject.Find("NoiseCircleController")
             .GetComponent<NoiseCircleController>();
+        ColourSystem = GameObject.Find("ColourSystem").GetComponent<ParticleSystem>();
+        WhiteSystem = GameObject.Find("WhiteSystem").GetComponent<ParticleSystem>();
         Triggers = new List<MidiTrigger>()
         {
             new MidiTrigger(Pitch.E2, KickA),
@@ -51,7 +55,8 @@ public class RingController : MidiTriggerController
             new MidiTrigger(Pitch.D3, SnareB),
             new MidiTrigger(Pitch.GSharp2, HiHat)
         };
-        NoteOffTriggers = new List<NoteOffTrigger>() {
+        NoteOffTriggers = new List<NoteOffTrigger>()
+        {
             new NoteOffTrigger(Pitch.E2, KickAOff),
             new NoteOffTrigger(Pitch.ASharp2, KickBOff),
             new NoteOffTrigger(Pitch.C3, SnareAOff),
@@ -115,21 +120,82 @@ public class RingController : MidiTriggerController
     //
     public bool DrumSynthActive = false;
 
-    public AirSticks.MotionMapping SynthKickManipulation { get; set; }
-        = new AirSticks.MotionMapping(AirSticks.Hand.Right)
-        {
-            Input = AirSticks.ControlType.Motion.PositionZ,
-            MinimumValue = 1,
-            MaximumValue = 1
-        };
+    public AirSticks.MotionMapping SynthKickManipulation { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Right)
+    {
+        Input = AirSticks.ControlType.Motion.PositionZ,
+        MinimumValue = 1,
+        MaximumValue = 1
+    };
 
-    public AirSticks.MotionMapping SynthSnareManipulation { get; set; }
-        = new AirSticks.MotionMapping(AirSticks.Hand.Left)
-        {
-            Input = AirSticks.ControlType.Motion.PositionZ,
-            MinimumValue = 1,
-            MaximumValue = 1
-        };
+    public AirSticks.MotionMapping SynthSnareManipulation { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.PositionZ,
+        MinimumValue = 1,
+        MaximumValue = 1
+    };
+    
+    public AirSticks.MotionMapping ColourThickness { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 0.25f,
+        MaximumValue = 0.25f
+    };
+    
+    public AirSticks.MotionMapping WhiteThickness { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 0.1f,
+        MaximumValue = 0.1f
+    };
+    
+    public AirSticks.MotionMapping NoiseStrength { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 0.001f,
+        MaximumValue = 0.001f,
+    };
+    
+    public AirSticks.MotionMapping NoiseFrequency { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 0.001f,
+        MaximumValue = 0.001f,
+    };
+    
+    public AirSticks.MotionMapping NosieScrollSpeed { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 0.001f,
+        MaximumValue = 0.001f,
+    };
+    
+    public AirSticks.MotionMapping NoisePosition { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 0.001f,
+        MaximumValue = 0.001f,
+    };
+    
+    public AirSticks.MotionMapping NoiseSize { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 0.001f,
+        MaximumValue = 0.001f,
+    };
+    
+    public AirSticks.MotionMapping SecondaryCurveInterpolation1 { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 1f,
+        MaximumValue = 1f,
+    };
+    
+    public AirSticks.MotionMapping SecondaryCurveInterpolation2 { get; set; } = new AirSticks.MotionMapping(AirSticks.Hand.Left)
+    {
+        Input = AirSticks.ControlType.Motion.RotationX,
+        MinimumValue = 1f,
+        MaximumValue = 1f,
+    };
 
     bool DrumSynthKickIsOn = false;
     bool DrumSynthSnareIsOn = false;
@@ -152,7 +218,6 @@ public class RingController : MidiTriggerController
             DrumSynthKickIsOn = false;
         }
     }
-
 
     public void DrumSynthSnareOn(int velocity)
     {
@@ -190,6 +255,27 @@ public class RingController : MidiTriggerController
                 CircleController.NoiseAddition = 0;
             }
         }
+
+        var colourTrailsModule = ColourSystem.trails;
+        colourTrailsModule.widthOverTrail = ColourThickness.Output;
+        var whiteTrailsModule = WhiteSystem.trails;
+        whiteTrailsModule.widthOverTrail = WhiteThickness.Output;
+
+        var colourNoiseModule = ColourSystem.noise;
+        var whiteNoiseModule = WhiteSystem.noise;
+        colourNoiseModule.strength = NoiseStrength.Output;
+        whiteNoiseModule.strength = NoiseStrength.Output;
+        colourNoiseModule.frequency = NoiseFrequency.Output;
+        whiteNoiseModule.frequency = NoiseFrequency.Output;
+        colourNoiseModule.scrollSpeed = NosieScrollSpeed.Output;
+        whiteNoiseModule.scrollSpeed = NosieScrollSpeed.Output;
+        colourNoiseModule.positionAmount = NoisePosition.Output;
+        whiteNoiseModule.positionAmount = NoisePosition.Output;
+        colourNoiseModule.sizeAmount = NoiseSize.Output;
+        whiteNoiseModule.sizeAmount = NoiseSize.Output;
+
+        NoiseCircleController.Instance.SecondaryCurveInterpolation1 = SecondaryCurveInterpolation1.Output;
+        NoiseCircleController.Instance.SecondaryCurveInterpolation2 = SecondaryCurveInterpolation2.Output;
     }
 
     public void ToggleDrumSynth()

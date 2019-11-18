@@ -54,7 +54,6 @@ public abstract class MidiTriggerController : RuntimeController
             // get the midi triggers
             var targetTriggers = NoteOffTriggers.Where(trigger =>
                 trigger.Note.Equals(noteOffMessage.Pitch) || trigger.Note.Equals(Pitch.Any))?.ToList();
-
             // invoke the noteOff triggers
             targetTriggers.OfType<NoteOffTrigger>().ToList()
                 .ForEach(t =>
@@ -136,6 +135,7 @@ public class NoteOffTrigger : MidiTrigger
 {
     public NoteOffTrigger(Pitch note, Action action) : base(note, action)
     {
+        action.Invoke();
     }
 };
 

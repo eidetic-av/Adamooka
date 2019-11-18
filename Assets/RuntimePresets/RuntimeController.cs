@@ -43,7 +43,7 @@ namespace Eidetic.Unity.Runtime
                 }
                 catch (Exception e)
                 {
-                    Debug.LogException(e);
+                    Debug.LogWarning(e);
                 }
             }
         }
