@@ -37,6 +37,7 @@ public class NoiseCircleController : MonoBehaviour
     public List<AnimationCurve> AttackResponses = new List<AnimationCurve>();
     public List<AnimationCurve> DecayResponses = new List<AnimationCurve>();
     public List<float> NoiseIntensities = new List<float>();
+    public List<float> SecondaryNoiseIntensities = new List<float>();
     public List<float> NoiseDamps = new List<float>();
     public List<bool> Triggers = new List<bool>();
     public List<bool> NoteOffs = new List<bool>();
@@ -55,7 +56,7 @@ public class NoiseCircleController : MonoBehaviour
             HitPoints.Add(new HitPoint()
             {
                 WeightCurve = WeightCurves[i],
-                SecondaryWeightCurve = SecondaryWeightCurves[i]
+                    SecondaryWeightCurve = SecondaryWeightCurves[i]
             });
         }
 
@@ -66,7 +67,7 @@ public class NoiseCircleController : MonoBehaviour
     {
         CheckVariables();
         UpdateHitPointVaraibles();
-        UpdateHitPointEnvelopes();
+        HitPoints.ForEach(hp => hp.UpdateEnvelope());
 
         ParticleSystems.ForEach(particleSystem =>
         {
@@ -144,19 +145,26 @@ public class NoiseCircleController : MonoBehaviour
 
                     var weight = hitPoint.WeightCurve.Evaluate((float) i / ParticleCount);
 
-                    var secondaryWeight = hitPoint.SecondaryWeightCurve.Evaluate((float)i / ParticleCount);
+                    var secondaryWeight = hitPoint.SecondaryWeightCurve.Evaluate((float) i / ParticleCount);
 
                     var interpolatedWeight = Mathf.Lerp(weight, secondaryWeight, SecondaryCurveInterpolation1);
                     if (index == 6 || index == 5)
                         interpolatedWeight = Mathf.Lerp(weight, secondaryWeight, SecondaryCurveInterpolation2);
-
 
                     curveOffset += hitPoint.CurveIntensity * interpolatedWeight;
 
                     // Apply individual hit noise
                     // Create the value
                     var newNoiseValue = (Random.value * 2) - 1;
-                    hitPoint.NoiseValues.y = (newNoiseValue * (hitPoint.CurveIntensity * weight)) * hitPoint.NoiseIntensity;
+
+                    var noiseIntensity = hitPoint.NoiseIntensity;
+                    var secondaryNoiseIntensity = hitPoint.SecondaryNoiseIntensity;
+
+                    var interpolatedNoiseIntensity = Mathf.Lerp(noiseIntensity, secondaryNoiseIntensity, SecondaryCurveInterpolation1);
+                    if (index == 6 || index == 5)
+                        interpolatedNoiseIntensity = Mathf.Lerp(noiseIntensity, secondaryNoiseIntensity, SecondaryCurveInterpolation2);
+
+                    hitPoint.NoiseValues.y = (newNoiseValue * (hitPoint.CurveIntensity * weight)) * interpolatedNoiseIntensity;
                     // Damp it
                     hitPoint.NoiseValues.x =
                         hitPoint.NoiseValues.x + (hitPoint.NoiseValues.y - hitPoint.NoiseValues.x) / hitPoint.NoiseDamping;
@@ -228,26 +236,12 @@ public class NoiseCircleController : MonoBehaviour
             HitPoints[i].AttackResponse = AttackResponses[i];
             HitPoints[i].DecayResponse = DecayResponses[i];
             HitPoints[i].NoiseIntensity = NoiseIntensities[i];
+            HitPoints[i].SecondaryNoiseIntensity = SecondaryNoiseIntensities[i];
             HitPoints[i].NoiseDamping = NoiseDamps[i];
             HitPoints[i].NoteOn = Triggers[i];
+            Triggers[i] = false;
             HitPoints[i].NoteOff = NoteOffs[i];
-        }
-    }
-
-    void UpdateHitPointEnvelopes()
-    {
-        foreach (var hitPoint in HitPoints)
-        {
-            if (hitPoint.NoteOn)
-            {
-                hitPoint.StartEnvelope();
-                Triggers[HitPoints.IndexOf(hitPoint)] = false;
-                NoteOffs[HitPoints.IndexOf(hitPoint)] = false;
-            }
-            else if (hitPoint.CurrentEnvelopeState != EnvelopeState.Off)
-            {
-                hitPoint.UpdateEnvelope();
-            }
+            NoteOffs[i] = false;
         }
     }
 
@@ -286,56 +280,50 @@ public class NoiseCircleController : MonoBehaviour
         public AnimationCurve SecondaryWeightCurve = AnimationCurve.Linear(0, 1, 1, 0);
 
         public float NoiseIntensity = 1f;
+        public float SecondaryNoiseIntensity = 1f;
         public float NoiseDamping = 2f;
         public Vector2 NoiseValues = new Vector2(0f, 0f);
 
-        float time = 0;
-        public void StartEnvelope()
-        {
-            // Start time = current time in Ms
-            time = 0;
-            EnvelopeStartTime = GetCurrentMs();
-
-            // set state to attack
-            CurrentEnvelopeState = EnvelopeState.Attack;
-
-            NoteOn = false;
-        }
-
         public void UpdateEnvelope()
         {
-            // if (!(CurrentEnvelopeState == EnvelopeState.Decay && !NoteOff))
-            // {
-                time = time + Time.deltaTime;
-            // }
+            if (NoteOn)
+            {
+                // Start time = current time in Ms
+                EnvelopeStartTime = GetCurrentMs();
+                // set state to attack
+                CurrentEnvelopeState = EnvelopeState.Attack;
+                NoteOn = false;
+            }
+            else if (NoteOff)
+            {
+                EnvelopeStartTime = GetCurrentMs();
+                CurrentEnvelopeState = EnvelopeState.Decay;
+                NoteOff = false;
+            }
+
             switch (CurrentEnvelopeState)
             {
                 case EnvelopeState.Attack:
                     {
-                        NoteOff = false;
                         var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float) AttackMs;
                         if (envelopeTime >= 1)
                         {
                             envelopeTime = 1;
-                            CurrentEnvelopeState = EnvelopeState.Decay;
-                            EnvelopeStartTime = GetCurrentMs();
+                            CurrentEnvelopeState = EnvelopeState.Off;
                         }
                         CurrentEnvelopeValue = AttackResponse.Evaluate(envelopeTime);
                         break;
                     }
                 case EnvelopeState.Decay:
                     {
-                        // if (NoteOff)
-                        // {
-                            var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float) DecayMs;
-                            if (envelopeTime >= 1)
-                            {
-                                envelopeTime = 1;
-                                CurrentEnvelopeState = EnvelopeState.Off;
-                                EnvelopeStartTime = 0;
-                            }
-                            CurrentEnvelopeValue = DecayResponse.Evaluate(envelopeTime);
-                        // }
+                        var envelopeTime = (GetCurrentMs() - EnvelopeStartTime) / (float) DecayMs;
+                        if (envelopeTime >= 1)
+                        {
+                            envelopeTime = 1;
+                            CurrentEnvelopeState = EnvelopeState.Off;
+                            EnvelopeStartTime = 0;
+                        }
+                        CurrentEnvelopeValue = DecayResponse.Evaluate(envelopeTime);
                         break;
                     }
             }
@@ -345,7 +333,7 @@ public class NoiseCircleController : MonoBehaviour
 
         int GetCurrentMs()
         {
-            return Mathf.RoundToInt(time * 1000);
+            return Mathf.RoundToInt(Time.time * 1000);
         }
     }
 }

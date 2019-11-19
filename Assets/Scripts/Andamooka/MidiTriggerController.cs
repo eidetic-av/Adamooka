@@ -55,12 +55,24 @@ public abstract class MidiTriggerController : RuntimeController
             var targetTriggers = NoteOffTriggers.Where(trigger =>
                 trigger.Note.Equals(noteOffMessage.Pitch) || trigger.Note.Equals(Pitch.Any))?.ToList();
             // invoke the noteOff triggers
-            targetTriggers.OfType<NoteOffTrigger>().ToList()
+            targetTriggers
                 .ForEach(t =>
                 {
-                    if (t.Action == null) Triggers.Remove(t);
-                    else t.Action.Invoke();
+                    if (t.Action != null) t.Action.Invoke();
                 });
+
+            if (noteOffMessage.Pitch == Pitch.E2)
+                NoiseCircleController.Instance.NoteOffs[4] = true;
+            else if (noteOffMessage.Pitch == Pitch.ASharp2)
+                NoiseCircleController.Instance.NoteOffs[1] = true;
+            else if (noteOffMessage.Pitch == Pitch.C3)
+                NoiseCircleController.Instance.NoteOffs[6] = true;
+            else if (noteOffMessage.Pitch == Pitch.D3)
+                NoiseCircleController.Instance.NoteOffs[5] = true;
+            else if (noteOffMessage.Pitch == Pitch.GSharp2)
+                NoiseCircleController.Instance.NoteOffs[2] = true;
+                
+
         });
     }
 
@@ -71,10 +83,17 @@ public abstract class MidiTriggerController : RuntimeController
     Action[] LoadingTriggerActions;
     Action<Pitch, int>[] NoteOnTriggerActions;
     List<int> NoteOnTriggerIndexes = new List<int>();
+
+    NoteOffTrigger[] NoteOffsBeforeLoad;
+    Action[] LoadingNoteOffTriggerActions;
     public override void BeforeLoad()
     {
         TriggersBeforeLoad = Triggers.ToArray();
         LoadingTriggerActions = Triggers.Where(t => t.GetType() == typeof(MidiTrigger))
+            .Select(trigger => trigger.Action).ToArray();
+        
+        NoteOffsBeforeLoad = NoteOffTriggers.ToArray();
+        LoadingNoteOffTriggerActions = NoteOffTriggers.Where(t => t.GetType() == typeof(MidiTrigger))
             .Select(trigger => trigger.Action).ToArray();
 
         NoteOnTriggerActions = new Action<Pitch, int>[Triggers.Count(t => t.GetType() == typeof(NoteOnTrigger))];
@@ -99,12 +118,22 @@ public abstract class MidiTriggerController : RuntimeController
             else
                 Triggers.Add(TriggersBeforeLoad[i]);
         }
+        for (int i = 0; i < LoadingNoteOffTriggerActions.Length; i++)
+        {
+            if (i < NoteOffTriggers.Count)
+                NoteOffTriggers[i].Action = LoadingNoteOffTriggerActions[i];
+            else
+                NoteOffTriggers.Add(NoteOffsBeforeLoad[i]);
+        }
+
         for (int i = 0; i < NoteOnTriggerActions.Length; i++)
         {
             ((NoteOnTrigger) Triggers[NoteOnTriggerIndexes[i]]).NoteOnAction = NoteOnTriggerActions[i];
         }
         TriggersBeforeLoad = null;
+        NoteOffsBeforeLoad = null;
         LoadingTriggerActions = null;
+        LoadingNoteOffTriggerActions = null;
         NoteOnTriggerActions = null;
         NoteOnTriggerIndexes.Clear();
     }
@@ -135,7 +164,8 @@ public class NoteOffTrigger : MidiTrigger
 {
     public NoteOffTrigger(Pitch note, Action action) : base(note, action)
     {
-        action.Invoke();
+        Note = note;
+        Action = action;
     }
 };
 

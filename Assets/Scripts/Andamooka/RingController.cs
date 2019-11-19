@@ -88,8 +88,10 @@ public class RingController : MidiTriggerController
         CircleController.Triggers[1] = true;
 
     [RuntimeInspectorButton("1: Kick B Off", false, ButtonVisibility.InitializedObjects)]
-    public void KickBOff() =>
+    public void KickBOff()
+    {
         CircleController.NoteOffs[1] = true;
+    }
 
     [RuntimeInspectorButton("2: Snare A", false, ButtonVisibility.InitializedObjects)]
     public void SnareA() =>
