@@ -26,6 +26,7 @@ namespace Eidetic.Andamooka
             public Action<int> NoteOn { get; set; }
             public Action NoteOff { get; set; }
             public float Velocity = 0; // Normalised
+            public float NoteOffVelocity = 0;
             public bool NoteIsOn = false;
 
             public Stick(Hand hand)

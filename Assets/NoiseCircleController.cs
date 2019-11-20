@@ -219,6 +219,15 @@ public class NoiseCircleController : MonoBehaviour
                 }
             }
         });
+
+        if (Mathf.Abs(colourPosition.x - colourPosition.y) > Mathf.Epsilon)
+        {
+            colourPosition.x = colourPosition.x + (colourPosition.y - colourPosition.x) / ColourChangeDamping;
+            var colourModule = ParticleSystems[1].colorOverLifetime;
+            colourModule.enabled = true;
+            var currentColour = Color.Lerp(DefaultColourTint, RecordColourTint, colourPosition.x);
+            colourModule.color = currentColour;
+        }
     }
 
     void CheckVariables()
@@ -243,6 +252,18 @@ public class NoiseCircleController : MonoBehaviour
             HitPoints[i].NoteOff = NoteOffs[i];
             NoteOffs[i] = false;
         }
+    }
+
+    public Color DefaultColourTint = Color.white;
+    public Color RecordColourTint = Color.red;
+    public float ColourChangeDamping = 4f;
+    Vector2 colourPosition = new Vector2(0, 0);
+    public void ToggleRecordColour()
+    {
+        if (colourPosition.y == 1)
+            colourPosition.y = 0;
+        else if (colourPosition.y == 0)
+            colourPosition.y = 1;
     }
 
     public float GetDistanceBetweenPoints(float x1, float y1, float x2, float y2)

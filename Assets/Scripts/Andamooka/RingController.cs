@@ -117,6 +117,10 @@ public class RingController : MidiTriggerController
     public void HiHatOff() =>
         CircleController.NoteOffs[2] = true;
 
+
+    [RuntimeInspectorButton("ToggleRecordColour", false, ButtonVisibility.InitializedObjects)]
+    public void ToggleRecordColour() => CircleController.ToggleRecordColour();
+
     //
     // Drum synth
     //
@@ -278,6 +282,8 @@ public class RingController : MidiTriggerController
 
         NoiseCircleController.Instance.SecondaryCurveInterpolation1 = SecondaryCurveInterpolation1.Output;
         NoiseCircleController.Instance.SecondaryCurveInterpolation2 = SecondaryCurveInterpolation2.Output;
+
+
     }
 
     public void ToggleDrumSynth()

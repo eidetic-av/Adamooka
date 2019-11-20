@@ -64,7 +64,11 @@ namespace Eidetic.Andamooka
                 case "note":
                     if (address[2] == "on")
                         targetStick.NoteOn.RunOnMain(data.GetElementAsInt(0));
-                    else targetStick.NoteOff.RunOnMain();
+                    else
+                    {
+                        targetStick.NoteOff.RunOnMain();
+                        targetStick.NoteOffVelocity = data.GetElementAsFloat(0).Map(0, 127, 0, 1);
+                    }
                     break;
             }
         }

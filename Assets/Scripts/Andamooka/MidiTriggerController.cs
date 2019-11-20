@@ -42,6 +42,11 @@ public abstract class MidiTriggerController : RuntimeController
                     if (t.NoteOnAction == null) Triggers.Remove(t);
                     else t.NoteOnAction.Invoke(noteOnMessage.Pitch, noteOnMessage.Velocity);
                 });
+
+            if (noteOnMessage.Channel == Channel.Channel10 && noteOnMessage.Pitch == Pitch.E1)
+            {
+                NoiseCircleController.Instance.ToggleRecordColour();
+            }
         });
     }
 

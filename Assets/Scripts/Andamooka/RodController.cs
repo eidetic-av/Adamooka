@@ -123,6 +123,8 @@ public class RodController : MidiTriggerController
     Vector2 Opacity = new Vector2(0f, 0f);
     public float FadeOutDamping { get; set; } = 5f;
 
+    public Vector2 NoteOffDamp = new Vector2(1, 5);
+
     //
     // Initialisation stuff
     //
@@ -207,7 +209,11 @@ public class RodController : MidiTriggerController
         // Opacity
         if (Opacity.x != 0)
         {
-            Opacity.x = Opacity.x + (Opacity.y - Opacity.x) / FadeOutDamping;
+            var damping = FadeOutDamping;
+            if (gameObject.name == "DrumSynthRods") damping = damping * AirSticks.Right.NoteOffVelocity.Map(0, 1, NoteOffDamp.x, NoteOffDamp.y);
+
+            Opacity.x = Opacity.x + (Opacity.y - Opacity.x) / damping;
+
             if (Opacity.x <= 0.005f)
             {
                 Opacity.x = 0;
